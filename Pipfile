@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 aiohttp = "*"
 websockets = "*"
+lettercase = "*"
+yarl = "*"
 
 [dev-packages]
 pytest = "*"

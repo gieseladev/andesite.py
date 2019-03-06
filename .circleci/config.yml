@@ -16,6 +16,10 @@ references:
       command: |
         sudo pip install pipenv
         pipenv install --dev
+  tag_filters: &tag_filters
+    filters:
+      tags:
+        only: /^v.*/
 
 executors:
   python:
@@ -62,10 +66,12 @@ jobs:
           command: pip install --upgrade setuptools wheel
       - run:
           name: Building distribution archives
-          command: pipenv run setup.py sdist bdist_wheel
+          command: python setup.py sdist bdist_wheel
       - run:
           name: Moving archives to workspace
-          command: mv dist /tmp/workspace/dist
+          command: |
+            mkdir -p /tmp/workspace/
+            mv dist /tmp/workspace/
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
@@ -83,25 +89,33 @@ jobs:
           command: mv /tmp/workspace/dist dist
       - run:
           name: Installing Dependencies
-          command: pip install --upgrade twine
+          command: pip install --user --upgrade twine
       - run:
           name: Uploading
-          command: twine upload --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD} dist/*
+          command: python -m twine upload --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD} dist/*
 
 workflows:
   main:
     jobs:
-      - install
+      - install:
+          <<: *tag_filters
 
-    tests:
-      requires:
-        - install
+      - tests:
+          <<: *tag_filters
+          requires:
+            - install
 
-    build:
-      requires:
-        - install
+      - build:
+          <<: *tag_filters
+          requires:
+            - install
 
-    deploy:
-      requires:
-        - build
-        - tests
+      - deploy:
+          requires:
+            - build
+            - tests
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/

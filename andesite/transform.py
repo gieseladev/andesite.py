@@ -1,17 +1,15 @@
-"""Python dataclasses for easy access to the data received from Andesite."""
+"""Transformation utilities."""
 
-import abc
 import dataclasses
-from contextlib import suppress
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
 from functools import partial
-from typing import Any, Callable, Dict, List, MutableMapping, MutableSequence, Optional, Type, TypeVar, cast
+from typing import Any, Callable, Dict, MutableMapping, MutableSequence, Optional, Type, TypeVar, cast, overload
 
-from .utils import from_milli
+import lettercase
+from lettercase import LetterCase
 
-__all__ = ["LoadType", "LoadedTrack"]
+__all__ = ["RawDataType", "convert_to_raw", "build_from_raw", "build_values_from_raw", "build_map_values_from_raw", "MapFunction", "map_value",
+           "map_values", "map_values_all", "map_values_from_raw", "from_milli", "to_milli", "map_values_from_milli", "map_values_to_milli",
+           "map_filter_none"]
 
 T = TypeVar("T")
 
@@ -33,7 +31,9 @@ def convert_to_raw(obj: Any) -> RawDataType:
         for field in dataclasses.fields(obj):
             field = cast(dataclasses.Field, field)
             value = convert_to_raw(getattr(obj, field.name))
-            data[field.name] = value
+
+            field_name = lettercase.snake_to_dromedary_case(field.name)
+            data[field_name] = value
 
         try:
             res = obj.__transform_output__(data)
@@ -58,7 +58,7 @@ def build_from_raw(cls: Type[T], raw_data: RawDataType) -> T:
 
     The keys of raw data are mutated to lower case.
     """
-    mut_map_keys_to_snake_case(raw_data)
+    lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE)
 
     try:
         res = cls.__transform_input__(raw_data)
@@ -113,110 +113,54 @@ def map_values_from_raw(mapping: RawDataType, **key_types: Type[T]) -> None:
     map_values(mapping, **{key: partial(build_from_raw, cls) for key, cls in key_types.items()})
 
 
+@overload
+def from_milli(value: int) -> float: ...
+
+
+@overload
+def from_milli(value: None) -> None: ...
+
+
+def from_milli(value: Optional[int]) -> Optional[float]:
+    """Convert a number from milli to base.
+
+    Let's be honest, this is just dividing by 1000.
+    """
+    if value is None:
+        return value
+
+    return value / 1000
+
+
+@overload
+def to_milli(value: float) -> int: ...
+
+
+@overload
+def to_milli(value: None) -> None: ...
+
+
+def to_milli(value: float) -> int:
+    """Convert from base unit to milli.
+
+    This is really just multiplying by 1000.
+    """
+    return round(1000 * value)
+
+
 def map_values_from_milli(mapping: RawDataType, *keys) -> None:
     """Run `from_milli` on all specified keys' values."""
     map_values_all(mapping, from_milli, *keys)
 
 
-@dataclass
-class PlaylistInfo:
-    name: str
-    selected_track: Optional[int]
+def map_values_to_milli(mapping: RawDataType, *keys) -> None:
+    """Run `to_milli` on all specified keys' values."""
+    map_values_all(mapping, to_milli, *keys)
 
 
-@dataclass
-class TrackMetadata:
-    class_name: str
-    title: str
-    author: str
-    length: float
-    identifier: str
-    uri: str
-    is_stream: bool
-    is_seekable: bool
-    position: float
+def map_filter_none(mapping: MutableMapping[str, Any]) -> None:
+    """Remove all keys from the mapping whose values are `None`."""
+    remove_keys = {key for key, value in mapping.items() if value is None}
 
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        data["class_name"] = data.pop("class")
-        map_values_from_milli(data, "length", "position")
-
-
-@dataclass
-class TrackInfo:
-    track: str
-    info: TrackMetadata
-
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        map_values_from_raw(data, info=TrackMetadata)
-
-
-class LoadType(Enum):
-    """Load type of a `LoadedTrack`"""
-    TRACK_LOADED = "TRACK_LOADED"
-    SEARCH_RESULT = "SEARCH_RESULT"
-    PLAYLIST_LOADED = "PLAYLIST_LOADED"
-    NO_MATCHES = "NO_MATCHES"
-    LOAD_FAILED = "LOAD_FAILED"
-
-
-@dataclass
-class LoadedTrack:
-    load_type: LoadType
-    tracks: Optional[List[TrackInfo]]
-    playlist_info: Optional[PlaylistInfo]
-
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        map_value(data, "load_type", LoadType)
-
-        with suppress(KeyError):
-            build_values_from_raw(TrackInfo, data["tracks"])
-
-        with suppress(KeyError):
-            build_from_raw(PlaylistInfo, data["playlist_info"])
-
-
-FilterMap = Dict[str, Any]
-
-
-@dataclass
-class BasePlayer(abc.ABC):
-    time: datetime
-    position: Optional[int]
-    paused: bool
-    volume: float
-    filters: FilterMap
-
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        map_values_from_milli(data, "position", "volume")
-
-        time_float = float(data["time"])
-        data["time"] = datetime.utcfromtimestamp(time_float)
-
-
-@dataclass
-class MixerPlayer(BasePlayer):
-    ...
-
-
-MixerMap = Dict[str, MixerPlayer]
-
-
-@dataclass
-class Player(BasePlayer):
-    mixer: MixerMap
-    mixer_enabled: bool
-
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        build_map_values_from_raw(MixerPlayer, data["mixer"])
-
-
-@dataclass
-class VoiceServerUpdate:
-    session_id: str
-    guild_id: int
-    event: Dict[str, Any]
+    for key in remove_keys:
+        del mapping[key]

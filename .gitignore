@@ -1,5 +1,7 @@
 .idea/
+build/
 dist/
+docs/_build
 venv/
 
 *.egg-info
