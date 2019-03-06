@@ -1,0 +1,107 @@
+version: 2.1
+
+references:
+  chown_pipenv_cache: &chown_pipenv_cache
+    run:
+      name: Changing owner of python packages to circleci
+      command: |
+        sudo chown -R circleci:circleci /usr/local/bin
+        sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
+  restore_pipenv_cache: &restore_pipenv_cache
+    restore_cache:
+      key: deps-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+  install_pipenv_cache: &install_pipenv_cache
+    run:
+      name: Installing dependencies
+      command: |
+        sudo pip install pipenv
+        pipenv install --dev
+
+executors:
+  python:
+    docker:
+      - image: circleci/python:3.7
+
+jobs:
+  install:
+    executor: python
+    steps:
+      - checkout
+      - *chown_pipenv_cache
+      - *restore_pipenv_cache
+      - *install_pipenv_cache
+      - save_cache:
+          key: deps-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.7/site-packages"
+
+  tests:
+    executor: python
+    steps:
+      - checkout
+      - *chown_pipenv_cache
+      - *restore_pipenv_cache
+      - *install_pipenv_cache
+      - run:
+          name: Running tests
+          command: pipenv run tests --junitxml=test-reports/junit.xml
+      - store_test_results:
+          path: test-reports
+
+  build:
+    executor: python
+    steps:
+      - checkout
+      - *chown_pipenv_cache
+      - *restore_pipenv_cache
+      - *install_pipenv_cache
+      - run:
+          name: Installing dist tools
+          command: pip install --upgrade setuptools wheel
+      - run:
+          name: Building distribution archives
+          command: pipenv run setup.py sdist bdist_wheel
+      - run:
+          name: Moving archives to workspace
+          command: mv dist /tmp/workspace/dist
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - dist
+      - store_artifacts:
+          path: dist
+
+  deploy:
+    executor: python
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Getting archives from workspace
+          command: mv /tmp/workspace/dist dist
+      - run:
+          name: Installing Dependencies
+          command: pip install --upgrade twine
+      - run:
+          name: Uploading
+          command: twine upload --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD} dist/*
+
+workflows:
+  main:
+    jobs:
+      - install
+
+    tests:
+      requires:
+        - install
+
+    build:
+      requires:
+        - install
+
+    deploy:
+      requires:
+        - build
+        - tests
