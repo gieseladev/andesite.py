@@ -1,10 +1,11 @@
+"""Event dispatching and listening."""
 import asyncio
 import inspect
 import logging
 from asyncio import CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union, Awaitable
+from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union
 
 __all__ = ["Event", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
 
