@@ -118,7 +118,7 @@ jobs:
             git fetch upstream
             git reset upstream/gh-pages
 
-            git add --force .
+            git add --force docs
             git commit --message "chore: deploy $(git rev-parse --short HEAD) [ci skip]"
             git push --quiet upstream HEAD:gh-pages > /dev/null 2>&1
 
