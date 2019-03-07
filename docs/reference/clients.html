@@ -151,6 +151,9 @@ queue are sent in order and an <em>ws_connected</em> event is dispatched.</p>
 If this is not set, <cite>AndesiteWebSocket.max_connect_attempts</cite> is used instead.
 If <cite>None</cite> unlimited attempts will be performed.</td>
 </tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – If the client is already connected.
+Check <cite>AndesiteWebSocket.connected</cite> first!</td>
+</tr>
 </tbody>
 </table>
 <p class="rubric">Notes</p>
@@ -186,11 +189,14 @@ receive events from Andesite.</p>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.destroy">
 <em class="property">coroutine </em><code class="descname">destroy</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.destroy" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Destroy a player.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to destroy the player</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -200,11 +206,16 @@ receive events from Andesite.</p>
 <dt id="andesite.AndesiteWebSocket.disconnect">
 <em class="property">coroutine </em><code class="descname">disconnect</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.disconnect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.disconnect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disconnect the web socket.</p>
+<p>This will obviously stop the client from
+receiving events from Andesite.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – If the client isn’t connected.
+Check <cite>AndesiteWebSocket.connected</cite> first!</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -213,11 +224,27 @@ receive events from Andesite.</p>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.filters">
 <em class="property">coroutine </em><code class="descname">filters</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>filter_update=None</em>, <em>*</em>, <em>equalizer=None</em>, <em>karaoke=None</em>, <em>timescale=None</em>, <em>tremolo=None</em>, <em>vibrato=None</em>, <em>volume=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.filters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.filters" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Configure the filters of a player.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to configure the filters</li>
+<li><strong>filter_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.FilterUpdate" title="andesite.models.operations.FilterUpdate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FilterUpdate</span></code></a>]) – Instead of specifying the other keyword arguments
+you may provide a <cite>FilterUpdate</cite> operation which will be used
+instead</li>
+<li><strong>equalizer</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Equalizer" title="andesite.models.filters.Equalizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Equalizer</span></code></a>]) – Equalizer filter settings</li>
+<li><strong>karaoke</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Karaoke" title="andesite.models.filters.Karaoke"><code class="xref py py-class docutils literal notranslate"><span class="pre">Karaoke</span></code></a>]) – Karaoke filter settings</li>
+<li><strong>timescale</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Timescale" title="andesite.models.filters.Timescale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Timescale</span></code></a>]) – Timescale filter settings</li>
+<li><strong>tremolo</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Tremolo" title="andesite.models.filters.Tremolo"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tremolo</span></code></a>]) – Tremolo filter settings</li>
+<li><strong>vibrato</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Vibrato" title="andesite.models.filters.Vibrato"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vibrato</span></code></a>]) – Vibrato filter settings</li>
+<li><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.VolumeFilter" title="andesite.models.filters.VolumeFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeFilter</span></code></a>]) – Volume filter settings</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -252,11 +279,20 @@ receive events from Andesite.</p>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.mixer">
 <em class="property">coroutine </em><code class="descname">mixer</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>enable=None</em>, <em>**players</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.mixer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.mixer" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Configure the mixer player.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to configure the mixer</li>
+<li><strong>enable</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – If present, controls whether or not the mixer should be used</li>
+<li><strong>**players</strong> – Map of player id to <cite>Play</cite> / <cite>Update</cite> payloads for each mixer source</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -265,11 +301,21 @@ receive events from Andesite.</p>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.pause">
 <em class="property">coroutine </em><code class="descname">pause</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>pause</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.pause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.pause" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Pause a player.</p>
+<p>If the player is already paused or unpaused,
+this is a no-op.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to pause</li>
+<li><strong>pause</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – <cite>True</cite> to pause, <cite>False</cite> to unpause</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -309,21 +355,16 @@ receive events from Andesite.</p>
 <li><strong>track</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="models.html#andesite.models.operations.Play" title="andesite.models.operations.Play"><code class="xref py py-class docutils literal notranslate"><span class="pre">Play</span></code></a>]) – Either a <cite>Play</cite> operation or a base64 encoded lavaplayer track.
 If you pass a <cite>Play</cite> operation you must not set any of the
 keyword arguments.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first simple">
-<li><strong>start</strong> – timestamp, in seconds, to start the track</li>
-<li><strong>end</strong> – timestamp, in seconds, to end the track</li>
-<li><strong>pause</strong> – whether or not to pause the player</li>
-<li><strong>volume</strong> – volume to set on the player</li>
-<li><strong>no_replace</strong> – if True and a track is already playing/paused,
+<li><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – timestamp, in seconds, to start the track</li>
+<li><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – timestamp, in seconds, to end the track</li>
+<li><strong>pause</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – whether or not to pause the player</li>
+<li><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – volume to set on the player</li>
+<li><strong>no_replace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if True and a track is already playing/paused,
 this command is ignored (Default: False)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -333,11 +374,19 @@ this command is ignored (Default: False)</li>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.seek">
 <em class="property">coroutine </em><code class="descname">seek</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>position</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.seek"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.seek" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Seek to a position.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to seek</li>
+<li><strong>position</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Timestamp, in seconds, to seek to</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -348,6 +397,8 @@ this command is ignored (Default: False)</li>
 <em class="property">coroutine </em><code class="descname">send</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>op</em>, <em>payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a payload.</p>
 <p>The guild_id and op are written to the payload before it is converted to JSON.</p>
+<p>Regardless of whether the payload was actually sent or
+not a <cite>ws_send</cite> event is dispatched.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -375,11 +426,14 @@ this command is ignored (Default: False)</li>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.stop">
 <em class="property">coroutine </em><code class="descname">stop</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.stop" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Stop a player.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to stop</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -388,11 +442,26 @@ this command is ignored (Default: False)</li>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.update">
 <em class="property">coroutine </em><code class="descname">update</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>update=None</em>, <em>*</em>, <em>pause=None</em>, <em>position=None</em>, <em>volume=None</em>, <em>filters=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.update" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Send an update.</p>
+<p>You may either provide the given keyword arguments,
+or pass an <cite>Update</cite> operation which will be used instead.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to update.</li>
+<li><strong>update</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.Update" title="andesite.models.operations.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">Update</span></code></a>]) – You can provide an <cite>Update</cite> operation instead of
+the keyword arguments.</li>
+<li><strong>pause</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – whether or not to pause the player</li>
+<li><strong>position</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – timestamp to set the current track to, in seconds</li>
+<li><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – volume to set on the player</li>
+<li><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.FilterUpdate" title="andesite.models.operations.FilterUpdate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FilterUpdate</span></code></a>]) – configuration for the filters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -400,7 +469,7 @@ this command is ignored (Default: False)</li>
 
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.voice_server_update">
-<em class="property">coroutine </em><code class="descname">voice_server_update</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.voice_server_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.voice_server_update" title="Permalink to this definition">¶</a></dt>
+<em class="property">coroutine </em><code class="descname">voice_server_update</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.voice_server_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.voice_server_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provide a voice server update.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -415,11 +484,19 @@ this command is ignored (Default: False)</li>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.volume">
 <em class="property">coroutine </em><code class="descname">volume</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>volume</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.volume" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Set a player’s volume.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to set the volume</li>
+<li><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Volume to set</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
 </tr>
 </tbody>
 </table>
