@@ -103,7 +103,7 @@ jobs:
       - *install_pipenv_cache
       - run:
           name: Building docs
-          command: pipenv run sphinx-build docs gh_pages/docs/
+          command: pipenv run sphinx-build -D html_baseurl=/docs/ docs gh_pages/docs/
       - run:
           name: Deploying docs
           command: |

@@ -1,4 +1,5 @@
 """Event dispatching and listening."""
+
 import asyncio
 import inspect
 import logging
