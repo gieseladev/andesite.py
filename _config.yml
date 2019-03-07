@@ -1,5 +1,5 @@
 exclude:
-  - docs
+  - "docs/*"
 
 keep_files:
-  - docs
+  - "docs/*"
