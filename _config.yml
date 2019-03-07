@@ -1,5 +1,2 @@
-exclude:
-  - "docs/*"
-
 keep_files:
   - "docs/*"
