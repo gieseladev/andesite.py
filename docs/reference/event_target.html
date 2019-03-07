@@ -1,0 +1,238 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Event Target &#8212; andesite.py 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Clients" href="clients.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-andesite.event_target">
+<span id="event-target"></span><h1>Event Target<a class="headerlink" href="#module-andesite.event_target" title="Permalink to this headline">¶</a></h1>
+<p>Event dispatching and listening.</p>
+<dl class="class">
+<dt id="andesite.event_target.Event">
+<em class="property">class </em><code class="descname">Event</code><span class="sig-paren">(</span><em>name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base type of all events.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.event_target.EventErrorEvent">
+<em class="property">class </em><code class="descname">EventErrorEvent</code><span class="sig-paren">(</span><em>handler</em>, <em>exception</em>, <em>original_event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventErrorEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventErrorEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event type passed to <cite>EventTarget.on_event_error</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.event_target.OneTimeEventListener">
+<em class="property">class </em><code class="descname">OneTimeEventListener</code><span class="sig-paren">(</span><em>future</em>, <em>condition=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#OneTimeEventListener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.OneTimeEventListener" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-time event listener.</p>
+<p>Special event listener which waits for the first event matching the conditions and then removes itself.</p>
+<dl class="attribute">
+<dt id="andesite.event_target.OneTimeEventListener.condition">
+<code class="descname">condition</code><em class="property"> = None</em><a class="headerlink" href="#andesite.event_target.OneTimeEventListener.condition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.event_target.EventListener">
+<em class="property">class </em><code class="descname">EventListener</code><span class="sig-paren">(</span><em>handler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventListener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventListener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Persistent event listener</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.event_target.EventTarget">
+<em class="property">class </em><code class="descname">EventTarget</code><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that can dispatch <a href="#id1"><span class="problematic" id="id2">`</span></a>Event`s.</p>
+<dl class="method">
+<dt id="andesite.event_target.EventTarget.add_listener">
+<code class="descname">add_listener</code><span class="sig-paren">(</span><em>event</em>, <em>listener</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.add_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.add_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener for an <cite>Event</cite> which is called whenever said event is dispatched.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventListener</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.event_target.EventTarget.dispatch">
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatch an event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Future aggregating all asynchronous dispatches.</dt>
+<dd>Can be awaited to make sure all handlers have been executed.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Optional[Future]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.event_target.EventTarget.on_event_error">
+<em class="property">coroutine </em><code class="descname">on_event_error</code><span class="sig-paren">(</span><em>self</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.on_event_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.on_event_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when an error occurs during event dispatching.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.event_target.EventTarget.remove_listener">
+<code class="descname">remove_listener</code><span class="sig-paren">(</span><em>event</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.remove_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.remove_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a previously added event listener.</p>
+<p>When a <cite>EventHandler</cite> is passed, all event listeners with the given handler are removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Whether the listener was successfully removed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.event_target.EventTarget.wait_for">
+<code class="descname">wait_for</code><span class="sig-paren">(</span><em>event</em>, <em>*</em>, <em>check</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.wait_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.wait_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a future which resolves when an <cite>Event</cite> meeting the given conditions is dispatched.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Event Target</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html">Transform</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference</a><ul>
+      <li>Previous: <a href="clients.html" title="previous chapter">Clients</a></li>
+      <li>Next: <a href="models.html" title="next chapter">Models</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/reference/event_target.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
