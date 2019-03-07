@@ -4,7 +4,7 @@ import logging
 from asyncio import CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union
+from typing import Any, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union, Awaitable
 
 __all__ = ["Event", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
 
@@ -73,7 +73,7 @@ class EventTarget:
         self._one_time_listeners = {}
         self._listeners = {}
 
-    def wait_for(self, event: str, *, check: EventFilter, timeout: float = None) -> Future[Optional[Event]]:
+    def wait_for(self, event: str, *, check: EventFilter, timeout: float = None) -> Awaitable[Optional[Event]]:
         """Return a future which resolves when an `Event` meeting the given conditions is dispatched."""
         future = Future()
         listener = OneTimeEventListener(future, check)

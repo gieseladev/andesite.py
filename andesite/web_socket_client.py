@@ -1,12 +1,18 @@
+import asyncio
 import logging
+import math
+import time
+from asyncio import CancelledError, Future
+from collections import deque
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
-from typing import Any, Dict, Union, overload
+from typing import Any, Deque, Dict, Optional, Union, overload
 
-from websockets import ConnectionClosed, WebSocketClientProtocol
+import websockets
+from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 
 from .event_target import Event, EventTarget
 from .models import Equalizer, FilterUpdate, Karaoke, Operation, Play, Timescale, Tremolo, Update, Vibrato, VoiceServerUpdate, VolumeFilter
-from .transform import convert_to_raw, map_filter_none, map_values_to_milli, to_milli
+from .transform import convert_to_raw, map_convert_values_to_milli, map_filter_none, to_milli
 
 __all__ = ["AndesiteWebSocket", "WebsocketMessageEvent", "WebsocketSendEvent"]
 
@@ -29,22 +35,137 @@ class WebsocketSendEvent(Event):
         super().__init__("ws_send", guild_id=guild_id, op=op, body=body)
 
 
+async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
+    try:
+        client = await websockets.connect(uri, **kwargs)
+    except InvalidHandshake as e:
+        log.info(f"Connection to {uri} failed: {e}")
+        return None
+
+    return client
+
+
 class AndesiteWebSocket(EventTarget):
-    web_socket_client: WebSocketClientProtocol
+    """Client for the Andesite WebSocket handler."""
+    max_connect_attempts: Optional[int]
+    web_socket_client: Optional[WebSocketClientProtocol]
+
+    _message_queue: Deque[str]
+    _read_loop: Optional[Future]
     _json_encoder: JSONEncoder
+    _json_decoder: JSONDecoder
 
     def __init__(self) -> None:
         super().__init__()
 
+        self.max_connect_attempts = None
+        self.web_socket_client = None
+
+        self._message_queue = deque()
+        self._read_loop = None
+
         self._json_encoder = JSONEncoder()
         self._json_decoder = JSONDecoder()
 
-    async def _read_loop(self) -> None:
+    @property
+    def connected(self) -> bool:
+        """Check whether the client is connected and usable."""
+        return self.web_socket_client and self.web_socket_client.open
+
+    async def connect(self, max_attempts: int = None) -> None:
+        """Connect to the web socket server.
+
+        After successfully connecting all messages in the message
+        queue are sent in order and an *ws_connected* event is dispatched.
+
+        Args:
+            max_attempts: Amount of connection attempts to perform before aborting.
+                If this is not set, `AndesiteWebSocket.max_connect_attempts` is used instead.
+                If `None` unlimited attempts will be performed.
+
+        Notes:
+            This method doesn't have to be called manually,
+            it is called as soon as the first message needs to be sent.
+            However, there are good reasons to call it anyway, such
+            as the ability to check the validity of the URI, or to
+            receive events from Andesite.
+        """
+        if self.connected:
+            raise ValueError("Already connected!")
+
+        uri = ""
+        headers = {
+            "Authorization": "",
+            "User-Id": ""
+        }
+
+        attempt: int = 1
+        max_attempts = max_attempts or self.max_connect_attempts
+
+        while max_attempts is None or attempt <= max_attempts:
+            client = await try_connect(uri, extra_headers=headers)
+            if client:
+                break
+
+            timeout = int(math.pow(attempt, 1.5))
+            log.info(f"Connection unsuccessful, trying again in {timeout} seconds")
+            await asyncio.sleep(timeout)
+        else:
+            raise ConnectionError(f"Couldn't connect to {uri} after {attempt} attempts")
+
+        self.web_socket_client = client
+        self._start_read_loop()
+
+        _ = self.dispatch(Event("ws_connected"))
+
+        await self._replay_message_queue()
+
+    async def disconnect(self) -> None:
+        """Disconnect the web socket."""
+        if not self.connected:
+            raise ValueError("Not connected")
+
+        self._stop_read_loop()
+        await self.web_socket_client.close(reason="disconnect")
+
+    async def _replay_message_queue(self) -> None:
+        """Send all messages in the message queue."""
+        if not self._message_queue:
+            return
+
+        log.info(f"Sending {len(self._message_queue)} queued messages")
+
+        try:
+            for msg in self._message_queue:
+                await self.web_socket_client.send(msg)
+        finally:
+            self._message_queue.clear()
+
+    async def _web_socket_reader(self) -> None:
+        """Internal web socket read loop.
+
+        This method should never be called manually, see the following
+        methods for controlling the reader.
+
+        See Also:
+            `AndesiteWebSocket._start_read_loop` to start the read loop.
+            `AndesiteWebSocket._stop_read_loop` to stop the read loop.
+
+        Notes:
+            The read loop is automatically managed by the `AndesiteWebSocket.connect`
+            and `AndesiteWebSocket.disconnect` methods.
+        """
         while True:
             try:
                 raw_msg = await self.web_socket_client.recv()
+            except CancelledError:
+                break
             except ConnectionClosed:
-                raise
+                log.error("Disconnected from websocket, trying to reconnect!")
+                await self.connect()
+                continue
+
+            log.debug(f"Received message {raw_msg}")
 
             try:
                 data = self._json_decoder.decode(raw_msg)
@@ -52,6 +173,18 @@ class AndesiteWebSocket(EventTarget):
                 raise
 
             _ = self.dispatch(WebsocketMessageEvent(data))
+
+    def _start_read_loop(self) -> None:
+        if self._read_loop and not self._read_loop.done():
+            return
+
+        self._read_loop = asyncio.ensure_future(self._web_socket_reader())
+
+    def _stop_read_loop(self) -> None:
+        if not self._read_loop:
+            return
+
+        self._read_loop.cancel()
 
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
         """Send a payload.
@@ -66,10 +199,15 @@ class AndesiteWebSocket(EventTarget):
 
         data = self._json_encoder.encode(payload)
 
-        await self.web_socket_client.send(data)
+        try:
+            await self.web_socket_client.send(data)
+        except ConnectionClosed:
+            log.info("Not connected, adding message to queue.")
+            self._message_queue.append(data)
+            await self.connect()
 
     async def send_operation(self, guild_id: int, operation: Operation) -> None:
-        """Send an operation."""
+        """Send an `Operation`."""
         await self.send(guild_id, operation.__op__, convert_to_raw(operation))
 
     @overload
@@ -91,13 +229,30 @@ class AndesiteWebSocket(EventTarget):
                    pause: bool = None,
                    volume: float = None,
                    no_replace: bool = False) -> None:
-        """Play a track on the guild."""
+        """Play a track on the guild.
+
+        Instead of providing all the fields you can also pass a `Play` operation.
+
+        Args:
+            guild_id: ID of the guild for which to play
+            track: Either a `Play` operation or a base64 encoded lavaplayer track.
+                If you pass a `Play` operation you must not set any of the
+                keyword arguments.
+
+        Keyword Args:
+            start: timestamp, in seconds, to start the track
+            end: timestamp, in seconds, to end the track
+            pause: whether or not to pause the player
+            volume: volume to set on the player
+            no_replace: if True and a track is already playing/paused,
+                this command is ignored (Default: False)
+        """
         if isinstance(track, Play):
             payload = convert_to_raw(track)
         else:
             payload = dict(track=track, start=start, end=end, pause=pause, volume=volume, noReplace=no_replace)
             map_filter_none(payload)
-            map_values_to_milli(payload, "start", "end", "volume")
+            map_convert_values_to_milli(payload, "start", "end", "volume")
 
         await self.send(guild_id, "play", payload)
 
@@ -140,7 +295,7 @@ class AndesiteWebSocket(EventTarget):
 
             payload = dict(pause=pause, position=position, volume=volume, filters=filters)
             map_filter_none(payload)
-            map_values_to_milli(payload, "position", "volume")
+            map_convert_values_to_milli(payload, "position", "volume")
 
         await self.send(guild_id, "update", payload)
 
@@ -187,13 +342,23 @@ class AndesiteWebSocket(EventTarget):
     async def get_stats(self, guild_id: int) -> None:
         await self.send(guild_id, "get-stats", {})
 
-    async def ping(self, guild_id: int) -> None:
+    async def ping(self, guild_id: int) -> float:
+        """Ping the Andesite server.
+
+        Returns:
+            `float`: Amount of seconds it took for the response to be received.
+                Note: This is not accurate.
+        """
+        start = time.time()
+
         await self.send(guild_id, "ping", {"ping": True})
 
         def check_ping_response(event: WebsocketMessageEvent) -> bool:
             return event.body.get("ping", False)
 
         await self.wait_for("ws_message", check=check_ping_response)
+
+        return time.time() - start
 
     @overload
     async def voice_server_update(self, guild_id: int, update: VoiceServerUpdate) -> None:

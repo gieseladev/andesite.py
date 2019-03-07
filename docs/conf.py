@@ -47,9 +47,11 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    'sphinx_autodoc_typehints'
-    'sphinxcontrib.asyncio'
+    'sphinx_autodoc_typehints',
+    'sphinxcontrib.asyncio',
 ]
+
+add_module_names = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -182,7 +184,10 @@ epub_exclude_files = ['search.html']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'https://docs.python.org/': None,
+}
 
 # -- Options for todo extension ----------------------------------------------
 

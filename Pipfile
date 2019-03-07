@@ -12,6 +12,9 @@ yarl = "*"
 [dev-packages]
 pytest = "*"
 pytest-asyncio = "*"
+sphinx = "*"
+sphinx-autodoc-typehints = "*"
+sphinxcontrib-asyncio = "*"
 
 [requires]
 python_version = "3.7"
