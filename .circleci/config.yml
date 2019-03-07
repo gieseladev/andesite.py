@@ -63,10 +63,10 @@ jobs:
       - *install_pipenv_cache
       - run:
           name: Installing dist tools
-          command: pip install --upgrade setuptools wheel
+          command: pipenv run pip install --upgrade setuptools wheel
       - run:
           name: Building distribution archives
-          command: python setup.py sdist bdist_wheel
+          command: pipenv run setup.py sdist bdist_wheel
       - run:
           name: Moving archives to workspace
           command: |
@@ -94,11 +94,45 @@ jobs:
           name: Uploading
           command: python -m twine upload --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD} dist/*
 
+  docs:
+    executor: python
+    steps:
+      - checkout
+      - *chown_pipenv_cache
+      - *restore_pipenv_cache
+      - *install_pipenv_cache
+      - run:
+          name: Building docs
+          command: pipenv run sphinx-build docs gh_pages/docs/
+      - run:
+          name: Deploying docs
+          command: |
+            cd gh_pages
+            git init --quiet
+
+            git config user.name "$GH_USERNAME"
+            git config user.email "$GH_EMAIL"
+
+            git remote add upstream "https://$GH_TOKEN@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git"
+            git fetch upstream
+            git reset upstream/gh-pages
+
+            git add --force .
+            git commit --message "chore: deploy $(git rev-parse --short HEAD) [ci skip]"
+            git push --quiet upstream HEAD:gh-pages > /dev/null 2>&1
+
 workflows:
   main:
     jobs:
       - install:
           <<: *tag_filters
+
+      - docs:
+          requires:
+            - install
+          filters:
+            branches:
+              only: master
 
       - tests:
           <<: *tag_filters
