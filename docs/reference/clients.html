@@ -1,0 +1,512 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Clients &#8212; andesite.py 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Reference" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="clients">
+<h1>Clients<a class="headerlink" href="#clients" title="Permalink to this headline">¶</a></h1>
+<p>Clients for interacting with Andesite.</p>
+<p>All clients are exported to the <cite>andesite</cite> namespace.</p>
+<div class="section" id="http-client">
+<h2>HTTP client<a class="headerlink" href="#http-client" title="Permalink to this headline">¶</a></h2>
+<p>Defined in <cite>andesite.http_client</cite>.</p>
+<dl class="class">
+<dt id="andesite.AndesiteHTTP">
+<em class="property">class </em><code class="descname">AndesiteHTTP</code><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Client for Andesite’s HTTP endpoints.</p>
+<p>This does not include the player routes, as they are already covered by the <cite>AndesiteWebSocket</cite>.</p>
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.close">
+<em class="property">coroutine </em><code class="descname">close</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.close" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.decode_track">
+<em class="property">coroutine </em><code class="descname">decode_track</code><span class="sig-paren">(</span><em>self</em>, <em>track</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.decode_track"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.decode_track" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.track.TrackInfo" title="andesite.models.track.TrackInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrackInfo</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.decode_tracks">
+<em class="property">coroutine </em><code class="descname">decode_tracks</code><span class="sig-paren">(</span><em>self</em>, <em>tracks</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.decode_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.decode_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="models.html#andesite.models.track.TrackInfo" title="andesite.models.track.TrackInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrackInfo</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.get_stats">
+<em class="property">coroutine </em><code class="descname">get_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.get_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.load_tracks">
+<em class="property">coroutine </em><code class="descname">load_tracks</code><span class="sig-paren">(</span><em>self</em>, <em>identifier</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.load_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.load_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load tracks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.request">
+<em class="property">coroutine </em><code class="descname">request</code><span class="sig-paren">(</span><em>self</em>, <em>method</em>, <em>path</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a request and return the JSON response.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – HTTP method to use</li>
+<li><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Path relative to the base url. Must not start with a slash!</li>
+<li><strong>kwargs</strong> – Keyword arguments passed to the request</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="websocket-client">
+<h2>WebSocket client<a class="headerlink" href="#websocket-client" title="Permalink to this headline">¶</a></h2>
+<p>Defined in <cite>andesite.web_socket_client</cite>.</p>
+<dl class="class">
+<dt id="andesite.AndesiteWebSocket">
+<em class="property">class </em><code class="descname">AndesiteWebSocket</code><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Client for the Andesite WebSocket handler.</p>
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.connect">
+<em class="property">coroutine </em><code class="descname">connect</code><span class="sig-paren">(</span><em>self</em>, <em>max_attempts=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the web socket server.</p>
+<p>After successfully connecting all messages in the message
+queue are sent in order and an <em>ws_connected</em> event is dispatched.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>max_attempts</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – Amount of connection attempts to perform before aborting.
+If this is not set, <cite>AndesiteWebSocket.max_connect_attempts</cite> is used instead.
+If <cite>None</cite> unlimited attempts will be performed.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This method doesn’t have to be called manually,
+it is called as soon as the first message needs to be sent.
+However, there are good reasons to call it anyway, such
+as the ability to check the validity of the URI, or to
+receive events from Andesite.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.AndesiteWebSocket.connected">
+<code class="descname">connected</code><a class="headerlink" href="#andesite.AndesiteWebSocket.connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the client is connected and usable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.destroy">
+<em class="property">coroutine </em><code class="descname">destroy</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.disconnect">
+<em class="property">coroutine </em><code class="descname">disconnect</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.disconnect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect the web socket.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.filters">
+<em class="property">coroutine </em><code class="descname">filters</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>filter_update=None</em>, <em>*</em>, <em>equalizer=None</em>, <em>karaoke=None</em>, <em>timescale=None</em>, <em>tremolo=None</em>, <em>vibrato=None</em>, <em>volume=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.filters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.filters" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.get_player">
+<em class="property">coroutine </em><code class="descname">get_player</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.get_player"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.get_player" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.get_stats">
+<em class="property">coroutine </em><code class="descname">get_stats</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.get_stats" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.mixer">
+<em class="property">coroutine </em><code class="descname">mixer</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>enable=None</em>, <em>**players</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.mixer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.mixer" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.pause">
+<em class="property">coroutine </em><code class="descname">pause</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>pause</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.pause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.pause" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.ping">
+<em class="property">coroutine </em><code class="descname">ping</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.ping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ping the Andesite server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Amount of seconds it took for the response to be received.</dt>
+<dd>Note: This is not accurate.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><cite>float</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.play">
+<em class="property">coroutine </em><code class="descname">play</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>track</em>, <em>*</em>, <em>start=None</em>, <em>end=None</em>, <em>pause=None</em>, <em>volume=None</em>, <em>no_replace=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.play"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.play" title="Permalink to this definition">¶</a></dt>
+<dd><p>Play a track on the guild.</p>
+<p>Instead of providing all the fields you can also pass a <cite>Play</cite> operation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to play</li>
+<li><strong>track</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="models.html#andesite.models.operations.Play" title="andesite.models.operations.Play"><code class="xref py py-class docutils literal notranslate"><span class="pre">Play</span></code></a>]) – Either a <cite>Play</cite> operation or a base64 encoded lavaplayer track.
+If you pass a <cite>Play</cite> operation you must not set any of the
+keyword arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>start</strong> – timestamp, in seconds, to start the track</li>
+<li><strong>end</strong> – timestamp, in seconds, to end the track</li>
+<li><strong>pause</strong> – whether or not to pause the player</li>
+<li><strong>volume</strong> – volume to set on the player</li>
+<li><strong>no_replace</strong> – if True and a track is already playing/paused,
+this command is ignored (Default: False)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.seek">
+<em class="property">coroutine </em><code class="descname">seek</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>position</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.seek"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.seek" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.send">
+<em class="property">coroutine </em><code class="descname">send</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>op</em>, <em>payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a payload.</p>
+<p>The guild_id and op are written to the payload before it is converted to JSON.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.send_operation">
+<em class="property">coroutine </em><code class="descname">send_operation</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>operation</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.send_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.send_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an <cite>Operation</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.stop">
+<em class="property">coroutine </em><code class="descname">stop</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.stop" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.update">
+<em class="property">coroutine </em><code class="descname">update</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>update=None</em>, <em>*</em>, <em>pause=None</em>, <em>position=None</em>, <em>volume=None</em>, <em>filters=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.update" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.voice_server_update">
+<em class="property">coroutine </em><code class="descname">voice_server_update</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.voice_server_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.voice_server_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a voice server update.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.volume">
+<em class="property">coroutine </em><code class="descname">volume</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>volume</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.volume" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html">Transform</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Reference</a></li>
+      <li>Next: <a href="models.html" title="next chapter">Models</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/reference/clients.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

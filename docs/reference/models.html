@@ -1,0 +1,1124 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Models &#8212; andesite.py 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Transform" href="transform.html" />
+    <link rel="prev" title="Clients" href="clients.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="models">
+<h1>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h1>
+<p>All the models (also called “Entities”) of Andesite, but as Python
+classes. This makes interacting with them a lot more comfortable.</p>
+<p>The models reside in modules of the <cite>andesite.models</cite> module, but they are all exported
+to the <cite>andesite</cite> namespace, so you can import them from there.</p>
+<div class="section" id="player">
+<h2>Player<a class="headerlink" href="#player" title="Permalink to this headline">¶</a></h2>
+<p>Models related to the player are stored in the <cite>andesite.models.player</cite> module.</p>
+<span class="target" id="module-andesite.models.player"></span><dl class="class">
+<dt id="andesite.models.player.BasePlayer">
+<em class="property">class </em><code class="descname">BasePlayer</code><span class="sig-paren">(</span><em>time</em>, <em>position</em>, <em>paused</em>, <em>volume</em>, <em>filters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/player.html#BasePlayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.player.BasePlayer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.player.BasePlayer.time">
+<code class="descname">time</code><a class="headerlink" href="#andesite.models.player.BasePlayer.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>current utc datetime on the node</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.player.BasePlayer.position">
+<code class="descname">position</code><a class="headerlink" href="#andesite.models.player.BasePlayer.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>position of the current playing track, or null if nothing is playing</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.player.BasePlayer.paused">
+<code class="descname">paused</code><a class="headerlink" href="#andesite.models.player.BasePlayer.paused" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not the player is paused</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.player.BasePlayer.volume">
+<code class="descname">volume</code><a class="headerlink" href="#andesite.models.player.BasePlayer.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>the volume of the player</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.player.BasePlayer.filters">
+<code class="descname">filters</code><a class="headerlink" href="#andesite.models.player.BasePlayer.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>map of filter name -&gt; filter settings for each filter present</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.player.BasePlayer.live_position">
+<code class="descname">live_position</code><a class="headerlink" href="#andesite.models.player.BasePlayer.live_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolated version of <cite>BasePlayer.position</cite> based on the time that has passed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>None if there is no position attribute,</dt>
+<dd>equal to position if the player is paused, and interpolated
+otherwise.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.player.MixerPlayer">
+<em class="property">class </em><code class="descname">MixerPlayer</code><span class="sig-paren">(</span><em>time</em>, <em>position</em>, <em>paused</em>, <em>volume</em>, <em>filters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/player.html#MixerPlayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.player.MixerPlayer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.player.Player">
+<em class="property">class </em><code class="descname">Player</code><span class="sig-paren">(</span><em>time</em>, <em>position</em>, <em>paused</em>, <em>volume</em>, <em>filters</em>, <em>mixer</em>, <em>mixer_enabled</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/player.html#Player"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.player.Player" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.player.Player.mixer">
+<code class="descname">mixer</code><a class="headerlink" href="#andesite.models.player.Player.mixer" title="Permalink to this definition">¶</a></dt>
+<dd><p>map of mixer player id -&gt; mixer player</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.player.Player.mixer_enabled">
+<code class="descname">mixer_enabled</code><a class="headerlink" href="#andesite.models.player.Player.mixer_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not the mixer is the current source of audio</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="track">
+<h2>Track<a class="headerlink" href="#track" title="Permalink to this headline">¶</a></h2>
+<p>Models related to track data are stored in the <cite>andesite.models.track</cite> module.</p>
+<span class="target" id="module-andesite.models.track"></span><dl class="class">
+<dt id="andesite.models.track.PlaylistInfo">
+<em class="property">class </em><code class="descname">PlaylistInfo</code><span class="sig-paren">(</span><em>name</em>, <em>selected_track</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#PlaylistInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.PlaylistInfo" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.track.PlaylistInfo.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.track.PlaylistInfo.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the playlist</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.PlaylistInfo.selected_track">
+<code class="descname">selected_track</code><a class="headerlink" href="#andesite.models.track.PlaylistInfo.selected_track" title="Permalink to this definition">¶</a></dt>
+<dd><p>index of the selected track in the tracks array, or None if no track is selected</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.track.TrackMetadata">
+<em class="property">class </em><code class="descname">TrackMetadata</code><span class="sig-paren">(</span><em>class_name</em>, <em>title</em>, <em>author</em>, <em>length</em>, <em>identifier</em>, <em>uri</em>, <em>is_stream</em>, <em>is_seekable</em>, <em>position</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#TrackMetadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.TrackMetadata" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.class_name">
+<code class="descname">class_name</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.class_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>class name of the lavaplayer track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.title">
+<code class="descname">title</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>title of the track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.author">
+<code class="descname">author</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.author" title="Permalink to this definition">¶</a></dt>
+<dd><p>author of the track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.length">
+<code class="descname">length</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>duration of the track, in seconds</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.identifier">
+<code class="descname">identifier</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>identifier of the track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.uri">
+<code class="descname">uri</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>uri of the track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.is_stream">
+<code class="descname">is_stream</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.is_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not the track is a livestream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.is_seekable">
+<code class="descname">is_seekable</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.is_seekable" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not the track supports seeking</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackMetadata.position">
+<code class="descname">position</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>current position of the track</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.track.TrackInfo">
+<em class="property">class </em><code class="descname">TrackInfo</code><span class="sig-paren">(</span><em>track</em>, <em>info</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#TrackInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.TrackInfo" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.track.TrackInfo.track">
+<code class="descname">track</code><a class="headerlink" href="#andesite.models.track.TrackInfo.track" title="Permalink to this definition">¶</a></dt>
+<dd><p>base64 encoded track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.TrackInfo.info">
+<code class="descname">info</code><a class="headerlink" href="#andesite.models.track.TrackInfo.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>metadata of the track</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.track.LoadType">
+<em class="property">class </em><code class="descname">LoadType</code><a class="reference internal" href="../_modules/andesite/models/track.html#LoadType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.LoadType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load type of a <cite>LoadedTrack</cite></p>
+<dl class="attribute">
+<dt id="andesite.models.track.LoadType.LOAD_FAILED">
+<code class="descname">LOAD_FAILED</code><em class="property"> = 'LOAD_FAILED'</em><a class="headerlink" href="#andesite.models.track.LoadType.LOAD_FAILED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadType.NO_MATCHES">
+<code class="descname">NO_MATCHES</code><em class="property"> = 'NO_MATCHES'</em><a class="headerlink" href="#andesite.models.track.LoadType.NO_MATCHES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadType.PLAYLIST_LOADED">
+<code class="descname">PLAYLIST_LOADED</code><em class="property"> = 'PLAYLIST_LOADED'</em><a class="headerlink" href="#andesite.models.track.LoadType.PLAYLIST_LOADED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadType.SEARCH_RESULT">
+<code class="descname">SEARCH_RESULT</code><em class="property"> = 'SEARCH_RESULT'</em><a class="headerlink" href="#andesite.models.track.LoadType.SEARCH_RESULT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadType.TRACK_LOADED">
+<code class="descname">TRACK_LOADED</code><em class="property"> = 'TRACK_LOADED'</em><a class="headerlink" href="#andesite.models.track.LoadType.TRACK_LOADED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.track.LoadedTrack">
+<em class="property">class </em><code class="descname">LoadedTrack</code><span class="sig-paren">(</span><em>load_type</em>, <em>tracks</em>, <em>playlist_info</em>, <em>cause</em>, <em>severity</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#LoadedTrack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.LoadedTrack" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.track.LoadedTrack.load_type">
+<code class="descname">load_type</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.load_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>type of the response</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadedTrack.tracks">
+<code class="descname">tracks</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>loaded tracks</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadedTrack.playlist_info">
+<code class="descname">playlist_info</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.playlist_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>metadata of the loaded playlist</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadedTrack.cause">
+<code class="descname">cause</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.cause" title="Permalink to this definition">¶</a></dt>
+<dd><p>error that happened while loading tracks</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.track.LoadedTrack.severity">
+<code class="descname">severity</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.severity" title="Permalink to this definition">¶</a></dt>
+<dd><p>severity of the error</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="filters">
+<h2>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h2>
+<p>Filter models are stored in the <cite>andesite.models.filters</cite> module.</p>
+<span class="target" id="module-andesite.models.filters"></span><dl class="class">
+<dt id="andesite.models.filters.EqualizerBand">
+<em class="property">class </em><code class="descname">EqualizerBand</code><span class="sig-paren">(</span><em>band</em>, <em>gain=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#EqualizerBand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.EqualizerBand" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.EqualizerBand.band">
+<code class="descname">band</code><a class="headerlink" href="#andesite.models.filters.EqualizerBand.band" title="Permalink to this definition">¶</a></dt>
+<dd><p>band number to configure ( 0 - 14 )</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.EqualizerBand.gain">
+<code class="descname">gain</code><a class="headerlink" href="#andesite.models.filters.EqualizerBand.gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>value to set for the band ( [-0.25, 1.0] )</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">gain</code><em class="property"> = 0</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.EqualizerBand.set_band">
+<code class="descname">set_band</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#EqualizerBand.set_band"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.EqualizerBand.set_band" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>EqualizerBand.band</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Value to set for the band. ( [0, 14] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.EqualizerBand.set_gain">
+<code class="descname">set_gain</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#EqualizerBand.set_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.EqualizerBand.set_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>EqualizerBand.gain</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the gain. ( [-0.25, 1] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.filters.Equalizer">
+<em class="property">class </em><code class="descname">Equalizer</code><span class="sig-paren">(</span><em>bands</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Equalizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Equalizer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.Equalizer.bands">
+<code class="descname">bands</code><a class="headerlink" href="#andesite.models.filters.Equalizer.bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>array of bands to configure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Equalizer.get_band">
+<code class="descname">get_band</code><span class="sig-paren">(</span><em>band</em>, <em>create=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Equalizer.get_band"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Equalizer.get_band" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the specified band from the bands list.</p>
+<p>If the band doesn’t exist it is created.
+If you don’t want to automatically create a band, pass
+<cite>create=False</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>band</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Band number to get</li>
+<li><strong>create</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether or not to create a new band if it doesn’t exist. (Defaults to True)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#andesite.models.filters.EqualizerBand" title="andesite.models.filters.EqualizerBand"><code class="xref py py-class docutils literal notranslate"><span class="pre">EqualizerBand</span></code></a>]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Equalizer.get_band_gain">
+<code class="descname">get_band_gain</code><span class="sig-paren">(</span><em>band</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Equalizer.get_band_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Equalizer.get_band_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the gain of a band.</p>
+<p>Returns: Gain of the band or None if it doesn’t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Equalizer.set_band_gain">
+<code class="descname">set_band_gain</code><span class="sig-paren">(</span><em>band</em>, <em>gain</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Equalizer.set_band_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Equalizer.set_band_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the gain of a band to the specified value.</p>
+<p>If the band does not exist it is created.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>band</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Band number to set the gain for.</li>
+<li><strong>gain</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the gain. ( [-0.25, 1] )</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><cite>ValueError</cite> – if the provided gain is invalid.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.filters.Karaoke">
+<em class="property">class </em><code class="descname">Karaoke</code><span class="sig-paren">(</span><em>level=1</em>, <em>mono_level=1</em>, <em>filter_band=220</em>, <em>filter_width=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Karaoke"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Karaoke" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.Karaoke.filter_band">
+<code class="descname">filter_band</code><em class="property"> = 220</em><a class="headerlink" href="#andesite.models.filters.Karaoke.filter_band" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Karaoke.filter_width">
+<code class="descname">filter_width</code><em class="property"> = 100</em><a class="headerlink" href="#andesite.models.filters.Karaoke.filter_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Karaoke.level">
+<code class="descname">level</code><em class="property"> = 1</em><a class="headerlink" href="#andesite.models.filters.Karaoke.level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Karaoke.mono_level">
+<code class="descname">mono_level</code><em class="property"> = 1</em><a class="headerlink" href="#andesite.models.filters.Karaoke.mono_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.filters.Timescale">
+<em class="property">class </em><code class="descname">Timescale</code><span class="sig-paren">(</span><em>speed=1</em>, <em>pitch=1</em>, <em>rate=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.Timescale.speed">
+<code class="descname">speed</code><a class="headerlink" href="#andesite.models.filters.Timescale.speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>speed to play music at (&gt; 0)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Timescale.pitch">
+<code class="descname">pitch</code><a class="headerlink" href="#andesite.models.filters.Timescale.pitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>pitch to set (&gt; 0)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Timescale.rate">
+<code class="descname">rate</code><a class="headerlink" href="#andesite.models.filters.Timescale.rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>rate to set (&gt; 0)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">pitch</code><em class="property"> = 1</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">rate</code><em class="property"> = 1</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Timescale.set_pitch">
+<code class="descname">set_pitch</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale.set_pitch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale.set_pitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Timescale.pitch</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the pitch. ( (0, INF] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Timescale.set_rate">
+<code class="descname">set_rate</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale.set_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale.set_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Timescale.rate</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the rate. ( (0, INF] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Timescale.set_speed">
+<code class="descname">set_speed</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale.set_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale.set_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Timescale.speed</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the speed. ( (0, INF] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">speed</code><em class="property"> = 1</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.filters.Tremolo">
+<em class="property">class </em><code class="descname">Tremolo</code><span class="sig-paren">(</span><em>frequency=2</em>, <em>depth=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Tremolo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Tremolo" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.Tremolo.frequency">
+<code class="descname">frequency</code><a class="headerlink" href="#andesite.models.filters.Tremolo.frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>(&gt; 0)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Tremolo.depth">
+<code class="descname">depth</code><a class="headerlink" href="#andesite.models.filters.Tremolo.depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>( (0, 1] )</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">depth</code><em class="property"> = 0.5</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">frequency</code><em class="property"> = 2</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Tremolo.set_depth">
+<code class="descname">set_depth</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Tremolo.set_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Tremolo.set_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Tremolo.depth</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the depth. ( (0, 1] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Tremolo.set_frequency">
+<code class="descname">set_frequency</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Tremolo.set_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Tremolo.set_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Tremolo.frequency</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the frequency. ( (0, INF] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.filters.Vibrato">
+<em class="property">class </em><code class="descname">Vibrato</code><span class="sig-paren">(</span><em>frequency=2</em>, <em>depth=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Vibrato"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Vibrato" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.Vibrato.frequency">
+<code class="descname">frequency</code><a class="headerlink" href="#andesite.models.filters.Vibrato.frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>( (0, 14] )</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Vibrato.depth">
+<code class="descname">depth</code><a class="headerlink" href="#andesite.models.filters.Vibrato.depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>( (0, 1] )</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">depth</code><em class="property"> = 0.5</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">frequency</code><em class="property"> = 2</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Vibrato.set_depth">
+<code class="descname">set_depth</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Vibrato.set_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Vibrato.set_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Vibrato.depth</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the depth. ( (0, 1] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.models.filters.Vibrato.set_frequency">
+<code class="descname">set_frequency</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Vibrato.set_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Vibrato.set_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for <cite>Vibrato.frequency</cite> which performs a value check.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the frequency. ( (0, 14] )</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.filters.VolumeFilter">
+<em class="property">class </em><code class="descname">VolumeFilter</code><span class="sig-paren">(</span><em>volume=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#VolumeFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.VolumeFilter" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.filters.VolumeFilter.volume">
+<code class="descname">volume</code><em class="property"> = 1</em><a class="headerlink" href="#andesite.models.filters.VolumeFilter.volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="operations">
+<h2>Operations<a class="headerlink" href="#operations" title="Permalink to this headline">¶</a></h2>
+<p>Operations are stored in the <cite>andesite.models.operations</cite> module.</p>
+<span class="target" id="module-andesite.models.operations"></span><dl class="class">
+<dt id="andesite.models.operations.Operation">
+<em class="property">class </em><code class="descname">Operation</code><a class="reference internal" href="../_modules/andesite/models/operations.html#Operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operation is a model that can be passed as a payload to the <cite>AndesiteWebSocket</cite> client.</p>
+<p>See Also: <cite>AndesiteWebSocket.send_operation</cite></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.VoiceServerUpdate">
+<em class="property">class </em><code class="descname">VoiceServerUpdate</code><span class="sig-paren">(</span><em>session_id</em>, <em>guild_id</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#VoiceServerUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.VoiceServerUpdate.session_id">
+<code class="descname">session_id</code><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate.session_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Session ID for the current user in the event’s guild</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.VoiceServerUpdate.guild_id">
+<code class="descname">guild_id</code><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate.guild_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>ID of the guild</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.VoiceServerUpdate.event">
+<code class="descname">event</code><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Voice server update event sent by discord</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.Play">
+<em class="property">class </em><code class="descname">Play</code><span class="sig-paren">(</span><em>track</em>, <em>start=None</em>, <em>end=None</em>, <em>pause=None</em>, <em>volume=None</em>, <em>no_replace=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#Play"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Play" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.Play.track">
+<code class="descname">track</code><a class="headerlink" href="#andesite.models.operations.Play.track" title="Permalink to this definition">¶</a></dt>
+<dd><p>base64 encoded lavaplayer track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Play.start">
+<code class="descname">start</code><a class="headerlink" href="#andesite.models.operations.Play.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>timestamp, in seconds, to start the track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Play.end">
+<code class="descname">end</code><a class="headerlink" href="#andesite.models.operations.Play.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>timestamp, in seconds, to end the track</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Play.pause">
+<code class="descname">pause</code><a class="headerlink" href="#andesite.models.operations.Play.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not to pause the player</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Play.volume">
+<code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.Play.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>volume to set on the player</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Play.no_replace">
+<code class="descname">no_replace</code><a class="headerlink" href="#andesite.models.operations.Play.no_replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>if True and a track is already playing/paused, this command is ignored</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">end</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">no_replace</code><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">pause</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">start</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">volume</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.Pause">
+<em class="property">class </em><code class="descname">Pause</code><span class="sig-paren">(</span><em>pause</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#Pause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Pause" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.Pause.pause">
+<code class="descname">pause</code><a class="headerlink" href="#andesite.models.operations.Pause.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not to pause the player</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.Seek">
+<em class="property">class </em><code class="descname">Seek</code><span class="sig-paren">(</span><em>position</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#Seek"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Seek" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.Seek.position">
+<code class="descname">position</code><a class="headerlink" href="#andesite.models.operations.Seek.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>timestamp to set the current track to, in seconds</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.Volume">
+<em class="property">class </em><code class="descname">Volume</code><span class="sig-paren">(</span><em>volume</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#Volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Volume" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.Volume.volume">
+<code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.Volume.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>volume to set on the player</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.FilterUpdate">
+<em class="property">class </em><code class="descname">FilterUpdate</code><span class="sig-paren">(</span><em>equalizer=None</em>, <em>karaoke=None</em>, <em>timescale=None</em>, <em>tremolo=None</em>, <em>vibrato=None</em>, <em>volume=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#FilterUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.FilterUpdate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.FilterUpdate.equalizer">
+<code class="descname">equalizer</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.equalizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>configures the equalizer</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.FilterUpdate.karaoke">
+<code class="descname">karaoke</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.karaoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>configures the karaoke filter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.FilterUpdate.timescale">
+<code class="descname">timescale</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.timescale" title="Permalink to this definition">¶</a></dt>
+<dd><p>configures the timescale filter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.FilterUpdate.tremolo">
+<code class="descname">tremolo</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.tremolo" title="Permalink to this definition">¶</a></dt>
+<dd><p>configures the tremolo filter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.FilterUpdate.vibrato">
+<code class="descname">vibrato</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.vibrato" title="Permalink to this definition">¶</a></dt>
+<dd><p>configures the vibrato filter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.FilterUpdate.volume">
+<code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>configures the volume filter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">equalizer</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">karaoke</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">timescale</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">tremolo</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">vibrato</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">volume</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.Update">
+<em class="property">class </em><code class="descname">Update</code><span class="sig-paren">(</span><em>pause=None</em>, <em>position=None</em>, <em>volume=None</em>, <em>filters=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#Update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Update" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.Update.pause">
+<code class="descname">pause</code><a class="headerlink" href="#andesite.models.operations.Update.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>whether or not to pause the player</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Update.position">
+<code class="descname">position</code><a class="headerlink" href="#andesite.models.operations.Update.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>timestamp to set the current track to, in seconds</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Update.volume">
+<code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.Update.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>volume to set on the player</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.Update.filters">
+<code class="descname">filters</code><a class="headerlink" href="#andesite.models.operations.Update.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>configuration for the filters</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">filters</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">pause</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">position</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">volume</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.operations.MixerUpdate">
+<em class="property">class </em><code class="descname">MixerUpdate</code><span class="sig-paren">(</span><em>enable</em>, <em>players</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#MixerUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.MixerUpdate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="andesite.models.operations.MixerUpdate.enable">
+<code class="descname">enable</code><a class="headerlink" href="#andesite.models.operations.MixerUpdate.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>if present, controls whether or not the mixer should be used</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.operations.MixerUpdate.players">
+<code class="descname">players</code><a class="headerlink" href="#andesite.models.operations.MixerUpdate.players" title="Permalink to this definition">¶</a></dt>
+<dd><p>map of player id to <cite>Play</cite> / <cite>Update</cite> payloads for each mixer source</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="debug">
+<h2>Debug<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h2>
+<p>Special debug models are stored in the <cite>andesite.models.debug</cite> module.</p>
+<span class="target" id="module-andesite.models.debug"></span><dl class="class">
+<dt id="andesite.models.debug.StackFrame">
+<em class="property">class </em><code class="descname">StackFrame</code><span class="sig-paren">(</span><em>class_loader</em>, <em>module_name</em>, <em>module_version</em>, <em>class_name</em>, <em>method_name</em>, <em>file_name</em>, <em>line_number</em>, <em>pretty</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#StackFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.StackFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>See Also: <cite>Error.stack</cite></p>
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.class_loader">
+<code class="descname">class_loader</code><a class="headerlink" href="#andesite.models.debug.StackFrame.class_loader" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the classloader</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.module_name">
+<code class="descname">module_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.module_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the module</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.module_version">
+<code class="descname">module_version</code><a class="headerlink" href="#andesite.models.debug.StackFrame.module_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>version of the module</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.class_name">
+<code class="descname">class_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.class_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the class</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.method_name">
+<code class="descname">method_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.method_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the method</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.file_name">
+<code class="descname">file_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the source file</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.line_number">
+<code class="descname">line_number</code><a class="headerlink" href="#andesite.models.debug.StackFrame.line_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>line in the source file</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.StackFrame.pretty">
+<code class="descname">pretty</code><a class="headerlink" href="#andesite.models.debug.StackFrame.pretty" title="Permalink to this definition">¶</a></dt>
+<dd><p>pretty printed version of this frame, as it would appear on Throwable#printStackTrace</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.Error">
+<em class="property">class </em><code class="descname">Error</code><span class="sig-paren">(</span><em>class_name</em>, <em>message</em>, <em>stack</em>, <em>cause</em>, <em>suppressed</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Andesite error.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.Error.class_name">
+<code class="descname">class_name</code><a class="headerlink" href="#andesite.models.debug.Error.class_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>class of the error</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Error.message">
+<code class="descname">message</code><a class="headerlink" href="#andesite.models.debug.Error.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>message of the error</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Error.stack">
+<code class="descname">stack</code><a class="headerlink" href="#andesite.models.debug.Error.stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>stacktrace of the error</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Error.cause">
+<code class="descname">cause</code><a class="headerlink" href="#andesite.models.debug.Error.cause" title="Permalink to this definition">¶</a></dt>
+<dd><p>cause of the error</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Error.suppressed">
+<code class="descname">suppressed</code><a class="headerlink" href="#andesite.models.debug.Error.suppressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>suppressed errors</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transform.html">Transform</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Reference</a><ul>
+      <li>Previous: <a href="clients.html" title="previous chapter">Clients</a></li>
+      <li>Next: <a href="transform.html" title="next chapter">Transform</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/reference/models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

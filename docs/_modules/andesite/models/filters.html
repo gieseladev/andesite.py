@@ -1,0 +1,387 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>andesite.models.filters &#8212; andesite.py 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for andesite.models.filters</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">seq_build_all_items_from_raw</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;EqualizerBand&quot;</span><span class="p">,</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">,</span> <span class="s2">&quot;Karaoke&quot;</span><span class="p">,</span> <span class="s2">&quot;Timescale&quot;</span><span class="p">,</span> <span class="s2">&quot;Tremolo&quot;</span><span class="p">,</span> <span class="s2">&quot;Vibrato&quot;</span><span class="p">,</span> <span class="s2">&quot;VolumeFilter&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                        <span class="n">low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">low_inc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">up</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">up_inc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">low_symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">up_symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">valid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">low_inc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">low_symbol</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;[</span><span class="si">{low_inc}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="n">low</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">low</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">low_symbol</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;(</span><span class="si">{low}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">low</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">up_inc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">up_symbol</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{up_inc}</span><span class="s2">]&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="n">up_inc</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">up</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">up_symbol</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{up}</span><span class="s2">)&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="n">up_inc</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+        <span class="n">low_symbol</span> <span class="o">=</span> <span class="n">low_symbol</span> <span class="ow">or</span> <span class="s2">&quot;[-INF&quot;</span>
+        <span class="n">up_symbol</span> <span class="o">=</span> <span class="n">up_symbol</span> <span class="ow">or</span> <span class="s2">&quot;INF]&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Provided value (</span><span class="si">{value}</span><span class="s2">) not in interval </span><span class="si">{low_symbol}</span><span class="s2">, </span><span class="si">{up_symbol}</span><span class="s2">!&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EqualizerBand"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">EqualizerBand</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        band: band number to configure ( 0 - 14 )</span>
+<span class="sd">        gain: value to set for the band ( [-0.25, 1.0] )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">band</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="EqualizerBand.set_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_band">[docs]</a>    <span class="k">def</span> <span class="nf">set_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `EqualizerBand.band` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the band. ( [0, 14] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low_inc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">band</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="EqualizerBand.set_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `EqualizerBand.gain` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the gain. ( [-0.25, 1] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low_inc</span><span class="o">=-.</span><span class="mi">25</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="Equalizer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Equalizer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bands: array of bands to configure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">seq_build_all_items_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;bands&quot;</span><span class="p">],</span> <span class="n">EqualizerBand</span><span class="p">)</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EqualizerBand</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]:</span>
+        <span class="o">...</span>
+
+<div class="viewcode-block" id="Equalizer.get_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.get_band">[docs]</a>    <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the specified band from the bands list.</span>
+
+<span class="sd">        If the band doesn&#39;t exist it is created.</span>
+<span class="sd">        If you don&#39;t want to automatically create a band, pass</span>
+<span class="sd">        `create=False`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band: Band number to get</span>
+<span class="sd">            create: Whether or not to create a new band if it doesn&#39;t exist. (Defaults to True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bands</span> <span class="k">if</span> <span class="n">band</span><span class="o">.</span><span class="n">band</span> <span class="o">==</span> <span class="n">band</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">create</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">band</span> <span class="o">=</span> <span class="n">EqualizerBand</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">band</span></div>
+
+<div class="viewcode-block" id="Equalizer.get_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.get_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the gain of a band.</span>
+
+<span class="sd">        Returns: Gain of the band or None if it doesn&#39;t exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">band</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">band</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">band</span><span class="o">.</span><span class="n">gain</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Equalizer.set_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.set_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set the gain of a band to the specified value.</span>
+
+<span class="sd">        If the band does not exist it is created.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band: Band number to set the gain for.</span>
+<span class="sd">            gain: Value to set for the gain. ( [-0.25, 1] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided gain is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">set_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Karaoke"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Karaoke">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Karaoke</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="n">level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">mono_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">filter_band</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">220</span>
+    <span class="n">filter_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span></div>
+
+
+<div class="viewcode-block" id="Timescale"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Timescale</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        speed: speed to play music at (&gt; 0)</span>
+<span class="sd">        pitch: pitch to set (&gt; 0)</span>
+<span class="sd">        rate: rate to set (&gt; 0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="Timescale.set_speed"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Timescale.speed` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the speed. ( (0, INF] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Timescale.set_pitch"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_pitch">[docs]</a>    <span class="k">def</span> <span class="nf">set_pitch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Timescale.pitch` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the pitch. ( (0, INF] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Timescale.set_rate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_rate">[docs]</a>    <span class="k">def</span> <span class="nf">set_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Timescale.rate` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the rate. ( (0, INF] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate</span> <span class="o">=</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="Tremolo"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Tremolo</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        frequency: (&gt; 0)</span>
+<span class="sd">        depth: ( (0, 1] )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<div class="viewcode-block" id="Tremolo.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Tremolo.frequency` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the frequency. ( (0, INF] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Tremolo.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Tremolo.depth` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the depth. ( (0, 1] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="Vibrato"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Vibrato</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        frequency: ( (0, 14] )</span>
+<span class="sd">        depth: ( (0, 1] )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<div class="viewcode-block" id="Vibrato.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Vibrato.frequency` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the frequency. ( (0, 14] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Vibrato.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setter for `Vibrato.depth` which performs a value check.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: Value to set for the depth. ( (0, 1] )</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="VolumeFilter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.VolumeFilter">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">VolumeFilter</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
