@@ -39,6 +39,12 @@ def convert_to_raw(obj: Any) -> RawDataType:
 
     This does not copy the values of the dataclass, modifying a value
     of the resulting `dict` will also modify the dataclass' value.
+
+    Args:
+        obj: Object to convert to its raw representation.
+            Usually this is a dataclass, however, you can also parse
+            `list`, `tuple`, and `dict` objects which will convert its
+            members. All other types will be returned without modifying them.
     """
     if dataclasses.is_dataclass(obj):
         data: RawDataType = {}
@@ -77,6 +83,10 @@ def build_from_raw(cls: Type[T], raw_data: RawDataType) -> T:
     other than `None`.
 
     After transformation the data is used as the keyword arguments to the cls constructor.
+
+    Args:
+        cls: Target type to build
+        raw_data: Data which should be used to build the instance.
     """
     lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE)
 
@@ -96,6 +106,13 @@ def seq_build_all_items_from_raw(items: MutableSequence[RawDataType], cls: Type[
 
     This calls `build_from_raw` on all items in the sequence and assigns
     the result to the index.
+
+    Args:
+        items: Mutable sequence of raw data to be converted
+        cls: Target type to build.
+
+    Returns:
+        This method mutates the provided sequence, it does not return anything.
     """
     for i, value in enumerate(items):
         items[i] = build_from_raw(cls, value)
@@ -111,6 +128,18 @@ def map_convert_value(mapping: MutableMapping[KT, T], key: KT, func: MapFunction
 
     If the key does not exist in the mapping, it is ignored and the
     function is not called.
+
+    Args:
+        mapping: Mutable mapping which is to be manipulated.
+        key: Key whose value in the mapping is to be converted.
+            If this key does not exist in the mapping, the conversion
+            is aborted and the function doesn't perform any action.
+        func: Callback which will be called with the value of the key.
+            Its return value then replaces the previous value in the
+            mapping.
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
     """
     try:
         value = mapping[key]
@@ -124,22 +153,50 @@ def map_convert_values(mapping: RawDataType, **key_funcs: MapFunction) -> None:
     """Run a callback for a key.
 
     For each key you can specify which function to run (<key> = <MapFunction>).
+
+    Args:
+        mapping: Mutable mapping for which to apply the conversion
+        **key_funcs: key -> map function mapping.
+            For each key the specified function will
+            be applied using `map_convert_value`.
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
     """
     for key, func in key_funcs.items():
         map_convert_value(mapping, key, func)
 
 
-def map_convert_values_all(mapping: RawDataType, func: Callable[[Any], Any], *keys: str) -> None:
+def map_convert_values_all(mapping: RawDataType, func: MapFunction, *keys: str) -> None:
     """Run the same callback on all keys.
 
     Works like `map_convert_values` but runs the same function for all keys.
+
+    Args:
+        mapping: Mutable mapping for which to apply the conversion
+        func: Function to apply to the values of the specified keys.
+            The function is run using `map_convert_value`
+        *keys: Keys whose values are to be converted.
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
     """
     for key in keys:
         map_convert_value(mapping, key, func)
 
 
 def map_build_values_from_raw(mapping: RawDataType, **key_types: Type[T]) -> None:
-    """Build the values of the specified keys to the specified type."""
+    """Build the values of the specified keys to the specified type.
+
+    Args:
+        mapping: Mutable mapping for which to apply the conversion
+        **key_types: key -> type mapping.
+            For each key the value will be converted to the provided type
+            using `build_from_raw`.
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
+    """
     map_convert_values(mapping, **{key: partial(build_from_raw, cls) for key, cls in key_types.items()})
 
 
@@ -148,6 +205,13 @@ def map_build_all_values_from_raw(mapping: MutableMapping[Any, RawDataType], cls
 
     This calls `build_from_raw` on all values of the mapping
     and replaces the old value with the result.
+
+    Args:
+        mapping: Mutable mapping whose values are to be built
+        cls: Type to convert the values to
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
     """
     for key, value in mapping.items():
         mapping[key] = build_from_raw(cls, value)
@@ -166,8 +230,11 @@ def from_milli(value: Optional[int]) -> Optional[float]:
 
     Let's be honest, this is just dividing by 1000.
 
+    Args:
+        value: Value to convert from milli.
+
     Returns:
-        Optional[float]: `None` if you pass `None` as the value.
+        Optional[float]: `None` if you pass `None` as the value, otherwise a `float`.
     """
     if value is None:
         return value
@@ -183,13 +250,16 @@ def to_milli(value: float) -> int: ...
 def to_milli(value: None) -> None: ...
 
 
-def to_milli(value: float) -> Optional[int]:
+def to_milli(value: Optional[float]) -> Optional[int]:
     """Convert from base unit to milli.
 
     This is really just multiplying by 1000.
 
+    Args:
+        value: Value to convert to milli.
+
     Returns:
-        Optional[int]: `None` if you pass `None` as the value.
+        Optional[int]: `None` if you pass `None` as the value, otherwise an `int`.
     """
     if value is None:
         return value
@@ -198,17 +268,42 @@ def to_milli(value: float) -> Optional[int]:
 
 
 def map_convert_values_from_milli(mapping: RawDataType, *keys) -> None:
-    """Run `from_milli` on all specified keys' values."""
+    """Run `from_milli` on all specified keys' values.
+
+    Args:
+        mapping: Mutable mapping for which to apply the conversion
+        *keys: Keys whose values to convert from milli.
+            Uses `from_milli` to perform the conversion.
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
+    """
     map_convert_values_all(mapping, from_milli, *keys)
 
 
 def map_convert_values_to_milli(mapping: RawDataType, *keys) -> None:
-    """Run `to_milli` on all specified keys' values."""
+    """Run `to_milli` on all specified keys' values.
+
+    Args:
+        mapping: Mutable mapping for which to apply the conversion
+        *keys: Keys whose values to convert to milli.
+            Uses `to_milli` to perform the conversion.
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
+    """
     map_convert_values_all(mapping, to_milli, *keys)
 
 
-def map_filter_none(mapping: MutableMapping[str, Any]) -> None:
-    """Remove all keys from the mapping whose values are `None`."""
+def map_filter_none(mapping: MutableMapping[Any, Any]) -> None:
+    """Remove all keys from the mapping whose values are `None`.
+
+    Args:
+        mapping: Mutable mapping to filter
+
+    Returns:
+        This method mutates the provided mapping, it does not return anything.
+    """
     remove_keys = {key for key, value in mapping.items() if value is None}
 
     for key in remove_keys:

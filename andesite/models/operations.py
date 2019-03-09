@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from andesite.transform import RawDataType, build_from_raw, map_build_values_from_raw, map_convert_values_all, map_convert_values_from_milli, \
+from andesite.transform import RawDataType, build_from_raw, map_build_values_from_raw, map_convert_values_from_milli, \
     map_convert_values_to_milli
 from .filters import Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter
 
@@ -24,22 +24,12 @@ class VoiceServerUpdate(Operation):
 
     Attributes:
         session_id (str): Session ID for the current user in the event's guild
-        guild_id (int): ID of the guild
         event (Dict[str, Any]): Voice server update event sent by discord
     """
     __op__ = "voice-server-update"
 
     session_id: str
-    guild_id: int
     event: Dict[str, Any]
-
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        map_convert_values_all(data, int, "guild_id")
-
-    @classmethod
-    def __transform_output__(cls, data: RawDataType) -> None:
-        map_convert_values_all(data, str, "guild_id")
 
 
 # noinspection PyUnresolvedReferences

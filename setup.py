@@ -17,7 +17,8 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "aiohttp",
+        "lettercase",
         "websockets",
-        "yarl"
+        "yarl",
     ],
 )

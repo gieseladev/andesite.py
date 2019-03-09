@@ -52,6 +52,7 @@ extensions = [
 ]
 
 add_module_names = False
+default_role = "py:obj"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -186,7 +187,7 @@ epub_exclude_files = ['search.html']
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'https://docs.python.org/': None,
+    'aiohttp': ('https://aiohttp.readthedocs.io/en/stable/', None)
 }
 
 # -- Options for todo extension ----------------------------------------------

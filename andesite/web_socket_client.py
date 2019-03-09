@@ -4,7 +4,7 @@ import asyncio
 import logging
 import math
 import time
-from asyncio import CancelledError, Future
+from asyncio import AbstractEventLoop, CancelledError, Future
 from collections import deque
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
 from typing import Any, Deque, Dict, Optional, Union, overload
@@ -13,7 +13,7 @@ import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 
 from .event_target import Event, EventTarget
-from .models import Equalizer, FilterUpdate, Karaoke, Operation, Play, Timescale, Tremolo, Update, Vibrato, VoiceServerUpdate, VolumeFilter
+from .models import Equalizer, FilterUpdate, Karaoke, Operation, Play, Timescale, Tremolo, Update, Vibrato, VolumeFilter
 from .transform import convert_to_raw, map_convert_values_to_milli, map_filter_none, to_milli
 
 __all__ = ["AndesiteWebSocket", "WebSocketMessageEvent", "WebSocketSendEvent"]
@@ -75,7 +75,23 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
 
 
 class AndesiteWebSocket(EventTarget):
-    """Client for the Andesite WebSocket handler."""
+    """Client for the Andesite WebSocket handler.
+
+    Attributes:
+        max_connect_attempts (Optional[int]):
+            Max amount of connection attempts before giving up.
+            If this is `None` there is no upper limit to how many attempts will be made.
+        web_socket_client (Optional[WebSocketClientProtocol]):
+            Web socket client which is used.
+            This attribute will be set once `connect` is called.
+            Don't use the presence of this attribute to check whether
+            the client is connected, use the `connected` property.
+
+    Args:
+        loop: Event loop to use for asynchronous operations.
+            If no loop is provided it is dynamically retrieved when
+            needed.
+    """
     max_connect_attempts: Optional[int]
     web_socket_client: Optional[WebSocketClientProtocol]
 
@@ -84,8 +100,8 @@ class AndesiteWebSocket(EventTarget):
     _json_encoder: JSONEncoder
     _json_decoder: JSONDecoder
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *, loop: AbstractEventLoop = None) -> None:
+        super().__init__(loop=loop)
 
         self.max_connect_attempts = None
         self.web_socket_client = None
@@ -98,23 +114,23 @@ class AndesiteWebSocket(EventTarget):
 
     @property
     def connected(self) -> bool:
-        """Check whether the client is connected and usable."""
+        """Whether the client is connected and usable."""
         return self.web_socket_client and self.web_socket_client.open
 
     async def connect(self, max_attempts: int = None) -> None:
         """Connect to the web socket server.
 
         After successfully connecting all messages in the message
-        queue are sent in order and an *ws_connected* event is dispatched.
+        queue are sent in order and a `ws_connected` event is dispatched.
 
         Args:
             max_attempts: Amount of connection attempts to perform before aborting.
-                If this is not set, `AndesiteWebSocket.max_connect_attempts` is used instead.
-                If `None` unlimited attempts will be performed.
+                If this is not set, `max_connect_attempts` is used instead.
+                If `None`, unlimited attempts will be performed.
 
         Raises:
             `ValueError`: If the client is already connected.
-                Check `AndesiteWebSocket.connected` first!
+                Check `connected` first!
 
         Notes:
             This method doesn't have to be called manually,
@@ -136,13 +152,13 @@ class AndesiteWebSocket(EventTarget):
         max_attempts = max_attempts or self.max_connect_attempts
 
         while max_attempts is None or attempt <= max_attempts:
-            client = await try_connect(uri, extra_headers=headers)
+            client = await try_connect(uri, extra_headers=headers, loop=self._loop)
             if client:
                 break
 
             timeout = int(math.pow(attempt, 1.5))
             log.info(f"Connection unsuccessful, trying again in {timeout} seconds")
-            await asyncio.sleep(timeout)
+            await asyncio.sleep(timeout, loop=self._loop)
         else:
             raise ConnectionError(f"Couldn't connect to {uri} after {attempt} attempts")
 
@@ -156,18 +172,16 @@ class AndesiteWebSocket(EventTarget):
     async def disconnect(self) -> None:
         """Disconnect the web socket.
 
-        This will obviously stop the client from
+        This will also stop the client from
         receiving events from Andesite.
 
-        Raises:
-            `ValueError`: If the client isn't connected.
-                Check `AndesiteWebSocket.connected` first!
+        This method is idempotent, it doesn't do
+        anything if the client isn't connected.
         """
-        if not self.connected:
-            raise ValueError("Not connected")
-
         self._stop_read_loop()
-        await self.web_socket_client.close(reason="disconnect")
+
+        if self.connected:
+            await self.web_socket_client.close(reason="disconnect")
 
     async def _replay_message_queue(self) -> None:
         """Send all messages in the message queue."""
@@ -216,12 +230,20 @@ class AndesiteWebSocket(EventTarget):
             _ = self.dispatch(WebSocketMessageEvent(data))
 
     def _start_read_loop(self) -> None:
+        """Start the web socket reader.
+
+        If the reader is already running, this is a no-op.
+        """
         if self._read_loop and not self._read_loop.done():
             return
 
-        self._read_loop = asyncio.ensure_future(self._web_socket_reader())
+        self._read_loop = asyncio.ensure_future(self._web_socket_reader(), loop=self._loop)
 
     def _stop_read_loop(self) -> None:
+        """Stop the web socket reader.
+
+        If the reader is already stopped, this is a no-op.
+        """
         if not self._read_loop:
             return
 
@@ -232,8 +254,17 @@ class AndesiteWebSocket(EventTarget):
 
         The guild_id and op are written to the payload before it is converted to JSON.
 
+        If sending the message fails because the connection is closed,
+        it is added to the message queue and a connection attempt is started.
+
         Regardless of whether the payload was actually sent or
         not a `ws_send` event is dispatched.
+
+        Args:
+            guild_id: Target guild id
+            op: Name of operation to perform
+            payload: Additional data to be sent along with the data.
+                The payload is mutated by the function.
         """
         payload.update(guildId=str(guild_id), op=op)
 
@@ -251,7 +282,17 @@ class AndesiteWebSocket(EventTarget):
             await self.connect()
 
     async def send_operation(self, guild_id: int, operation: Operation) -> None:
-        """Send an `Operation`."""
+        """Send an `Operation`.
+
+        Args:
+            guild_id: Target guild id
+            operation: Operation to send
+
+        Notes:
+            Using `Operation` instances to send messages is currently
+            less efficient than calling the `AndesiteWebSocket` methods
+            directly. This is mainly due to the overhead of conversion.
+        """
         await self.send(guild_id, operation.__op__, convert_to_raw(operation))
 
     # noinspection PyOverloads
@@ -448,17 +489,30 @@ class AndesiteWebSocket(EventTarget):
         await self.send(guild_id, "filters", payload)
 
     async def get_player(self, guild_id: int) -> None:
+        """Get the player.
+
+        Args:
+            guild_id: Target guild id
+        """
         await self.send(guild_id, "get-player", {})
 
     async def get_stats(self, guild_id: int) -> None:
+        """Get the Andesite stats.
+
+        Args:
+            guild_id: Target guild id
+        """
         await self.send(guild_id, "get-stats", {})
 
     async def ping(self, guild_id: int) -> float:
         """Ping the Andesite server.
 
+        Args:
+            guild_id: Target guild id
+
         Returns:
-            `float`: Amount of seconds it took for the response to be received.
-                Note: This is not accurate.
+            Amount of seconds it took for the response to be received.
+            Note: This is not accurate.
         """
         start = time.time()
 
@@ -471,16 +525,6 @@ class AndesiteWebSocket(EventTarget):
 
         return time.time() - start
 
-    @overload
-    async def voice_server_update(self, update: VoiceServerUpdate) -> None:
-        """Provide a voice server update.
-
-        Args:
-            update: `VoiceServerUpdate` to use.
-        """
-        ...
-
-    @overload
     async def voice_server_update(self, guild_id: int, session_id: str, event: Dict[str, Any]) -> None:
         """Provide a voice server update.
 
@@ -488,26 +532,10 @@ class AndesiteWebSocket(EventTarget):
             guild_id: ID of the guild of the voice server update
             session_id: session id
             event: voice server update event as sent by Discord
+
+        Notes:
+            If you wish to send a `VoiceServerUpdate` operation, please
+            use the `send_operation` method directly.
         """
-        ...
-
-    async def voice_server_update(self, *args, **kwargs) -> None:
-        """Provide a voice server update."""
-
-        # Because we want to preserve the names as shown in the
-        # overloads but also take the positional args into account and handling
-        # that manually would be messy we just let Python do it.
-
-        def extract_update(update: VoiceServerUpdate):
-            return update.guild_id, convert_to_raw(update)
-
-        def extract_session_and_event(guild_id: int, session_id: str, event: Dict[str, Any]):
-            return guild_id, dict(sessionId=session_id, event=event)
-
-        try:
-            # this is probably more likely
-            guild_id, payload = extract_session_and_event(*args, **kwargs)
-        except TypeError:
-            guild_id, payload = extract_update(*args, **kwargs)
-
+        payload = dict(sessionId=session_id, event=event)
         await self.send(guild_id, "voice-server-update", payload)

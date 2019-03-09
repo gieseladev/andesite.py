@@ -3,10 +3,10 @@
 import asyncio
 import inspect
 import logging
-from asyncio import CancelledError, Future
+from asyncio import AbstractEventLoop, CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union
+from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union, overload
 
 __all__ = ["Event", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
 
@@ -14,7 +14,11 @@ log = logging.getLogger(__name__)
 
 
 class Event:
-    """Base type of all events."""
+    """Base type of all events.
+
+    Attributes:
+        name (str): Name of the event.
+    """
     name: str
 
     def __init__(self, name: str, **kwargs: Any) -> None:
@@ -26,7 +30,13 @@ EventHandler = Callable[[Event], Any]
 
 
 class EventErrorEvent(Event):
-    """Event type passed to `EventTarget.on_event_error`."""
+    """Event type passed to `EventTarget.on_event_error`.
+
+    Attributes:
+        handler (EventHandler): Callback that received the event.
+        exception (Exception): Error that was raised by the handler.
+        original_event (Event): Event that was to be dispatched but caused an error.
+    """
     handler: EventHandler
     exception: Exception
     original_event: Event
@@ -38,19 +48,35 @@ class EventErrorEvent(Event):
 EventFilter = Callable[[Event], bool]
 
 
+# noinspection PyUnresolvedReferences
 @dataclass()
 class OneTimeEventListener:
     """One-time event listener.
 
     Special event listener which waits for the first event matching the conditions and then removes itself.
+
+    Attributes:
+        future (Future): Future that was returned to the callee and is used
+            to communicate.
+            When an event occurs which meets the conditions it is set
+            as the result of this future. If an error occurs, it is
+            set as the exception.
+        condition (Optional[EventFilter): Callback which takes an `Event` and returns `True`
+            to accept the event and `False` otherwise.
+            If not provided, all events are accepted.
     """
     future: Future
     condition: Optional[EventFilter] = None
 
 
+# noinspection PyUnresolvedReferences
 @dataclass()
 class EventListener:
-    """Persistent event listener"""
+    """Persistent event listener.
+
+    Attributes:
+        handler (EventHandler): Callback which will be called whenever an event occurs.
+    """
     handler: EventHandler
 
 
@@ -67,25 +93,69 @@ def _push_map_list(mapping: MutableMapping[str, List[T]], key: str, item: T) -> 
 
 
 class EventTarget:
-    """An object that can dispatch `Event`s."""
+    """An object that can dispatch `Event` instances to listeners.
+
+    Args:
+        loop: You can specify the loop which will be used for various asynchronous actions.
+            If you don't specify a loop, it will be dynamically retrieved when needed.
+    """
     _one_time_listeners: Dict[str, List[OneTimeEventListener]]
     _listeners: Dict[str, List[EventListener]]
 
-    def __init__(self) -> None:
+    _loop: Optional[AbstractEventLoop]
+
+    def __init__(self, *, loop: AbstractEventLoop = None) -> None:
+        self._loop = loop
         self._one_time_listeners = {}
         self._listeners = {}
 
+    @overload
+    def wait_for(self, event: str, *, check: EventFilter) -> Awaitable[Event]:
+        ...
+
+    @overload
+    def wait_for(self, event: str, *, check: EventFilter, timeout: float) -> Awaitable[Optional[Event]]:
+        ...
+
     def wait_for(self, event: str, *, check: EventFilter, timeout: float = None) -> Awaitable[Optional[Event]]:
-        """Return a future which resolves when an `Event` meeting the given conditions is dispatched."""
-        future = Future()
+        """Wait for an event to be dispatched.
+
+        This is similar to adding a listener, but it only listens once and
+        returns the event that was dispatched instead of calling a callback.
+
+        Args:
+            event: Name of the event to listen to
+            check: Callback which takes an `Event` and returns `True`
+                to accept the event and `False` otherwise.
+                If not provided, all events are accepted.
+            timeout: Amount of seconds to wait before aborting.
+                If not provided it will wait forever.
+
+        Returns:
+            `Future` which when awaited yields the event.
+            If a timeout was given the result will be `None`
+            if it timed-out.
+        """
+        # not using self._loop.create_future because loop may be None
+        future = Future(loop=self._loop)
         listener = OneTimeEventListener(future, check)
 
         _push_map_list(self._one_time_listeners, event, listener)
 
-        return asyncio.wait_for(future, timeout=timeout)
+        return asyncio.wait_for(future, timeout=timeout, loop=self._loop)
 
     def add_listener(self, event: str, listener: Union[EventHandler, EventListener]) -> EventListener:
-        """Add a listener for an `Event` which is called whenever said event is dispatched."""
+        """Add a listener for an `Event` which is called whenever said event is dispatched.
+
+        Args:
+            event: Name of the event to listen to
+            listener: Listener to add.
+
+        Returns:
+            The `EventListener` that was added.
+            If the provided listener already is an `EventListener`,
+            the return value is the same value.
+        """
         if not isinstance(listener, EventListener):
             listener = EventListener(listener)
 
@@ -96,6 +166,10 @@ class EventTarget:
         """Remove a previously added event listener.
 
         When a `EventHandler` is passed, all event listeners with the given handler are removed.
+
+        Args:
+            event: Name of the event for which to remove a listener.
+            target: Listener to remove.
 
         Returns:
             bool: Whether the listener was successfully removed.
@@ -122,6 +196,15 @@ class EventTarget:
 
     def dispatch(self, event: Event) -> Optional[Future]:
         """Dispatch an event.
+
+        Events are first propagated to the "one-time listeners" (i.e. those added by `wait_for`),
+        then the instances "on_<event>" methods are called and finally
+        the listeners.
+
+        If an error occurs while dispatching an event, `on_event_error` is called.
+
+        Args:
+            event: Event to be dispatched.
 
         Returns:
             Optional[Future]: Future aggregating all asynchronous dispatches.
@@ -176,7 +259,7 @@ class EventTarget:
                 futures.append(self._run_event(listener.handler, event))
 
         if futures:
-            return asyncio.gather(*futures)
+            return asyncio.gather(*futures, loop=self._loop)
         else:
             return None
 
@@ -196,5 +279,10 @@ class EventTarget:
 
     # noinspection PyMethodMayBeStatic
     async def on_event_error(self, event: EventErrorEvent) -> None:
-        """Called when an error occurs during event dispatching."""
+        """Called when an error occurs during event dispatching.
+
+        Args:
+            event: Special event type which contains some meta information
+                next to the original event.
+        """
         log.exception(f"There was an error when {event.handler} handled {event.original_event}: {event.exception}")
