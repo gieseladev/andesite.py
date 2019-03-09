@@ -3,13 +3,14 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
 
-from andesite.transform import RawDataType, seq_build_all_items_from_raw, map_convert_value, map_convert_values_from_milli, map_build_values_from_raw, \
-    map_convert_values_to_milli
+from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_value, map_convert_values_from_milli, map_convert_values_to_milli, \
+    seq_build_all_items_from_raw
 from .debug import Error
 
 __all__ = ["PlaylistInfo", "TrackMetadata", "TrackInfo", "LoadType", "LoadedTrack"]
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class PlaylistInfo:
     """
@@ -22,20 +23,21 @@ class PlaylistInfo:
     selected_track: Optional[int]
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class TrackMetadata:
     """
 
     Attributes:
-        class_name: class name of the lavaplayer track
-        title: title of the track
-        author: author of the track
-        length: duration of the track, in seconds
-        identifier: identifier of the track
-        uri: uri of the track
-        is_stream: whether or not the track is a livestream
-        is_seekable: whether or not the track supports seeking
-        position: current position of the track
+        class_name (str): class name of the lavaplayer track
+        title (str): title of the track
+        author (str): author of the track
+        length (float): duration of the track, in seconds
+        identifier (str): identifier of the track
+        uri (str): uri of the track
+        is_stream (bool): whether or not the track is a livestream
+        is_seekable (bool): whether or not the track supports seeking
+        position (float): current position of the track
     """
     class_name: str
     title: str
@@ -58,13 +60,14 @@ class TrackMetadata:
         map_convert_values_to_milli(data, "length", "position")
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class TrackInfo:
     """
 
     Attributes:
-        track: base64 encoded track
-        info: metadata of the track
+        track (str): base64 encoded track
+        info (TrackMetadata): metadata of the track
     """
     track: str
     info: TrackMetadata
@@ -83,16 +86,17 @@ class LoadType(Enum):
     LOAD_FAILED = "LOAD_FAILED"
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class LoadedTrack:
     """
 
     Attributes:
-        load_type: type of the response
-        tracks: loaded tracks
-        playlist_info: metadata of the loaded playlist
-        cause: error that happened while loading tracks
-        severity: severity of the error
+        load_type (LoadType): type of the response
+        tracks (Optional[List[TrackInfo]]): loaded tracks
+        playlist_info (Optional[PlaylistInfo]): metadata of the loaded playlist
+        cause (Optional[Error]): error that happened while loading tracks
+        severity (Optional[str]): severity of the error
     """
     load_type: LoadType
     tracks: Optional[List[TrackInfo]]

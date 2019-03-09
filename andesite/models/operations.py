@@ -10,21 +10,22 @@ __all__ = ["Operation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", 
 
 
 class Operation(ABC):
-    """Operation is a model that can be passed as a payload to the `AndesiteWebSocket` client.
+    """Operation is a model that can be passed as a payload to the :py:class:`AndesiteWebSocket` client.
 
-    See Also: `AndesiteWebSocket.send_operation`
+    See Also: :py:meth:`AndesiteWebSocket.send_operation`
     """
     __op__: str
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class VoiceServerUpdate(Operation):
     """
 
     Attributes:
-        session_id: Session ID for the current user in the event's guild
-        guild_id: ID of the guild
-        event: Voice server update event sent by discord
+        session_id (str): Session ID for the current user in the event's guild
+        guild_id (int): ID of the guild
+        event (Dict[str, Any]): Voice server update event sent by discord
     """
     __op__ = "voice-server-update"
 
@@ -41,17 +42,18 @@ class VoiceServerUpdate(Operation):
         map_convert_values_all(data, str, "guild_id")
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Play(Operation):
     """
 
     Attributes:
-        track: base64 encoded lavaplayer track
-        start: timestamp, in seconds, to start the track
-        end: timestamp, in seconds, to end the track
-        pause: whether or not to pause the player
-        volume: volume to set on the player
-        no_replace: if True and a track is already playing/paused, this command is ignored
+        track (str): base64 encoded lavaplayer track
+        start (Optional[float]): timestamp, in seconds, to start the track
+        end (Optional[float]): timestamp, in seconds, to end the track
+        pause (Optional[bool]): whether or not to pause the player
+        volume (Optional[float]): volume to set on the player
+        no_replace (bool): if True and a track is already playing/paused, this command is ignored
     """
     __op__ = "play"
 
@@ -71,23 +73,25 @@ class Play(Operation):
         map_convert_values_to_milli(data, "start", "end", "volume")
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Pause(Operation):
     """
 
     Attributes:
-        pause: whether or not to pause the player
+        pause (bool): whether or not to pause the player
     """
     __op__ = "pause"
 
     pause: bool
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Seek(Operation):
     """
     Attributes:
-        position: timestamp to set the current track to, in seconds
+        position (float): timestamp to set the current track to, in seconds
     """
     __op__ = "seek"
 
@@ -102,12 +106,13 @@ class Seek(Operation):
         map_convert_values_to_milli(data, "position")
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Volume(Operation):
     """
 
     Attributes:
-        volume: volume to set on the player
+        volume (float): volume to set on the player
     """
     __op__ = "volume"
 
@@ -122,17 +127,18 @@ class Volume(Operation):
         map_convert_values_to_milli(data, "volume")
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class FilterUpdate(Operation):
     """
 
     Attributes:
-        equalizer: configures the equalizer
-        karaoke: configures the karaoke filter
-        timescale: configures the timescale filter
-        tremolo: configures the tremolo filter
-        vibrato: configures the vibrato filter
-        volume: configures the volume filter
+        equalizer (Optional[Equalizer]): configures the equalizer
+        karaoke (Optional[Karaoke]): configures the karaoke filter
+        timescale (Optional[Timescale]): configures the timescale filter
+        tremolo (Optional[Tremolo]): configures the tremolo filter
+        vibrato (Optional[Vibrato]): configures the vibrato filter
+        volume (Optional[VolumeFilter]): configures the volume filter
     """
     __op__ = "filters"
 
@@ -144,15 +150,16 @@ class FilterUpdate(Operation):
     volume: Optional[VolumeFilter] = None
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Update(Operation):
     """
 
     Attributes:
-        pause: whether or not to pause the player
-        position: timestamp to set the current track to, in seconds
-        volume: volume to set on the player
-        filters: configuration for the filters
+        pause (Optional[bool]): whether or not to pause the player
+        position (Optional[float]): timestamp to set the current track to, in seconds
+        volume (Optional[float]): volume to set on the player
+        filters (Optional[FilterUpdate]): configuration for the filters
     """
     __op__ = "update"
 
@@ -171,18 +178,22 @@ class Update(Operation):
         map_convert_values_to_milli(data, "position", "volume")
 
 
+MixerPlayerUpdateMap = Dict[str, Union[Play, Update]]
+
+
+# noinspection PyUnresolvedReferences
 @dataclass
 class MixerUpdate(Operation):
     """
 
     Attributes:
-        enable: if present, controls whether or not the mixer should be used
-        players: map of player id to `Play` / `Update` payloads for each mixer source
+        enable (Optional[bool]): if present, controls whether or not the mixer should be used
+        players (MixerPlayerUpdateMap): map of player id to `Play` / `Update` payloads for each mixer source
     """
     __op__ = "mixer"
 
     enable: Optional[bool]
-    players: Dict[str, Union[Play, Update]]
+    players: MixerPlayerUpdateMap
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:

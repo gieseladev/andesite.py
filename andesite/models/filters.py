@@ -42,14 +42,14 @@ class EqualizerBand:
     """
 
     Attributes:
-        band: band number to configure ( 0 - 14 )
-        gain: value to set for the band ( [-0.25, 1.0] )
+        band (int): band number to configure ( 0 - 14 )
+        gain (float): value to set for the band ( [-0.25, 1.0] )
     """
     band: int
     gain: float = 0
 
     def set_band(self, value: int) -> None:
-        """Setter for `EqualizerBand.band` which performs a value check.
+        """Setter for :py:attr:`band` which performs a value check.
 
         Args:
             value: Value to set for the band. ( [0, 14] )
@@ -61,7 +61,7 @@ class EqualizerBand:
         self.band = value
 
     def set_gain(self, value: float) -> None:
-        """Setter for `EqualizerBand.gain` which performs a value check.
+        """Setter for :py:attr:`gain` which performs a value check.
 
         Args:
             value: Value to set for the gain. ( [-0.25, 1] )
@@ -73,12 +73,13 @@ class EqualizerBand:
         self.gain = value
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Equalizer:
     """
 
     Attributes:
-        bands: array of bands to configure
+        bands (List[EqualizerBand]): array of bands to configure
     """
     bands: List[EqualizerBand]
 
@@ -120,7 +121,8 @@ class Equalizer:
     def get_band_gain(self, band: int) -> Optional[float]:
         """Get the gain of a band.
 
-        Returns: Gain of the band or None if it doesn't exist.
+        Returns:
+            Gain of the band or `None` if it doesn't exist.
         """
         band = self.get_band(band, create=False)
         if band:
@@ -143,9 +145,17 @@ class Equalizer:
         self.get_band(band).set_gain(gain)
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Karaoke:
-    """"""
+    """
+
+    Attributes:
+        level (float)
+        mono_level (float)
+        filter_band (float)
+        filter_width (float)
+    """
     level: float = 1
     mono_level: float = 1
     filter_band: float = 220
@@ -157,16 +167,16 @@ class Timescale:
     """
 
     Attributes:
-        speed: speed to play music at (> 0)
-        pitch: pitch to set (> 0)
-        rate: rate to set (> 0)
+        speed (float): speed to play music at (> 0)
+        pitch (float): pitch to set (> 0)
+        rate (float): rate to set (> 0)
     """
     speed: float = 1
     pitch: float = 1
     rate: float = 1
 
     def set_speed(self, value: float) -> None:
-        """Setter for `Timescale.speed` which performs a value check.
+        """Setter for :py:attr:`speed` which performs a value check.
 
         Args:
             value: Value to set for the speed. ( (0, INF] )
@@ -178,7 +188,7 @@ class Timescale:
         self.speed = value
 
     def set_pitch(self, value: float) -> None:
-        """Setter for `Timescale.pitch` which performs a value check.
+        """Setter for :py:attr:`pitch` which performs a value check.
 
         Args:
             value: Value to set for the pitch. ( (0, INF] )
@@ -190,7 +200,7 @@ class Timescale:
         self.pitch = value
 
     def set_rate(self, value: float) -> None:
-        """Setter for `Timescale.rate` which performs a value check.
+        """Setter for :py:attr:`rate` which performs a value check.
 
         Args:
             value: Value to set for the rate. ( (0, INF] )
@@ -207,14 +217,14 @@ class Tremolo:
     """
 
     Attributes:
-        frequency: (> 0)
-        depth: ( (0, 1] )
+        frequency (float): (> 0)
+        depth (float): ( (0, 1] )
     """
     frequency: float = 2
     depth: float = 0.5
 
     def set_frequency(self, value: float) -> None:
-        """Setter for `Tremolo.frequency` which performs a value check.
+        """Setter for :py:attr:`frequency` which performs a value check.
 
         Args:
             value: Value to set for the frequency. ( (0, INF] )
@@ -226,7 +236,7 @@ class Tremolo:
         self.frequency = value
 
     def set_depth(self, value: float) -> None:
-        """Setter for `Tremolo.depth` which performs a value check.
+        """Setter for :py:attr:`depth` which performs a value check.
 
         Args:
             value: Value to set for the depth. ( (0, 1] )
@@ -243,14 +253,14 @@ class Vibrato:
     """
 
     Attributes:
-        frequency: ( (0, 14] )
-        depth: ( (0, 1] )
+        frequency (float): ( (0, 14] )
+        depth (float): ( (0, 1] )
     """
     frequency: float = 2
     depth: float = 0.5
 
     def set_frequency(self, value: float) -> None:
-        """Setter for `Vibrato.frequency` which performs a value check.
+        """Setter for :py:attr:`frequency` which performs a value check.
 
         Args:
             value: Value to set for the frequency. ( (0, 14] )
@@ -262,7 +272,7 @@ class Vibrato:
         self.frequency = value
 
     def set_depth(self, value: float) -> None:
-        """Setter for `Vibrato.depth` which performs a value check.
+        """Setter for :py:attr:`depth` which performs a value check.
 
         Args:
             value: Value to set for the depth. ( (0, 1] )
@@ -274,7 +284,12 @@ class Vibrato:
         self.depth = value
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class VolumeFilter:
-    """"""
+    """
+
+    Attributes:
+        volume (float)
+    """
     volume: float = 1

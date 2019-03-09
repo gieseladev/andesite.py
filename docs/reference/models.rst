@@ -7,6 +7,9 @@ classes. This makes interacting with them a lot more comfortable.
 The models reside in modules of the `andesite.models` module, but they are all exported
 to the `andesite` namespace, so you can import them from there.
 
+.. contents::
+    :local:
+
 Player
 ------
 
@@ -15,6 +18,7 @@ Models related to the player are stored in the `andesite.models.player` module.
 .. automodule:: andesite.models.player
     :members:
     :undoc-members:
+    :show-inheritance:
 
 Track
 -----

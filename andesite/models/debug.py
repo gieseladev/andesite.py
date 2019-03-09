@@ -7,21 +7,22 @@ from andesite.transform import RawDataType, build_from_raw, seq_build_all_items_
 __all__ = ["StackFrame", "Error"]
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class StackFrame:
     """
 
-    See Also: `Error.stack`
+    Can be found in :py:attr:`Error.stack`.
 
     Attributes:
-        class_loader: name of the classloader
-        module_name: name of the module
-        module_version: version of the module
-        class_name: name of the class
-        method_name: name of the method
-        file_name: name of the source file
-        line_number: line in the source file
-        pretty: pretty printed version of this frame, as it would appear on Throwable#printStackTrace
+        class_loader (Optional[str]): name of the classloader
+        module_name (Optional[str]): name of the module
+        module_version (Optional[str]): version of the module
+        class_name (str): name of the class
+        method_name (str): name of the method
+        file_name (Optional[str]): name of the source file
+        line_number (Optional[int]): line in the source file
+        pretty (str): pretty printed version of this frame, as it would appear on Throwable#printStackTrace
     """
     class_loader: Optional[str]
     module_name: Optional[str]
@@ -33,16 +34,17 @@ class StackFrame:
     pretty: str
 
 
+# noinspection PyUnresolvedReferences
 @dataclass
 class Error:
     """Andesite error.
 
     Attributes:
-        class_name: class of the error
-        message: message of the error
-        stack: stacktrace of the error
-        cause: cause of the error
-        suppressed: suppressed errors
+        class_name (str): class of the error
+        message (Optional[str]): message of the error
+        stack (List[StackFrame]): stacktrace of the error
+        cause (Optional[Error]): cause of the error
+        suppressed (List[Error]): suppressed errors
     """
     class_name: str
     message: Optional[str]
