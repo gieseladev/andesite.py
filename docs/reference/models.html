@@ -39,60 +39,115 @@
 <h1>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h1>
 <p>All the models (also called “Entities”) of Andesite, but as Python
 classes. This makes interacting with them a lot more comfortable.</p>
-<p>The models reside in modules of the <cite>andesite.models</cite> module, but they are all exported
-to the <cite>andesite</cite> namespace, so you can import them from there.</p>
+<p>The models reside in modules of the <code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.models</span></code> module, but they are all exported
+to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite</span></code> namespace, so you can import them from there.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#player" id="id1">Player</a></li>
+<li><a class="reference internal" href="#track" id="id2">Track</a></li>
+<li><a class="reference internal" href="#filters" id="id3">Filters</a></li>
+<li><a class="reference internal" href="#operations" id="id4">Operations</a></li>
+<li><a class="reference internal" href="#debug" id="id5">Debug</a></li>
+</ul>
+</div>
 <div class="section" id="player">
-<h2>Player<a class="headerlink" href="#player" title="Permalink to this headline">¶</a></h2>
-<p>Models related to the player are stored in the <cite>andesite.models.player</cite> module.</p>
+<h2><a class="toc-backref" href="#id1">Player</a><a class="headerlink" href="#player" title="Permalink to this headline">¶</a></h2>
+<p>Models related to the player are stored in the <a class="reference internal" href="#module-andesite.models.player" title="andesite.models.player"><code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.models.player</span></code></a> module.</p>
 <span class="target" id="module-andesite.models.player"></span><dl class="class">
 <dt id="andesite.models.player.BasePlayer">
 <em class="property">class </em><code class="descname">BasePlayer</code><span class="sig-paren">(</span><em>time</em>, <em>position</em>, <em>paused</em>, <em>volume</em>, <em>filters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/player.html#BasePlayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.player.BasePlayer" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract class for Andesite players.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#andesite.models.player.Player" title="andesite.models.player.Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a></li>
+<li><a class="reference internal" href="#andesite.models.player.MixerPlayer" title="andesite.models.player.MixerPlayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MixerPlayer</span></code></a></li>
+</ul>
+</div>
+<dl class="attribute">
 <dt id="andesite.models.player.BasePlayer.time">
 <code class="descname">time</code><a class="headerlink" href="#andesite.models.player.BasePlayer.time" title="Permalink to this definition">¶</a></dt>
 <dd><p>current utc datetime on the node</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">datetime</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.player.BasePlayer.position">
 <code class="descname">position</code><a class="headerlink" href="#andesite.models.player.BasePlayer.position" title="Permalink to this definition">¶</a></dt>
-<dd><p>position of the current playing track, or null if nothing is playing</p>
+<dd><p>position of the current playing track, or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if nothing is playing</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.player.BasePlayer.paused">
 <code class="descname">paused</code><a class="headerlink" href="#andesite.models.player.BasePlayer.paused" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not the player is paused</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.player.BasePlayer.volume">
 <code class="descname">volume</code><a class="headerlink" href="#andesite.models.player.BasePlayer.volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>the volume of the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.player.BasePlayer.filters">
 <code class="descname">filters</code><a class="headerlink" href="#andesite.models.player.BasePlayer.filters" title="Permalink to this definition">¶</a></dt>
 <dd><p>map of filter name -&gt; filter settings for each filter present</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">FilterMap</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.player.BasePlayer.live_position">
 <code class="descname">live_position</code><a class="headerlink" href="#andesite.models.player.BasePlayer.live_position" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interpolated version of <cite>BasePlayer.position</cite> based on the time that has passed.</p>
+<dd><p>Interpolated version of <a class="reference internal" href="#andesite.models.player.BasePlayer.position" title="andesite.models.player.BasePlayer.position"><code class="xref py py-attr docutils literal notranslate"><span class="pre">position</span></code></a> based on the time that has passed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
-<dt>None if there is no position attribute,</dt>
-<dd>equal to position if the player is paused, and interpolated
-otherwise.</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if there is no position attribute,
+equal to position if the player is paused, and interpolated
+otherwise.</td>
 </tr>
 </tbody>
 </table>
@@ -103,29 +158,47 @@ otherwise.</dd>
 <dl class="class">
 <dt id="andesite.models.player.MixerPlayer">
 <em class="property">class </em><code class="descname">MixerPlayer</code><span class="sig-paren">(</span><em>time</em>, <em>position</em>, <em>paused</em>, <em>volume</em>, <em>filters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/player.html#MixerPlayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.player.MixerPlayer" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Bases: <a class="reference internal" href="#andesite.models.player.BasePlayer" title="andesite.models.player.BasePlayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">andesite.models.player.BasePlayer</span></code></a></p>
+</dd></dl>
 
 <dl class="class">
 <dt id="andesite.models.player.Player">
 <em class="property">class </em><code class="descname">Player</code><span class="sig-paren">(</span><em>time</em>, <em>position</em>, <em>paused</em>, <em>volume</em>, <em>filters</em>, <em>mixer</em>, <em>mixer_enabled</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/player.html#Player"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.player.Player" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<dd><p>Bases: <a class="reference internal" href="#andesite.models.player.BasePlayer" title="andesite.models.player.BasePlayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">andesite.models.player.BasePlayer</span></code></a></p>
+<dl class="attribute">
 <dt id="andesite.models.player.Player.mixer">
 <code class="descname">mixer</code><a class="headerlink" href="#andesite.models.player.Player.mixer" title="Permalink to this definition">¶</a></dt>
 <dd><p>map of mixer player id -&gt; mixer player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">MixerMap</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.player.Player.mixer_enabled">
 <code class="descname">mixer_enabled</code><a class="headerlink" href="#andesite.models.player.Player.mixer_enabled" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not the mixer is the current source of audio</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="track">
-<h2>Track<a class="headerlink" href="#track" title="Permalink to this headline">¶</a></h2>
-<p>Models related to track data are stored in the <cite>andesite.models.track</cite> module.</p>
+<h2><a class="toc-backref" href="#id2">Track</a><a class="headerlink" href="#track" title="Permalink to this headline">¶</a></h2>
+<p>Models related to track data are stored in the <a class="reference internal" href="#module-andesite.models.track" title="andesite.models.track"><code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.models.track</span></code></a> module.</p>
 <span class="target" id="module-andesite.models.track"></span><dl class="class">
 <dt id="andesite.models.track.PlaylistInfo">
 <em class="property">class </em><code class="descname">PlaylistInfo</code><span class="sig-paren">(</span><em>name</em>, <em>selected_track</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#PlaylistInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.PlaylistInfo" title="Permalink to this definition">¶</a></dt>
@@ -150,54 +223,126 @@ otherwise.</dd>
 <dt id="andesite.models.track.TrackMetadata.class_name">
 <code class="descname">class_name</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.class_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>class name of the lavaplayer track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.title">
 <code class="descname">title</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.title" title="Permalink to this definition">¶</a></dt>
 <dd><p>title of the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.author">
 <code class="descname">author</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.author" title="Permalink to this definition">¶</a></dt>
 <dd><p>author of the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.length">
 <code class="descname">length</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.length" title="Permalink to this definition">¶</a></dt>
 <dd><p>duration of the track, in seconds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.identifier">
 <code class="descname">identifier</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.identifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>identifier of the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.uri">
 <code class="descname">uri</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.uri" title="Permalink to this definition">¶</a></dt>
 <dd><p>uri of the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.is_stream">
 <code class="descname">is_stream</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.is_stream" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not the track is a livestream</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.is_seekable">
 <code class="descname">is_seekable</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.is_seekable" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not the track supports seeking</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackMetadata.position">
 <code class="descname">position</code><a class="headerlink" href="#andesite.models.track.TrackMetadata.position" title="Permalink to this definition">¶</a></dt>
 <dd><p>current position of the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -209,12 +354,28 @@ otherwise.</dd>
 <dt id="andesite.models.track.TrackInfo.track">
 <code class="descname">track</code><a class="headerlink" href="#andesite.models.track.TrackInfo.track" title="Permalink to this definition">¶</a></dt>
 <dd><p>base64 encoded track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.TrackInfo.info">
 <code class="descname">info</code><a class="headerlink" href="#andesite.models.track.TrackInfo.info" title="Permalink to this definition">¶</a></dt>
 <dd><p>metadata of the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.track.TrackMetadata" title="andesite.models.track.TrackMetadata">TrackMetadata</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -222,7 +383,7 @@ otherwise.</dd>
 <dl class="class">
 <dt id="andesite.models.track.LoadType">
 <em class="property">class </em><code class="descname">LoadType</code><a class="reference internal" href="../_modules/andesite/models/track.html#LoadType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.LoadType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load type of a <cite>LoadedTrack</cite></p>
+<dd><p>Load type of a <a class="reference internal" href="#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></p>
 <dl class="attribute">
 <dt id="andesite.models.track.LoadType.LOAD_FAILED">
 <code class="descname">LOAD_FAILED</code><em class="property"> = 'LOAD_FAILED'</em><a class="headerlink" href="#andesite.models.track.LoadType.LOAD_FAILED" title="Permalink to this definition">¶</a></dt>
@@ -257,38 +418,78 @@ otherwise.</dd>
 <dt id="andesite.models.track.LoadedTrack.load_type">
 <code class="descname">load_type</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.load_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>type of the response</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.track.LoadType" title="andesite.models.track.LoadType">LoadType</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.LoadedTrack.tracks">
 <code class="descname">tracks</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.tracks" title="Permalink to this definition">¶</a></dt>
 <dd><p>loaded tracks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[List[<a class="reference internal" href="#andesite.models.track.TrackInfo" title="andesite.models.track.TrackInfo">TrackInfo</a>]]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.LoadedTrack.playlist_info">
 <code class="descname">playlist_info</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.playlist_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>metadata of the loaded playlist</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.track.PlaylistInfo" title="andesite.models.track.PlaylistInfo">PlaylistInfo</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.LoadedTrack.cause">
 <code class="descname">cause</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.cause" title="Permalink to this definition">¶</a></dt>
 <dd><p>error that happened while loading tracks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.debug.Error" title="andesite.models.debug.Error">Error</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.track.LoadedTrack.severity">
 <code class="descname">severity</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.severity" title="Permalink to this definition">¶</a></dt>
 <dd><p>severity of the error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="filters">
-<h2>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h2>
-<p>Filter models are stored in the <cite>andesite.models.filters</cite> module.</p>
+<h2><a class="toc-backref" href="#id3">Filters</a><a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h2>
+<p>Filter models are stored in the <a class="reference internal" href="#module-andesite.models.filters" title="andesite.models.filters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.models.filters</span></code></a> module.</p>
 <span class="target" id="module-andesite.models.filters"></span><dl class="class">
 <dt id="andesite.models.filters.EqualizerBand">
 <em class="property">class </em><code class="descname">EqualizerBand</code><span class="sig-paren">(</span><em>band</em>, <em>gain=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#EqualizerBand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.EqualizerBand" title="Permalink to this definition">¶</a></dt>
@@ -296,12 +497,28 @@ otherwise.</dd>
 <dt id="andesite.models.filters.EqualizerBand.band">
 <code class="descname">band</code><a class="headerlink" href="#andesite.models.filters.EqualizerBand.band" title="Permalink to this definition">¶</a></dt>
 <dd><p>band number to configure ( 0 - 14 )</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.filters.EqualizerBand.gain">
 <code class="descname">gain</code><a class="headerlink" href="#andesite.models.filters.EqualizerBand.gain" title="Permalink to this definition">¶</a></dt>
 <dd><p>value to set for the band ( [-0.25, 1.0] )</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -312,14 +529,14 @@ otherwise.</dd>
 <dl class="method">
 <dt id="andesite.models.filters.EqualizerBand.set_band">
 <code class="descname">set_band</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#EqualizerBand.set_band"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.EqualizerBand.set_band" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>EqualizerBand.band</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.EqualizerBand.band" title="andesite.models.filters.EqualizerBand.band"><code class="xref py py-attr docutils literal notranslate"><span class="pre">band</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Value to set for the band. ( [0, 14] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -330,14 +547,14 @@ otherwise.</dd>
 <dl class="method">
 <dt id="andesite.models.filters.EqualizerBand.set_gain">
 <code class="descname">set_gain</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#EqualizerBand.set_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.EqualizerBand.set_gain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>EqualizerBand.gain</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.EqualizerBand.gain" title="andesite.models.filters.EqualizerBand.gain"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gain</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the gain. ( [-0.25, 1] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -354,6 +571,14 @@ otherwise.</dd>
 <dt id="andesite.models.filters.Equalizer.bands">
 <code class="descname">bands</code><a class="headerlink" href="#andesite.models.filters.Equalizer.bands" title="Permalink to this definition">¶</a></dt>
 <dd><p>array of bands to configure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.filters.EqualizerBand" title="andesite.models.filters.EqualizerBand">EqualizerBand</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -362,7 +587,7 @@ otherwise.</dd>
 <dd><p>Get the specified band from the bands list.</p>
 <p>If the band doesn’t exist it is created.
 If you don’t want to automatically create a band, pass
-<cite>create=False</cite>.</p>
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">create=False</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -384,12 +609,13 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.filters.Equalizer.get_band_gain">
 <code class="descname">get_band_gain</code><span class="sig-paren">(</span><em>band</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Equalizer.get_band_gain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Equalizer.get_band_gain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the gain of a band.</p>
-<p>Returns: Gain of the band or None if it doesn’t exist.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Gain of the band or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if it doesn’t exist.</td>
 </tr>
 </tbody>
 </table>
@@ -410,7 +636,7 @@ If you don’t want to automatically create a band, pass
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><cite>ValueError</cite> – if the provided gain is invalid.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided gain is invalid.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -426,23 +652,75 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.filters.Karaoke">
 <em class="property">class </em><code class="descname">Karaoke</code><span class="sig-paren">(</span><em>level=1</em>, <em>mono_level=1</em>, <em>filter_band=220</em>, <em>filter_width=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Karaoke"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Karaoke" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
-<dt id="andesite.models.filters.Karaoke.filter_band">
-<code class="descname">filter_band</code><em class="property"> = 220</em><a class="headerlink" href="#andesite.models.filters.Karaoke.filter_band" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="andesite.models.filters.Karaoke.filter_width">
-<code class="descname">filter_width</code><em class="property"> = 100</em><a class="headerlink" href="#andesite.models.filters.Karaoke.filter_width" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
 <dt id="andesite.models.filters.Karaoke.level">
-<code class="descname">level</code><em class="property"> = 1</em><a class="headerlink" href="#andesite.models.filters.Karaoke.level" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">level</code><a class="headerlink" href="#andesite.models.filters.Karaoke.level" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.filters.Karaoke.mono_level">
-<code class="descname">mono_level</code><em class="property"> = 1</em><a class="headerlink" href="#andesite.models.filters.Karaoke.mono_level" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mono_level</code><a class="headerlink" href="#andesite.models.filters.Karaoke.mono_level" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Karaoke.filter_band">
+<code class="descname">filter_band</code><a class="headerlink" href="#andesite.models.filters.Karaoke.filter_band" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.filters.Karaoke.filter_width">
+<code class="descname">filter_width</code><a class="headerlink" href="#andesite.models.filters.Karaoke.filter_width" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">filter_band</code><em class="property"> = 220</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">filter_width</code><em class="property"> = 100</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">level</code><em class="property"> = 1</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">mono_level</code><em class="property"> = 1</em></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -454,18 +732,42 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.filters.Timescale.speed">
 <code class="descname">speed</code><a class="headerlink" href="#andesite.models.filters.Timescale.speed" title="Permalink to this definition">¶</a></dt>
 <dd><p>speed to play music at (&gt; 0)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.filters.Timescale.pitch">
 <code class="descname">pitch</code><a class="headerlink" href="#andesite.models.filters.Timescale.pitch" title="Permalink to this definition">¶</a></dt>
 <dd><p>pitch to set (&gt; 0)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.filters.Timescale.rate">
 <code class="descname">rate</code><a class="headerlink" href="#andesite.models.filters.Timescale.rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>rate to set (&gt; 0)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -481,14 +783,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Timescale.set_pitch">
 <code class="descname">set_pitch</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale.set_pitch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale.set_pitch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Timescale.pitch</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Timescale.pitch" title="andesite.models.filters.Timescale.pitch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pitch</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the pitch. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -499,14 +801,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Timescale.set_rate">
 <code class="descname">set_rate</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale.set_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale.set_rate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Timescale.rate</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Timescale.rate" title="andesite.models.filters.Timescale.rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rate</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the rate. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -517,14 +819,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Timescale.set_speed">
 <code class="descname">set_speed</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Timescale.set_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Timescale.set_speed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Timescale.speed</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Timescale.speed" title="andesite.models.filters.Timescale.speed"><code class="xref py py-attr docutils literal notranslate"><span class="pre">speed</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the speed. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -546,12 +848,28 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.filters.Tremolo.frequency">
 <code class="descname">frequency</code><a class="headerlink" href="#andesite.models.filters.Tremolo.frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>(&gt; 0)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.filters.Tremolo.depth">
 <code class="descname">depth</code><a class="headerlink" href="#andesite.models.filters.Tremolo.depth" title="Permalink to this definition">¶</a></dt>
 <dd><p>( (0, 1] )</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -567,14 +885,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Tremolo.set_depth">
 <code class="descname">set_depth</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Tremolo.set_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Tremolo.set_depth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Tremolo.depth</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Tremolo.depth" title="andesite.models.filters.Tremolo.depth"><code class="xref py py-attr docutils literal notranslate"><span class="pre">depth</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the depth. ( (0, 1] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -585,14 +903,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Tremolo.set_frequency">
 <code class="descname">set_frequency</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Tremolo.set_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Tremolo.set_frequency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Tremolo.frequency</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Tremolo.frequency" title="andesite.models.filters.Tremolo.frequency"><code class="xref py py-attr docutils literal notranslate"><span class="pre">frequency</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the frequency. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -609,12 +927,28 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.filters.Vibrato.frequency">
 <code class="descname">frequency</code><a class="headerlink" href="#andesite.models.filters.Vibrato.frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>( (0, 14] )</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.filters.Vibrato.depth">
 <code class="descname">depth</code><a class="headerlink" href="#andesite.models.filters.Vibrato.depth" title="Permalink to this definition">¶</a></dt>
 <dd><p>( (0, 1] )</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -630,14 +964,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Vibrato.set_depth">
 <code class="descname">set_depth</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Vibrato.set_depth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Vibrato.set_depth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Vibrato.depth</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Vibrato.depth" title="andesite.models.filters.Vibrato.depth"><code class="xref py py-attr docutils literal notranslate"><span class="pre">depth</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the depth. ( (0, 1] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -648,14 +982,14 @@ If you don’t want to automatically create a band, pass
 <dl class="method">
 <dt id="andesite.models.filters.Vibrato.set_frequency">
 <code class="descname">set_frequency</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#Vibrato.set_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.Vibrato.set_frequency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setter for <cite>Vibrato.frequency</cite> which performs a value check.</p>
+<dd><p>Setter for <a class="reference internal" href="#andesite.models.filters.Vibrato.frequency" title="andesite.models.filters.Vibrato.frequency"><code class="xref py py-attr docutils literal notranslate"><span class="pre">frequency</span></code></a> which performs a value check.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the frequency. ( (0, 14] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><cite>ValueError</cite> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -670,41 +1004,64 @@ If you don’t want to automatically create a band, pass
 <em class="property">class </em><code class="descname">VolumeFilter</code><span class="sig-paren">(</span><em>volume=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/filters.html#VolumeFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.filters.VolumeFilter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="andesite.models.filters.VolumeFilter.volume">
-<code class="descname">volume</code><em class="property"> = 1</em><a class="headerlink" href="#andesite.models.filters.VolumeFilter.volume" title="Permalink to this definition">¶</a></dt>
+<code class="descname">volume</code><a class="headerlink" href="#andesite.models.filters.VolumeFilter.volume" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">volume</code><em class="property"> = 1</em></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="operations">
-<h2>Operations<a class="headerlink" href="#operations" title="Permalink to this headline">¶</a></h2>
-<p>Operations are stored in the <cite>andesite.models.operations</cite> module.</p>
+<h2><a class="toc-backref" href="#id4">Operations</a><a class="headerlink" href="#operations" title="Permalink to this headline">¶</a></h2>
+<p>Operations are stored in the <a class="reference internal" href="#module-andesite.models.operations" title="andesite.models.operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.models.operations</span></code></a> module.</p>
 <span class="target" id="module-andesite.models.operations"></span><dl class="class">
 <dt id="andesite.models.operations.Operation">
 <em class="property">class </em><code class="descname">Operation</code><a class="reference internal" href="../_modules/andesite/models/operations.html#Operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.Operation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Operation is a model that can be passed as a payload to the <cite>AndesiteWebSocket</cite> client.</p>
-<p>See Also: <cite>AndesiteWebSocket.send_operation</cite></p>
+<dd><p>Operation is a model that can be passed as a payload to the <code class="xref py py-class docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> client.</p>
+<p>See Also: <code class="xref py py-meth docutils literal notranslate"><span class="pre">AndesiteWebSocket.send_operation()</span></code></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="andesite.models.operations.VoiceServerUpdate">
-<em class="property">class </em><code class="descname">VoiceServerUpdate</code><span class="sig-paren">(</span><em>session_id</em>, <em>guild_id</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#VoiceServerUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">VoiceServerUpdate</code><span class="sig-paren">(</span><em>session_id</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/operations.html#VoiceServerUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="andesite.models.operations.VoiceServerUpdate.session_id">
 <code class="descname">session_id</code><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate.session_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Session ID for the current user in the event’s guild</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="andesite.models.operations.VoiceServerUpdate.guild_id">
-<code class="descname">guild_id</code><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate.guild_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>ID of the guild</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.VoiceServerUpdate.event">
 <code class="descname">event</code><a class="headerlink" href="#andesite.models.operations.VoiceServerUpdate.event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Voice server update event sent by discord</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>, Any]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -716,36 +1073,84 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.Play.track">
 <code class="descname">track</code><a class="headerlink" href="#andesite.models.operations.Play.track" title="Permalink to this definition">¶</a></dt>
 <dd><p>base64 encoded lavaplayer track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Play.start">
 <code class="descname">start</code><a class="headerlink" href="#andesite.models.operations.Play.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>timestamp, in seconds, to start the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Play.end">
 <code class="descname">end</code><a class="headerlink" href="#andesite.models.operations.Play.end" title="Permalink to this definition">¶</a></dt>
 <dd><p>timestamp, in seconds, to end the track</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Play.pause">
 <code class="descname">pause</code><a class="headerlink" href="#andesite.models.operations.Play.pause" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not to pause the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Play.volume">
 <code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.Play.volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>volume to set on the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Play.no_replace">
 <code class="descname">no_replace</code><a class="headerlink" href="#andesite.models.operations.Play.no_replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>if True and a track is already playing/paused, this command is ignored</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -782,6 +1187,14 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.Pause.pause">
 <code class="descname">pause</code><a class="headerlink" href="#andesite.models.operations.Pause.pause" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not to pause the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -793,6 +1206,14 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.Seek.position">
 <code class="descname">position</code><a class="headerlink" href="#andesite.models.operations.Seek.position" title="Permalink to this definition">¶</a></dt>
 <dd><p>timestamp to set the current track to, in seconds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -804,6 +1225,14 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.Volume.volume">
 <code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.Volume.volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>volume to set on the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -815,36 +1244,84 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.FilterUpdate.equalizer">
 <code class="descname">equalizer</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.equalizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>configures the equalizer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.filters.Equalizer" title="andesite.models.filters.Equalizer">Equalizer</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.FilterUpdate.karaoke">
 <code class="descname">karaoke</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.karaoke" title="Permalink to this definition">¶</a></dt>
 <dd><p>configures the karaoke filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.filters.Karaoke" title="andesite.models.filters.Karaoke">Karaoke</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.FilterUpdate.timescale">
 <code class="descname">timescale</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.timescale" title="Permalink to this definition">¶</a></dt>
 <dd><p>configures the timescale filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.filters.Timescale" title="andesite.models.filters.Timescale">Timescale</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.FilterUpdate.tremolo">
 <code class="descname">tremolo</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.tremolo" title="Permalink to this definition">¶</a></dt>
 <dd><p>configures the tremolo filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.filters.Tremolo" title="andesite.models.filters.Tremolo">Tremolo</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.FilterUpdate.vibrato">
 <code class="descname">vibrato</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.vibrato" title="Permalink to this definition">¶</a></dt>
 <dd><p>configures the vibrato filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.filters.Vibrato" title="andesite.models.filters.Vibrato">Vibrato</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.FilterUpdate.volume">
 <code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.FilterUpdate.volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>configures the volume filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.filters.VolumeFilter" title="andesite.models.filters.VolumeFilter">VolumeFilter</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -886,24 +1363,56 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.Update.pause">
 <code class="descname">pause</code><a class="headerlink" href="#andesite.models.operations.Update.pause" title="Permalink to this definition">¶</a></dt>
 <dd><p>whether or not to pause the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Update.position">
 <code class="descname">position</code><a class="headerlink" href="#andesite.models.operations.Update.position" title="Permalink to this definition">¶</a></dt>
 <dd><p>timestamp to set the current track to, in seconds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Update.volume">
 <code class="descname">volume</code><a class="headerlink" href="#andesite.models.operations.Update.volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>volume to set on the player</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.Update.filters">
 <code class="descname">filters</code><a class="headerlink" href="#andesite.models.operations.Update.filters" title="Permalink to this definition">¶</a></dt>
 <dd><p>configuration for the filters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.operations.FilterUpdate" title="andesite.models.operations.FilterUpdate">FilterUpdate</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -935,70 +1444,150 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.operations.MixerUpdate.enable">
 <code class="descname">enable</code><a class="headerlink" href="#andesite.models.operations.MixerUpdate.enable" title="Permalink to this definition">¶</a></dt>
 <dd><p>if present, controls whether or not the mixer should be used</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.operations.MixerUpdate.players">
 <code class="descname">players</code><a class="headerlink" href="#andesite.models.operations.MixerUpdate.players" title="Permalink to this definition">¶</a></dt>
-<dd><p>map of player id to <cite>Play</cite> / <cite>Update</cite> payloads for each mixer source</p>
+<dd><p>map of player id to <a class="reference internal" href="#andesite.models.operations.Play" title="andesite.models.operations.Play"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Play</span></code></a> / <a class="reference internal" href="#andesite.models.operations.Update" title="andesite.models.operations.Update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Update</span></code></a> payloads for each mixer source</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">MixerPlayerUpdateMap</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="debug">
-<h2>Debug<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h2>
-<p>Special debug models are stored in the <cite>andesite.models.debug</cite> module.</p>
+<h2><a class="toc-backref" href="#id5">Debug</a><a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h2>
+<p>Special debug models are stored in the <a class="reference internal" href="#module-andesite.models.debug" title="andesite.models.debug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.models.debug</span></code></a> module.</p>
 <span class="target" id="module-andesite.models.debug"></span><dl class="class">
 <dt id="andesite.models.debug.StackFrame">
 <em class="property">class </em><code class="descname">StackFrame</code><span class="sig-paren">(</span><em>class_loader</em>, <em>module_name</em>, <em>module_version</em>, <em>class_name</em>, <em>method_name</em>, <em>file_name</em>, <em>line_number</em>, <em>pretty</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#StackFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.StackFrame" title="Permalink to this definition">¶</a></dt>
-<dd><p>See Also: <cite>Error.stack</cite></p>
+<dd><p>Can be found in <a class="reference internal" href="#andesite.models.debug.Error.stack" title="andesite.models.debug.Error.stack"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Error.stack</span></code></a>.</p>
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.class_loader">
 <code class="descname">class_loader</code><a class="headerlink" href="#andesite.models.debug.StackFrame.class_loader" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of the classloader</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.module_name">
 <code class="descname">module_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.module_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of the module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.module_version">
 <code class="descname">module_version</code><a class="headerlink" href="#andesite.models.debug.StackFrame.module_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>version of the module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.class_name">
 <code class="descname">class_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.class_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of the class</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.method_name">
 <code class="descname">method_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.method_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of the method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.file_name">
 <code class="descname">file_name</code><a class="headerlink" href="#andesite.models.debug.StackFrame.file_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>name of the source file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.line_number">
 <code class="descname">line_number</code><a class="headerlink" href="#andesite.models.debug.StackFrame.line_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>line in the source file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.pretty">
 <code class="descname">pretty</code><a class="headerlink" href="#andesite.models.debug.StackFrame.pretty" title="Permalink to this definition">¶</a></dt>
 <dd><p>pretty printed version of this frame, as it would appear on Throwable#printStackTrace</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1011,30 +1600,70 @@ If you don’t want to automatically create a band, pass
 <dt id="andesite.models.debug.Error.class_name">
 <code class="descname">class_name</code><a class="headerlink" href="#andesite.models.debug.Error.class_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>class of the error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.Error.message">
 <code class="descname">message</code><a class="headerlink" href="#andesite.models.debug.Error.message" title="Permalink to this definition">¶</a></dt>
 <dd><p>message of the error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.Error.stack">
 <code class="descname">stack</code><a class="headerlink" href="#andesite.models.debug.Error.stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>stacktrace of the error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.StackFrame" title="andesite.models.debug.StackFrame">StackFrame</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.Error.cause">
 <code class="descname">cause</code><a class="headerlink" href="#andesite.models.debug.Error.cause" title="Permalink to this definition">¶</a></dt>
 <dd><p>cause of the error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference internal" href="#andesite.models.debug.Error" title="andesite.models.debug.Error">Error</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="andesite.models.debug.Error.suppressed">
 <code class="descname">suppressed</code><a class="headerlink" href="#andesite.models.debug.Error.suppressed" title="Permalink to this definition">¶</a></dt>
 <dd><p>suppressed errors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.Error" title="andesite.models.debug.Error">Error</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

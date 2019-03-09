@@ -5,6 +5,9 @@ Clients for interacting with Andesite.
 
 All clients are exported to the `andesite` namespace.
 
+.. contents::
+    :local:
+
 HTTP client
 -----------
 
@@ -15,8 +18,8 @@ Defined in `andesite.http_client`.
     :undoc-members:
 
 
-WebSocket client
-----------------
+Web socket client
+-----------------
 
 Defined in `andesite.web_socket_client`.
 

@@ -75,6 +75,12 @@
 
 <span class="sd">    This does not copy the values of the dataclass, modifying a value</span>
 <span class="sd">    of the resulting `dict` will also modify the dataclass&#39; value.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: Object to convert to its raw representation.</span>
+<span class="sd">            Usually this is a dataclass, however, you can also parse</span>
+<span class="sd">            `list`, `tuple`, and `dict` objects which will convert its</span>
+<span class="sd">            members. All other types will be returned without modifying them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">is_dataclass</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span> <span class="o">=</span> <span class="p">{}</span>
@@ -113,6 +119,10 @@
 <span class="sd">    other than `None`.</span>
 
 <span class="sd">    After transformation the data is used as the keyword arguments to the cls constructor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls: Target type to build</span>
+<span class="sd">        raw_data: Data which should be used to build the instance.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lettercase</span><span class="o">.</span><span class="n">mut_convert_keys</span><span class="p">(</span><span class="n">raw_data</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">DROMEDARY</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">)</span>
 
@@ -132,6 +142,13 @@
 
 <span class="sd">    This calls `build_from_raw` on all items in the sequence and assigns</span>
 <span class="sd">    the result to the index.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        items: Mutable sequence of raw data to be converted</span>
+<span class="sd">        cls: Target type to build.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided sequence, it does not return anything.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
         <span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
@@ -147,6 +164,18 @@
 
 <span class="sd">    If the key does not exist in the mapping, it is ignored and the</span>
 <span class="sd">    function is not called.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping which is to be manipulated.</span>
+<span class="sd">        key: Key whose value in the mapping is to be converted.</span>
+<span class="sd">            If this key does not exist in the mapping, the conversion</span>
+<span class="sd">            is aborted and the function doesn&#39;t perform any action.</span>
+<span class="sd">        func: Callback which will be called with the value of the key.</span>
+<span class="sd">            Its return value then replaces the previous value in the</span>
+<span class="sd">            mapping.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
@@ -160,22 +189,50 @@
     <span class="sd">&quot;&quot;&quot;Run a callback for a key.</span>
 
 <span class="sd">    For each key you can specify which function to run (&lt;key&gt; = &lt;MapFunction&gt;).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping for which to apply the conversion</span>
+<span class="sd">        **key_funcs: key -&gt; map function mapping.</span>
+<span class="sd">            For each key the specified function will</span>
+<span class="sd">            be applied using `map_convert_value`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">key_funcs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">map_convert_value</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="map_convert_values_all"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_convert_values_all">[docs]</a><span class="k">def</span> <span class="nf">map_convert_values_all</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="map_convert_values_all"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_convert_values_all">[docs]</a><span class="k">def</span> <span class="nf">map_convert_values_all</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">MapFunction</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Run the same callback on all keys.</span>
 
 <span class="sd">    Works like `map_convert_values` but runs the same function for all keys.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping for which to apply the conversion</span>
+<span class="sd">        func: Function to apply to the values of the specified keys.</span>
+<span class="sd">            The function is run using `map_convert_value`</span>
+<span class="sd">        *keys: Keys whose values are to be converted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
         <span class="n">map_convert_value</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="map_build_values_from_raw"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_build_values_from_raw">[docs]</a><span class="k">def</span> <span class="nf">map_build_values_from_raw</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="o">**</span><span class="n">key_types</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Build the values of the specified keys to the specified type.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Build the values of the specified keys to the specified type.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping for which to apply the conversion</span>
+<span class="sd">        **key_types: key -&gt; type mapping.</span>
+<span class="sd">            For each key the value will be converted to the provided type</span>
+<span class="sd">            using `build_from_raw`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">map_convert_values</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">partial</span><span class="p">(</span><span class="n">build_from_raw</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">key_types</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span></div>
 
 
@@ -184,6 +241,13 @@
 
 <span class="sd">    This calls `build_from_raw` on all values of the mapping</span>
 <span class="sd">    and replaces the old value with the result.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping whose values are to be built</span>
+<span class="sd">        cls: Type to convert the values to</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
@@ -202,8 +266,11 @@
 
 <span class="sd">    Let&#39;s be honest, this is just dividing by 1000.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        value: Value to convert from milli.</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        Optional[float]: `None` if you pass `None` as the value.</span>
+<span class="sd">        Optional[float]: `None` if you pass `None` as the value, otherwise a `float`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">value</span>
@@ -219,13 +286,16 @@
 <span class="k">def</span> <span class="nf">to_milli</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 
 
-<div class="viewcode-block" id="to_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.to_milli">[docs]</a><span class="k">def</span> <span class="nf">to_milli</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<div class="viewcode-block" id="to_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.to_milli">[docs]</a><span class="k">def</span> <span class="nf">to_milli</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Convert from base unit to milli.</span>
 
 <span class="sd">    This is really just multiplying by 1000.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        value: Value to convert to milli.</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        Optional[int]: `None` if you pass `None` as the value.</span>
+<span class="sd">        Optional[int]: `None` if you pass `None` as the value, otherwise an `int`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">value</span>
@@ -234,17 +304,42 @@
 
 
 <div class="viewcode-block" id="map_convert_values_from_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_convert_values_from_milli">[docs]</a><span class="k">def</span> <span class="nf">map_convert_values_from_milli</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Run `from_milli` on all specified keys&#39; values.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Run `from_milli` on all specified keys&#39; values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping for which to apply the conversion</span>
+<span class="sd">        *keys: Keys whose values to convert from milli.</span>
+<span class="sd">            Uses `from_milli` to perform the conversion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">map_convert_values_all</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">from_milli</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="map_convert_values_to_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_convert_values_to_milli">[docs]</a><span class="k">def</span> <span class="nf">map_convert_values_to_milli</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Run `to_milli` on all specified keys&#39; values.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Run `to_milli` on all specified keys&#39; values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping for which to apply the conversion</span>
+<span class="sd">        *keys: Keys whose values to convert to milli.</span>
+<span class="sd">            Uses `to_milli` to perform the conversion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">map_convert_values_all</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">to_milli</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="map_filter_none"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_filter_none">[docs]</a><span class="k">def</span> <span class="nf">map_filter_none</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Remove all keys from the mapping whose values are `None`.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="map_filter_none"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_filter_none">[docs]</a><span class="k">def</span> <span class="nf">map_filter_none</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Remove all keys from the mapping whose values are `None`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping to filter</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">remove_keys</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">}</span>
 
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">remove_keys</span><span class="p">:</span>

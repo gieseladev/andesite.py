@@ -78,14 +78,14 @@
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        band: band number to configure ( 0 - 14 )</span>
-<span class="sd">        gain: value to set for the band ( [-0.25, 1.0] )</span>
+<span class="sd">        band (int): band number to configure ( 0 - 14 )</span>
+<span class="sd">        gain (float): value to set for the band ( [-0.25, 1.0] )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">band</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="EqualizerBand.set_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_band">[docs]</a>    <span class="k">def</span> <span class="nf">set_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `EqualizerBand.band` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`band` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the band. ( [0, 14] )</span>
@@ -97,7 +97,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">band</span> <span class="o">=</span> <span class="n">value</span></div>
 
 <div class="viewcode-block" id="EqualizerBand.set_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `EqualizerBand.gain` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`gain` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the gain. ( [-0.25, 1] )</span>
@@ -109,12 +109,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="Equalizer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Equalizer</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        bands: array of bands to configure</span>
+<span class="sd">        bands (List[EqualizerBand]): array of bands to configure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">bands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]</span>
 
@@ -156,7 +157,8 @@
 <div class="viewcode-block" id="Equalizer.get_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.get_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the gain of a band.</span>
 
-<span class="sd">        Returns: Gain of the band or None if it doesn&#39;t exist.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Gain of the band or `None` if it doesn&#39;t exist.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">band</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">band</span><span class="p">:</span>
@@ -179,9 +181,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">set_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span></div></div>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="Karaoke"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Karaoke">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Karaoke</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        level (float)</span>
+<span class="sd">        mono_level (float)</span>
+<span class="sd">        filter_band (float)</span>
+<span class="sd">        filter_width (float)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">mono_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">filter_band</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">220</span>
@@ -193,16 +203,16 @@
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        speed: speed to play music at (&gt; 0)</span>
-<span class="sd">        pitch: pitch to set (&gt; 0)</span>
-<span class="sd">        rate: rate to set (&gt; 0)</span>
+<span class="sd">        speed (float): speed to play music at (&gt; 0)</span>
+<span class="sd">        pitch (float): pitch to set (&gt; 0)</span>
+<span class="sd">        rate (float): rate to set (&gt; 0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="Timescale.set_speed"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Timescale.speed` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`speed` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the speed. ( (0, INF] )</span>
@@ -214,7 +224,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">value</span></div>
 
 <div class="viewcode-block" id="Timescale.set_pitch"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_pitch">[docs]</a>    <span class="k">def</span> <span class="nf">set_pitch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Timescale.pitch` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`pitch` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the pitch. ( (0, INF] )</span>
@@ -226,7 +236,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="n">value</span></div>
 
 <div class="viewcode-block" id="Timescale.set_rate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_rate">[docs]</a>    <span class="k">def</span> <span class="nf">set_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Timescale.rate` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`rate` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the rate. ( (0, INF] )</span>
@@ -243,14 +253,14 @@
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        frequency: (&gt; 0)</span>
-<span class="sd">        depth: ( (0, 1] )</span>
+<span class="sd">        frequency (float): (&gt; 0)</span>
+<span class="sd">        depth (float): ( (0, 1] )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 <div class="viewcode-block" id="Tremolo.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Tremolo.frequency` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`frequency` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the frequency. ( (0, INF] )</span>
@@ -262,7 +272,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
 
 <div class="viewcode-block" id="Tremolo.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Tremolo.depth` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`depth` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the depth. ( (0, 1] )</span>
@@ -279,14 +289,14 @@
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        frequency: ( (0, 14] )</span>
-<span class="sd">        depth: ( (0, 1] )</span>
+<span class="sd">        frequency (float): ( (0, 14] )</span>
+<span class="sd">        depth (float): ( (0, 1] )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 <div class="viewcode-block" id="Vibrato.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Vibrato.frequency` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`frequency` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the frequency. ( (0, 14] )</span>
@@ -298,7 +308,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
 
 <div class="viewcode-block" id="Vibrato.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Setter for `Vibrato.depth` which performs a value check.</span>
+        <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`depth` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: Value to set for the depth. ( (0, 1] )</span>
@@ -310,9 +320,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="VolumeFilter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.VolumeFilter">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">VolumeFilter</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        volume (float)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span></div>
 </pre></div>
 

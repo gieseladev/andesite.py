@@ -34,7 +34,11 @@
           <div class="body" role="main">
             
   <h1>Source code for andesite.http_client</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span></span><span class="sd">&quot;&quot;&quot;Client for Andesite&#39;s HTTP routes.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">asyncio</span> <span class="k">import</span> <span class="n">AbstractEventLoop</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">aiohttp</span> <span class="k">import</span> <span class="n">ClientSession</span>
 <span class="kn">from</span> <span class="nn">yarl</span> <span class="k">import</span> <span class="n">URL</span>
@@ -50,19 +54,32 @@
     <span class="sd">&quot;&quot;&quot;Client for Andesite&#39;s HTTP endpoints.</span>
 
 <span class="sd">    This does not include the player routes, as they are already covered by the `AndesiteWebSocket`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        aiohttp_session (aiohttp.ClientSession): Client session used to make requests.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">aiohttp_session</span><span class="p">:</span> <span class="n">ClientSession</span>
+
+    <span class="n">_loop</span><span class="p">:</span> <span class="n">AbstractEventLoop</span>
     <span class="n">_base_url</span><span class="p">:</span> <span class="n">URL</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initialise the client.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loop: Event loop to use for the `aiohttp.ClientSession`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span> <span class="o">=</span> <span class="n">loop</span> <span class="ow">or</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+
         <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">USER_AGENT</span>
         <span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span> <span class="o">=</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span> <span class="o">=</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AndesiteHTTP.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteHTTP.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Close the underlying `aiohttp.ClientSession`.&quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AndesiteHTTP.request"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteHTTP.request">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -71,7 +88,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            method: HTTP method to use</span>
 <span class="sd">            path: Path relative to the base url. Must not start with a slash!</span>
-<span class="sd">            kwargs: Keyword arguments passed to the request</span>
+<span class="sd">            **kwargs: Keyword arguments passed to the request</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_url</span> <span class="o">/</span> <span class="n">path</span>
 
@@ -82,15 +99,39 @@
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;stats&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AndesiteHTTP.load_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteHTTP.load_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedTrack</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Load tracks.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Load tracks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            identifier: Identifier to load</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;loadtracks&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">LoadedTrack</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AndesiteHTTP.decode_track"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteHTTP.decode_track">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">decode_track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TrackInfo</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the `TrackInfo` from the encoded track data.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            Please use `decode_tracks` if you need to decode multiple</span>
+<span class="sd">            encoded strings at once!</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            track: base 64 encoded track data to decode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `TrackInfo` of the provided data, `None` if the data is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;decodetrack&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="AndesiteHTTP.decode_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteHTTP.decode_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">decode_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tracks</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">TrackInfo</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the `TrackInfo` from multiple encoded track data strings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tracks: `Iterable` of base 64 encoded track data to decode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of `TrackInfo` in order of the provided tracks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;decodetracks&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">tracks</span><span class="p">))</span>
         <span class="n">seq_build_all_items_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TrackInfo</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span></div></div>

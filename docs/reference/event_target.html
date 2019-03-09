@@ -42,12 +42,68 @@
 <dt id="andesite.event_target.Event">
 <em class="property">class </em><code class="descname">Event</code><span class="sig-paren">(</span><em>name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.Event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base type of all events.</p>
+<dl class="attribute">
+<dt id="andesite.event_target.Event.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.event_target.Event.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="andesite.event_target.EventErrorEvent">
 <em class="property">class </em><code class="descname">EventErrorEvent</code><span class="sig-paren">(</span><em>handler</em>, <em>exception</em>, <em>original_event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventErrorEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventErrorEvent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Event type passed to <cite>EventTarget.on_event_error</cite>.</p>
+<dd><p>Event type passed to <a class="reference internal" href="#andesite.event_target.EventTarget.on_event_error" title="andesite.event_target.EventTarget.on_event_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventTarget.on_event_error</span></code></a>.</p>
+<dl class="attribute">
+<dt id="andesite.event_target.EventErrorEvent.handler">
+<code class="descname">handler</code><a class="headerlink" href="#andesite.event_target.EventErrorEvent.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback that received the event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">EventHandler</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.event_target.EventErrorEvent.exception">
+<code class="descname">exception</code><a class="headerlink" href="#andesite.event_target.EventErrorEvent.exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error that was raised by the handler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.7)">Exception</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.event_target.EventErrorEvent.original_event">
+<code class="descname">original_event</code><a class="headerlink" href="#andesite.event_target.EventErrorEvent.original_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event that was to be dispatched but caused an error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event">Event</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -56,8 +112,42 @@
 <dd><p>One-time event listener.</p>
 <p>Special event listener which waits for the first event matching the conditions and then removes itself.</p>
 <dl class="attribute">
+<dt id="andesite.event_target.OneTimeEventListener.future">
+<code class="descname">future</code><a class="headerlink" href="#andesite.event_target.OneTimeEventListener.future" title="Permalink to this definition">¶</a></dt>
+<dd><p>Future that was returned to the callee and is used
+to communicate.
+When an event occurs which meets the conditions it is set
+as the result of this future. If an error occurs, it is
+set as the exception.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Future</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="andesite.event_target.OneTimeEventListener.condition">
-<code class="descname">condition</code><em class="property"> = None</em><a class="headerlink" href="#andesite.event_target.OneTimeEventListener.condition" title="Permalink to this definition">¶</a></dt>
+<code class="descname">condition</code><a class="headerlink" href="#andesite.event_target.OneTimeEventListener.condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback which takes an <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> and returns <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>
+to accept the event and <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a> otherwise.
+If not provided, all events are accepted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[EventFilter</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">condition</code><em class="property"> = None</em></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -65,22 +155,57 @@
 <dl class="class">
 <dt id="andesite.event_target.EventListener">
 <em class="property">class </em><code class="descname">EventListener</code><span class="sig-paren">(</span><em>handler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventListener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventListener" title="Permalink to this definition">¶</a></dt>
-<dd><p>Persistent event listener</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="andesite.event_target.EventTarget">
-<em class="property">class </em><code class="descname">EventTarget</code><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget" title="Permalink to this definition">¶</a></dt>
-<dd><p>An object that can dispatch <a href="#id1"><span class="problematic" id="id2">`</span></a>Event`s.</p>
-<dl class="method">
-<dt id="andesite.event_target.EventTarget.add_listener">
-<code class="descname">add_listener</code><span class="sig-paren">(</span><em>event</em>, <em>listener</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.add_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.add_listener" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a listener for an <cite>Event</cite> which is called whenever said event is dispatched.</p>
+<dd><p>Persistent event listener.</p>
+<dl class="attribute">
+<dt id="andesite.event_target.EventListener.handler">
+<code class="descname">handler</code><a class="headerlink" href="#andesite.event_target.EventListener.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback which will be called whenever an event occurs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventListener</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">EventHandler</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.event_target.EventTarget">
+<em class="property">class </em><code class="descname">EventTarget</code><span class="sig-paren">(</span><em>*</em>, <em>loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that can dispatch <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> instances to listeners.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – You can specify the loop which will be used for various asynchronous actions.
+If you don’t specify a loop, it will be dynamically retrieved when needed.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="andesite.event_target.EventTarget.add_listener">
+<code class="descname">add_listener</code><span class="sig-paren">(</span><em>event</em>, <em>listener</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.add_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.add_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener for an <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> which is called whenever said event is dispatched.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of the event to listen to</li>
+<li><strong>listener</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventListener</span></code></a>]) – Listener to add.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventListener</span></code></a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The <a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventListener</span></code></a> that was added.
+If the provided listener already is an <a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventListener</span></code></a>,
+the return value is the same value.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -90,17 +215,23 @@
 <dt id="andesite.event_target.EventTarget.dispatch">
 <code class="descname">dispatch</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.dispatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dispatch an event.</p>
+<p>Events are first propagated to the “one-time listeners” (i.e. those added by <a class="reference internal" href="#andesite.event_target.EventTarget.wait_for" title="andesite.event_target.EventTarget.wait_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for</span></code></a>),
+then the instances “on_&lt;event&gt;” methods are called and finally
+the listeners.</p>
+<p>If an error occurs while dispatching an event, <a class="reference internal" href="#andesite.event_target.EventTarget.on_event_error" title="andesite.event_target.EventTarget.on_event_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_event_error</span></code></a> is called.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>) – Event to be dispatched.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
 <dt>Future aggregating all asynchronous dispatches.</dt>
 <dd>Can be awaited to make sure all handlers have been executed.</dd>
 </dl>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Optional[Future]</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Optional[Future]</td>
 </tr>
 </tbody>
 </table>
@@ -114,7 +245,10 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference internal" href="#andesite.event_target.EventErrorEvent" title="andesite.event_target.EventErrorEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventErrorEvent</span></code></a>) – Special event type which contains some meta information
+next to the original event.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -124,14 +258,22 @@
 <dt id="andesite.event_target.EventTarget.remove_listener">
 <code class="descname">remove_listener</code><span class="sig-paren">(</span><em>event</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.remove_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.remove_listener" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a previously added event listener.</p>
-<p>When a <cite>EventHandler</cite> is passed, all event listeners with the given handler are removed.</p>
+<p>When a <code class="xref py py-obj docutils literal notranslate"><span class="pre">EventHandler</span></code> is passed, all event listeners with the given handler are removed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Whether the listener was successfully removed.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of the event for which to remove a listener.</li>
+<li><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference internal" href="#andesite.event_target.EventListener" title="andesite.event_target.EventListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventListener</span></code></a>]) – Listener to remove.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Whether the listener was successfully removed.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -140,12 +282,30 @@
 <dl class="method">
 <dt id="andesite.event_target.EventTarget.wait_for">
 <code class="descname">wait_for</code><span class="sig-paren">(</span><em>event</em>, <em>*</em>, <em>check</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.wait_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.wait_for" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a future which resolves when an <cite>Event</cite> meeting the given conditions is dispatched.</p>
+<dd><p>Wait for an event to be dispatched.</p>
+<p>This is similar to adding a listener, but it only listens once and
+returns the event that was dispatched instead of calling a callback.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>]]</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of the event to listen to</li>
+<li><strong>check</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – Callback which takes an <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> and returns <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>
+to accept the event and <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a> otherwise.
+If not provided, all events are accepted.</li>
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Amount of seconds to wait before aborting.
+If not provided it will wait forever.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>]]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Future</span></code> which when awaited yields the event.
+If a timeout was given the result will be <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>
+if it timed-out.</p>
+</td>
 </tr>
 </tbody>
 </table>

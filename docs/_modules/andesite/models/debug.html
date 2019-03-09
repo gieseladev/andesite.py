@@ -43,21 +43,22 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;StackFrame&quot;</span><span class="p">,</span> <span class="s2">&quot;Error&quot;</span><span class="p">]</span>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="StackFrame"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.debug.StackFrame">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">StackFrame</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="sd">    See Also: `Error.stack`</span>
+<span class="sd">    Can be found in :py:attr:`Error.stack`.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        class_loader: name of the classloader</span>
-<span class="sd">        module_name: name of the module</span>
-<span class="sd">        module_version: version of the module</span>
-<span class="sd">        class_name: name of the class</span>
-<span class="sd">        method_name: name of the method</span>
-<span class="sd">        file_name: name of the source file</span>
-<span class="sd">        line_number: line in the source file</span>
-<span class="sd">        pretty: pretty printed version of this frame, as it would appear on Throwable#printStackTrace</span>
+<span class="sd">        class_loader (Optional[str]): name of the classloader</span>
+<span class="sd">        module_name (Optional[str]): name of the module</span>
+<span class="sd">        module_version (Optional[str]): version of the module</span>
+<span class="sd">        class_name (str): name of the class</span>
+<span class="sd">        method_name (str): name of the method</span>
+<span class="sd">        file_name (Optional[str]): name of the source file</span>
+<span class="sd">        line_number (Optional[int]): line in the source file</span>
+<span class="sd">        pretty (str): pretty printed version of this frame, as it would appear on Throwable#printStackTrace</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">class_loader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">module_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -69,16 +70,17 @@
     <span class="n">pretty</span><span class="p">:</span> <span class="nb">str</span></div>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.debug.Error">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Error</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Andesite error.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        class_name: class of the error</span>
-<span class="sd">        message: message of the error</span>
-<span class="sd">        stack: stacktrace of the error</span>
-<span class="sd">        cause: cause of the error</span>
-<span class="sd">        suppressed: suppressed errors</span>
+<span class="sd">        class_name (str): class of the error</span>
+<span class="sd">        message (Optional[str]): message of the error</span>
+<span class="sd">        stack (List[StackFrame]): stacktrace of the error</span>
+<span class="sd">        cause (Optional[Error]): cause of the error</span>
+<span class="sd">        suppressed (List[Error]): suppressed errors</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>

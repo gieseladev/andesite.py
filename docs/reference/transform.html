@@ -42,21 +42,26 @@ into the Python models.</p>
 <dl class="function">
 <dt id="andesite.transform.convert_to_raw">
 <code class="descname">convert_to_raw</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#convert_to_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.convert_to_raw" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a dataclass to a <cite>dict</cite>.</p>
-<p>This behaves similar to <cite>dataclasses.asdict</cite>. The difference is outlined below.</p>
-<p>This function calls <cite>__transform_output__</cite> on the dataclasses
-if such a method exists. Similarly to the <cite>__transform_input__</cite>
+<dd><p>Convert a dataclass to a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>.</p>
+<p>This behaves similar to <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#dataclasses.asdict" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclasses.asdict</span></code></a>. The difference is outlined below.</p>
+<p>This function calls <code class="xref py py-obj docutils literal notranslate"><span class="pre">__transform_output__</span></code> on the dataclasses
+if such a method exists. Similarly to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">__transform_input__</span></code>
 function it may mutate the data or replace it by returning something
-other than <cite>None</cite>.</p>
+other than <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>.</p>
 <p>After transformation the keys of the data dict are converted from
 snake_case to dromedaryCase.</p>
 <p>This does not copy the values of the dataclass, modifying a value
-of the resulting <cite>dict</cite> will also modify the dataclass’ value.</p>
+of the resulting <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> will also modify the dataclass’ value.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>) – Object to convert to its raw representation.
+Usually this is a dataclass, however, you can also parse
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, and <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a> objects which will convert its
+members. All other types will be returned without modifying them.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -67,15 +72,22 @@ of the resulting <cite>dict</cite> will also modify the dataclass’ value.</p>
 <code class="descname">build_from_raw</code><span class="sig-paren">(</span><em>cls</em>, <em>raw_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#build_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.build_from_raw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build an instance of cls from the passed raw data.</p>
 <p>The keys of raw data are mutated from dromedaryCase to snake_case
-before it is passed to the <cite>__transform_input__</cite> <strong>classmethod</strong> of <cite>cls</cite>, if it exists.
+before it is passed to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">__transform_input__</span></code> <strong>classmethod</strong> of <code class="xref py py-obj docutils literal notranslate"><span class="pre">cls</span></code>, if it exists.
 This function may mutate the data or replace it completely by returning something
-other than <cite>None</cite>.</p>
+other than <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>.</p>
 <p>After transformation the data is used as the keyword arguments to the cls constructor.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">~T</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T]) – Target type to build</li>
+<li><strong>raw_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Data which should be used to build the instance.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">~T</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -85,13 +97,23 @@ other than <cite>None</cite>.</p>
 <dt id="andesite.transform.seq_build_all_items_from_raw">
 <code class="descname">seq_build_all_items_from_raw</code><span class="sig-paren">(</span><em>items</em>, <em>cls</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#seq_build_all_items_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.seq_build_all_items_from_raw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build all items of a mutable sequence.</p>
-<p>This calls <cite>build_from_raw</cite> on all items in the sequence and assigns
+<p>This calls <a class="reference internal" href="#andesite.transform.build_from_raw" title="andesite.transform.build_from_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_raw</span></code></a> on all items in the sequence and assigns
 the result to the index.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>items</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablesequence</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]) – Mutable sequence of raw data to be converted</li>
+<li><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T]) – Target type to build.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided sequence, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -101,13 +123,23 @@ the result to the index.</p>
 <dt id="andesite.transform.map_build_all_values_from_raw">
 <code class="descname">map_build_all_values_from_raw</code><span class="sig-paren">(</span><em>mapping</em>, <em>cls</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_build_all_values_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_build_all_values_from_raw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build all values of a mapping.</p>
-<p>This calls <cite>build_from_raw</cite> on all values of the mapping
+<p>This calls <a class="reference internal" href="#andesite.transform.build_from_raw" title="andesite.transform.build_from_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_raw</span></code></a> on all values of the mapping
 and replaces the old value with the result.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]) – Mutable mapping whose values are to be built</li>
+<li><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T]) – Type to convert the values to</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -124,7 +156,22 @@ function is not called.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[~KT, ~T]) – Mutable mapping which is to be manipulated.</li>
+<li><strong>key</strong> (<em>~KT</em>) – Key whose value in the mapping is to be converted.
+If this key does not exist in the mapping, the conversion
+is aborted and the function doesn’t perform any action.</li>
+<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Callback which will be called with the value of the key.
+Its return value then replaces the previous value in the
+mapping.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -139,7 +186,19 @@ function is not called.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mutable mapping for which to apply the conversion</li>
+<li><strong>**key_funcs</strong> – key -&gt; map function mapping.
+For each key the specified function will
+be applied using <a class="reference internal" href="#andesite.transform.map_convert_value" title="andesite.transform.map_convert_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_convert_value</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -149,12 +208,24 @@ function is not called.</p>
 <dt id="andesite.transform.map_convert_values_all">
 <code class="descname">map_convert_values_all</code><span class="sig-paren">(</span><em>mapping</em>, <em>func</em>, <em>*keys</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_convert_values_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_convert_values_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the same callback on all keys.</p>
-<p>Works like <cite>map_convert_values</cite> but runs the same function for all keys.</p>
+<p>Works like <a class="reference internal" href="#andesite.transform.map_convert_values" title="andesite.transform.map_convert_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_convert_values</span></code></a> but runs the same function for all keys.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mutable mapping for which to apply the conversion</li>
+<li><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Function to apply to the values of the specified keys.
+The function is run using <a class="reference internal" href="#andesite.transform.map_convert_value" title="andesite.transform.map_convert_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_convert_value</span></code></a></li>
+<li><strong>*keys</strong> – Keys whose values are to be converted.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -168,7 +239,19 @@ function is not called.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mutable mapping for which to apply the conversion</li>
+<li><strong>**key_types</strong> – key -&gt; type mapping.
+For each key the value will be converted to the provided type
+using <a class="reference internal" href="#andesite.transform.build_from_raw" title="andesite.transform.build_from_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_raw</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -183,9 +266,11 @@ function is not called.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><cite>None</cite> if you pass <cite>None</cite> as the value.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – Value to convert from milli.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if you pass <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> as the value, otherwise a <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a>]</td>
 </tr>
 </tbody>
 </table>
@@ -200,9 +285,11 @@ function is not called.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><cite>None</cite> if you pass <cite>None</cite> as the value.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Value to convert to milli.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>]</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if you pass <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> as the value, otherwise an <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>]</td>
 </tr>
 </tbody>
 </table>
@@ -211,12 +298,23 @@ function is not called.</p>
 <dl class="function">
 <dt id="andesite.transform.map_convert_values_from_milli">
 <code class="descname">map_convert_values_from_milli</code><span class="sig-paren">(</span><em>mapping</em>, <em>*keys</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_convert_values_from_milli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_convert_values_from_milli" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run <cite>from_milli</cite> on all specified keys’ values.</p>
+<dd><p>Run <a class="reference internal" href="#andesite.transform.from_milli" title="andesite.transform.from_milli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_milli</span></code></a> on all specified keys’ values.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mutable mapping for which to apply the conversion</li>
+<li><strong>*keys</strong> – Keys whose values to convert from milli.
+Uses <a class="reference internal" href="#andesite.transform.from_milli" title="andesite.transform.from_milli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_milli</span></code></a> to perform the conversion.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -225,12 +323,23 @@ function is not called.</p>
 <dl class="function">
 <dt id="andesite.transform.map_convert_values_to_milli">
 <code class="descname">map_convert_values_to_milli</code><span class="sig-paren">(</span><em>mapping</em>, <em>*keys</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_convert_values_to_milli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_convert_values_to_milli" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run <cite>to_milli</cite> on all specified keys’ values.</p>
+<dd><p>Run <a class="reference internal" href="#andesite.transform.to_milli" title="andesite.transform.to_milli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_milli</span></code></a> on all specified keys’ values.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mapping</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mutable mapping for which to apply the conversion</li>
+<li><strong>*keys</strong> – Keys whose values to convert to milli.
+Uses <a class="reference internal" href="#andesite.transform.to_milli" title="andesite.transform.to_milli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_milli</span></code></a> to perform the conversion.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">This method mutates the provided mapping, it does not return anything.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -239,12 +348,16 @@ function is not called.</p>
 <dl class="function">
 <dt id="andesite.transform.map_filter_none">
 <code class="descname">map_filter_none</code><span class="sig-paren">(</span><em>mapping</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_filter_none"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_filter_none" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove all keys from the mapping whose values are <cite>None</cite>.</p>
+<dd><p>Remove all keys from the mapping whose values are <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mutable mapping to filter</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">This method mutates the provided mapping, it does not return anything.</td>
 </tr>
 </tbody>
 </table>

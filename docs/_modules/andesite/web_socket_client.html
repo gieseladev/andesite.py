@@ -40,7 +40,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">asyncio</span> <span class="k">import</span> <span class="n">CancelledError</span><span class="p">,</span> <span class="n">Future</span>
+<span class="kn">from</span> <span class="nn">asyncio</span> <span class="k">import</span> <span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">CancelledError</span><span class="p">,</span> <span class="n">Future</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
 <span class="kn">from</span> <span class="nn">json</span> <span class="k">import</span> <span class="n">JSONDecodeError</span><span class="p">,</span> <span class="n">JSONDecoder</span><span class="p">,</span> <span class="n">JSONEncoder</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Deque</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
@@ -49,7 +49,7 @@
 <span class="kn">from</span> <span class="nn">websockets</span> <span class="k">import</span> <span class="n">ConnectionClosed</span><span class="p">,</span> <span class="n">InvalidHandshake</span><span class="p">,</span> <span class="n">WebSocketClientProtocol</span>
 
 <span class="kn">from</span> <span class="nn">.event_target</span> <span class="k">import</span> <span class="n">Event</span><span class="p">,</span> <span class="n">EventTarget</span>
-<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">Equalizer</span><span class="p">,</span> <span class="n">FilterUpdate</span><span class="p">,</span> <span class="n">Karaoke</span><span class="p">,</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">Play</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">,</span> <span class="n">Update</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">,</span> <span class="n">VoiceServerUpdate</span><span class="p">,</span> <span class="n">VolumeFilter</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">Equalizer</span><span class="p">,</span> <span class="n">FilterUpdate</span><span class="p">,</span> <span class="n">Karaoke</span><span class="p">,</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">Play</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">,</span> <span class="n">Update</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">,</span> <span class="n">VolumeFilter</span>
 <span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="n">convert_to_raw</span><span class="p">,</span> <span class="n">map_convert_values_to_milli</span><span class="p">,</span> <span class="n">map_filter_none</span><span class="p">,</span> <span class="n">to_milli</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AndesiteWebSocket&quot;</span><span class="p">,</span> <span class="s2">&quot;WebSocketMessageEvent&quot;</span><span class="p">,</span> <span class="s2">&quot;WebSocketSendEvent&quot;</span><span class="p">]</span>
@@ -111,7 +111,23 @@
 
 
 <div class="viewcode-block" id="AndesiteWebSocket"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket">[docs]</a><span class="k">class</span> <span class="nc">AndesiteWebSocket</span><span class="p">(</span><span class="n">EventTarget</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Client for the Andesite WebSocket handler.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Client for the Andesite WebSocket handler.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        max_connect_attempts (Optional[int]):</span>
+<span class="sd">            Max amount of connection attempts before giving up.</span>
+<span class="sd">            If this is `None` there is no upper limit to how many attempts will be made.</span>
+<span class="sd">        web_socket_client (Optional[WebSocketClientProtocol]):</span>
+<span class="sd">            Web socket client which is used.</span>
+<span class="sd">            This attribute will be set once `connect` is called.</span>
+<span class="sd">            Don&#39;t use the presence of this attribute to check whether</span>
+<span class="sd">            the client is connected, use the `connected` property.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        loop: Event loop to use for asynchronous operations.</span>
+<span class="sd">            If no loop is provided it is dynamically retrieved when</span>
+<span class="sd">            needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">max_connect_attempts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">web_socket_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WebSocketClientProtocol</span><span class="p">]</span>
 
@@ -120,8 +136,8 @@
     <span class="n">_json_encoder</span><span class="p">:</span> <span class="n">JSONEncoder</span>
     <span class="n">_json_decoder</span><span class="p">:</span> <span class="n">JSONDecoder</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">max_connect_attempts</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span> <span class="o">=</span> <span class="kc">None</span>
@@ -134,23 +150,23 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Check whether the client is connected and usable.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Whether the client is connected and usable.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">open</span>
 
 <div class="viewcode-block" id="AndesiteWebSocket.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Connect to the web socket server.</span>
 
 <span class="sd">        After successfully connecting all messages in the message</span>
-<span class="sd">        queue are sent in order and an *ws_connected* event is dispatched.</span>
+<span class="sd">        queue are sent in order and a `ws_connected` event is dispatched.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            max_attempts: Amount of connection attempts to perform before aborting.</span>
-<span class="sd">                If this is not set, `AndesiteWebSocket.max_connect_attempts` is used instead.</span>
-<span class="sd">                If `None` unlimited attempts will be performed.</span>
+<span class="sd">                If this is not set, `max_connect_attempts` is used instead.</span>
+<span class="sd">                If `None`, unlimited attempts will be performed.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            `ValueError`: If the client is already connected.</span>
-<span class="sd">                Check `AndesiteWebSocket.connected` first!</span>
+<span class="sd">                Check `connected` first!</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            This method doesn&#39;t have to be called manually,</span>
@@ -172,13 +188,13 @@
         <span class="n">max_attempts</span> <span class="o">=</span> <span class="n">max_attempts</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_connect_attempts</span>
 
         <span class="k">while</span> <span class="n">max_attempts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">attempt</span> <span class="o">&lt;=</span> <span class="n">max_attempts</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="k">await</span> <span class="n">try_connect</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">extra_headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="k">await</span> <span class="n">try_connect</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">extra_headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">client</span><span class="p">:</span>
                 <span class="k">break</span>
 
             <span class="n">timeout</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">attempt</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Connection unsuccessful, trying again in </span><span class="si">{timeout}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t connect to </span><span class="si">{uri}</span><span class="s2"> after </span><span class="si">{attempt}</span><span class="s2"> attempts&quot;</span><span class="p">)</span>
 
@@ -192,18 +208,16 @@
 <div class="viewcode-block" id="AndesiteWebSocket.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.disconnect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Disconnect the web socket.</span>
 
-<span class="sd">        This will obviously stop the client from</span>
+<span class="sd">        This will also stop the client from</span>
 <span class="sd">        receiving events from Andesite.</span>
 
-<span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: If the client isn&#39;t connected.</span>
-<span class="sd">                Check `AndesiteWebSocket.connected` first!</span>
+<span class="sd">        This method is idempotent, it doesn&#39;t do</span>
+<span class="sd">        anything if the client isn&#39;t connected.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not connected&quot;</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop_read_loop</span><span class="p">()</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;disconnect&quot;</span><span class="p">)</span></div>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;disconnect&quot;</span><span class="p">)</span></div>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_replay_message_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send all messages in the message queue.&quot;&quot;&quot;</span>
@@ -252,12 +266,20 @@
             <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">WebSocketMessageEvent</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_start_read_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Start the web socket reader.</span>
+
+<span class="sd">        If the reader is already running, this is a no-op.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_web_socket_reader</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_web_socket_reader</span><span class="p">(),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_stop_read_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Stop the web socket reader.</span>
+
+<span class="sd">        If the reader is already stopped, this is a no-op.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -268,8 +290,17 @@
 
 <span class="sd">        The guild_id and op are written to the payload before it is converted to JSON.</span>
 
+<span class="sd">        If sending the message fails because the connection is closed,</span>
+<span class="sd">        it is added to the message queue and a connection attempt is started.</span>
+
 <span class="sd">        Regardless of whether the payload was actually sent or</span>
 <span class="sd">        not a `ws_send` event is dispatched.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Target guild id</span>
+<span class="sd">            op: Name of operation to perform</span>
+<span class="sd">            payload: Additional data to be sent along with the data.</span>
+<span class="sd">                The payload is mutated by the function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">guildId</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">guild_id</span><span class="p">),</span> <span class="n">op</span><span class="o">=</span><span class="n">op</span><span class="p">)</span>
 
@@ -287,7 +318,17 @@
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AndesiteWebSocket.send_operation"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.send_operation">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="n">Operation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Send an `Operation`.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Send an `Operation`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Target guild id</span>
+<span class="sd">            operation: Operation to send</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            Using `Operation` instances to send messages is currently</span>
+<span class="sd">            less efficient than calling the `AndesiteWebSocket` methods</span>
+<span class="sd">            directly. This is mainly due to the overhead of conversion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">operation</span><span class="o">.</span><span class="n">__op__</span><span class="p">,</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">operation</span><span class="p">))</span></div>
 
     <span class="c1"># noinspection PyOverloads</span>
@@ -484,17 +525,30 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;filters&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AndesiteWebSocket.get_player"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.get_player">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the player.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Target guild id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;get-player&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
 
 <div class="viewcode-block" id="AndesiteWebSocket.get_stats"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.get_stats">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the Andesite stats.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Target guild id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;get-stats&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
 
 <div class="viewcode-block" id="AndesiteWebSocket.ping"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.ping">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ping the Andesite server.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Target guild id</span>
+
 <span class="sd">        Returns:</span>
-<span class="sd">            `float`: Amount of seconds it took for the response to be received.</span>
-<span class="sd">                Note: This is not accurate.</span>
+<span class="sd">            Amount of seconds it took for the response to be received.</span>
+<span class="sd">            Note: This is not accurate.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -507,45 +561,19 @@
 
         <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span></div>
 
-    <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">VoiceServerUpdate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Provide a voice server update.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            update: `VoiceServerUpdate` to use.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="o">...</span>
-
-    <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AndesiteWebSocket.voice_server_update"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Provide a voice server update.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            guild_id: ID of the guild of the voice server update</span>
 <span class="sd">            session_id: session id</span>
 <span class="sd">            event: voice server update event as sent by Discord</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            If you wish to send a `VoiceServerUpdate` operation, please</span>
+<span class="sd">            use the `send_operation` method directly.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="o">...</span>
-
-<div class="viewcode-block" id="AndesiteWebSocket.voice_server_update"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Provide a voice server update.&quot;&quot;&quot;</span>
-
-        <span class="c1"># Because we want to preserve the names as shown in the</span>
-        <span class="c1"># overloads but also take the positional args into account and handling</span>
-        <span class="c1"># that manually would be messy we just let Python do it.</span>
-
-        <span class="k">def</span> <span class="nf">extract_update</span><span class="p">(</span><span class="n">update</span><span class="p">:</span> <span class="n">VoiceServerUpdate</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">update</span><span class="o">.</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">extract_session_and_event</span><span class="p">(</span><span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
-            <span class="k">return</span> <span class="n">guild_id</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sessionId</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># this is probably more likely</span>
-            <span class="n">guild_id</span><span class="p">,</span> <span class="n">payload</span> <span class="o">=</span> <span class="n">extract_session_and_event</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="n">guild_id</span><span class="p">,</span> <span class="n">payload</span> <span class="o">=</span> <span class="n">extract_update</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
+        <span class="n">payload</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sessionId</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;voice-server-update&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div></div>
 </pre></div>
 

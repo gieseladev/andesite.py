@@ -46,16 +46,21 @@
 <span class="n">FilterMap</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="BasePlayer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.BasePlayer">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">BasePlayer</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class for Andesite players.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        - :py:class:`Player`</span>
+<span class="sd">        - :py:class:`MixerPlayer`</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        time: current utc datetime on the node</span>
-<span class="sd">        position: position of the current playing track, or null if nothing is playing</span>
-<span class="sd">        paused: whether or not the player is paused</span>
-<span class="sd">        volume: the volume of the player</span>
-<span class="sd">        filters: map of filter name -&gt; filter settings for each filter present</span>
+<span class="sd">        time (datetime): current utc datetime on the node</span>
+<span class="sd">        position (Optional[float]): position of the current playing track, or `None` if nothing is playing</span>
+<span class="sd">        paused (bool): whether or not the player is paused</span>
+<span class="sd">        volume (float): the volume of the player</span>
+<span class="sd">        filters (FilterMap): map of filter name -&gt; filter settings for each filter present</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="n">position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
@@ -65,12 +70,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">live_position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Interpolated version of `BasePlayer.position` based on the time that has passed.</span>
+        <span class="sd">&quot;&quot;&quot;Interpolated version of :py:attr:`position` based on the time that has passed.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Optional[float]: None if there is no position attribute,</span>
-<span class="sd">                equal to position if the player is paused, and interpolated</span>
-<span class="sd">                otherwise.</span>
+<span class="sd">            `None` if there is no position attribute,</span>
+<span class="sd">            equal to position if the player is paused, and interpolated</span>
+<span class="sd">            otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -93,7 +98,6 @@
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span></div>
 
 
-
 <div class="viewcode-block" id="MixerPlayer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.MixerPlayer">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">MixerPlayer</span><span class="p">(</span><span class="n">BasePlayer</span><span class="p">):</span>
     <span class="o">...</span></div>
@@ -102,13 +106,14 @@
 <span class="n">MixerMap</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MixerPlayer</span><span class="p">]</span>
 
 
+<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="Player"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.Player">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Player</span><span class="p">(</span><span class="n">BasePlayer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        mixer: map of mixer player id -&gt; mixer player</span>
-<span class="sd">        mixer_enabled: whether or not the mixer is the current source of audio</span>
+<span class="sd">        mixer (MixerMap): map of mixer player id -&gt; mixer player</span>
+<span class="sd">        mixer_enabled (bool): whether or not the mixer is the current source of audio</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mixer</span><span class="p">:</span> <span class="n">MixerMap</span>
     <span class="n">mixer_enabled</span><span class="p">:</span> <span class="nb">bool</span>
