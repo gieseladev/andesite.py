@@ -9,7 +9,7 @@ from functools import partial
 from typing import Any, Callable, Dict, MutableMapping, MutableSequence, Optional, Type, TypeVar, cast, overload
 
 import lettercase
-from lettercase import LetterCase
+from lettercase import ConversionMemo, LetterCase
 
 __all__ = ["RawDataType", "convert_to_raw", "build_from_raw", "seq_build_all_items_from_raw", "map_build_all_values_from_raw", "MapFunction",
            "map_convert_value",
@@ -22,6 +22,9 @@ KT = TypeVar("KT")
 VT = TypeVar("VT")
 
 RawDataType = Dict[str, Any]
+
+# memo used to speed up key conversion
+CONVERTER_MEMO = ConversionMemo(LetterCase.DROMEDARY, LetterCase.SNAKE)
 
 
 def convert_to_raw(obj: Any) -> RawDataType:
@@ -62,7 +65,7 @@ def convert_to_raw(obj: Any) -> RawDataType:
             if res is not None:
                 data = res
 
-        lettercase.mut_convert_keys(data, LetterCase.SNAKE, LetterCase.DROMEDARY)
+        lettercase.mut_convert_keys(data, LetterCase.SNAKE, LetterCase.DROMEDARY, memo=CONVERTER_MEMO)
 
         return data
     elif isinstance(obj, (list, tuple)):
@@ -88,7 +91,7 @@ def build_from_raw(cls: Type[T], raw_data: RawDataType) -> T:
         cls: Target type to build
         raw_data: Data which should be used to build the instance.
     """
-    lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE)
+    lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE, memo=CONVERTER_MEMO)
 
     try:
         res = cls.__transform_input__(raw_data)
