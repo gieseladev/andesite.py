@@ -45,13 +45,18 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">overload</span>
 
 <span class="kn">import</span> <span class="nn">lettercase</span>
-<span class="kn">from</span> <span class="nn">lettercase</span> <span class="k">import</span> <span class="n">LetterCase</span>
+<span class="kn">from</span> <span class="nn">lettercase</span> <span class="k">import</span> <span class="n">ConversionMemo</span><span class="p">,</span> <span class="n">LetterCase</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RawDataType&quot;</span><span class="p">,</span> <span class="s2">&quot;convert_to_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;build_from_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;seq_build_all_items_from_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;map_build_all_values_from_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;MapFunction&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;map_convert_value&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;map_convert_values&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_all&quot;</span><span class="p">,</span> <span class="s2">&quot;map_build_values_from_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;from_milli&quot;</span><span class="p">,</span> <span class="s2">&quot;to_milli&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_from_milli&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;map_convert_values_to_milli&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;map_filter_none&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RawDataType&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;transform_input&quot;</span><span class="p">,</span> <span class="s2">&quot;transform_output&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;convert_to_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;build_from_raw&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;seq_build_all_items_from_raw&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;map_build_all_values_from_raw&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;MapFunction&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_value&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_all&quot;</span><span class="p">,</span> <span class="s2">&quot;map_build_values_from_raw&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;from_milli&quot;</span><span class="p">,</span> <span class="s2">&quot;to_milli&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;from_centi&quot;</span><span class="p">,</span> <span class="s2">&quot;to_centi&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;map_convert_values_from_milli&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_to_milli&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;map_filter_none&quot;</span><span class="p">,</span> <span class="s2">&quot;map_rename_keys&quot;</span><span class="p">]</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 <span class="n">KT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;KT&quot;</span><span class="p">)</span>
@@ -59,16 +64,94 @@
 
 <span class="n">RawDataType</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 
+<span class="c1"># memo used to speed up key conversion</span>
+<span class="n">CONVERTER_MEMO</span> <span class="o">=</span> <span class="n">ConversionMemo</span><span class="p">(</span><span class="n">LetterCase</span><span class="o">.</span><span class="n">DROMEDARY</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="n">transformer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">RawDataType</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RawDataType</span><span class="p">]],</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Perform a transformation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        transformer: Transformer which is called with the data</span>
+<span class="sd">        data: Data to be transformed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        If the transformer returned something other than `None`, it is returned.</span>
+<span class="sd">        Otherwise it is assumed, that the transformer manipulated the data</span>
+<span class="sd">        and the original data is returned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="transform_input"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.transform_input">[docs]</a><span class="k">def</span> <span class="nf">transform_input</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Call the __transform_input__ classmethod on a model.</span>
+
+<span class="sd">    This is different from calling the method directly because it</span>
+<span class="sd">    always returns the current data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls: Target model whose transformation to apply</span>
+<span class="sd">        data: Data to be transformed</span>
+
+<span class="sd">    The transform method can either manipulate the provided data</span>
+<span class="sd">    or replace it entirely by returning something other than `None`.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        When using this function inside of a transformation, make sure</span>
+<span class="sd">        that you continue to work on the data returned by this function.</span>
+<span class="sd">        Also, you cannot return `None` when using this function, you have</span>
+<span class="sd">        to return the data. This is because you can&#39;t be sure whether the</span>
+<span class="sd">        data has been modified or replaced and modifications on a replaced</span>
+<span class="sd">        value wouldn&#39;t propagate upward unless you return them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">transformer</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__transform_input__</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_transform</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="transform_output"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.transform_output">[docs]</a><span class="k">def</span> <span class="nf">transform_output</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Call the __transform_output__ classmethod on a model.</span>
+
+<span class="sd">    This is different from calling the method directly because it</span>
+<span class="sd">    always returns the current data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls: Target model whose transformation to apply</span>
+<span class="sd">        data: Data to be transformed</span>
+
+<span class="sd">    The transform method can either manipulate the provided data</span>
+<span class="sd">    or replace it entirely by returning something other than `None`.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        When using this function inside of a transformation, make sure</span>
+<span class="sd">        that you continue to work on the data returned by this function.</span>
+<span class="sd">        Also, you cannot return `None` when using this function, you have</span>
+<span class="sd">        to return the data. This is because you can&#39;t be sure whether the</span>
+<span class="sd">        data has been modified or replaced and modifications on a replaced</span>
+<span class="sd">        value wouldn&#39;t propagate upward unless you return them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">transformer</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__transform_output__</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_transform</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="convert_to_raw"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.convert_to_raw">[docs]</a><span class="k">def</span> <span class="nf">convert_to_raw</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Convert a dataclass to a `dict`.</span>
 
 <span class="sd">    This behaves similar to `dataclasses.asdict`. The difference is outlined below.</span>
 
-<span class="sd">    This function calls `__transform_output__` on the dataclasses</span>
-<span class="sd">    if such a method exists. Similarly to the `__transform_input__`</span>
-<span class="sd">    function it may mutate the data or replace it by returning something</span>
-<span class="sd">    other than `None`.</span>
+<span class="sd">    The function uses `transform_output`, if the model provides a `__transform_output__` method</span>
+<span class="sd">    it will be called.</span>
 
 <span class="sd">    After transformation the keys of the data dict are converted from</span>
 <span class="sd">    snake_case to dromedaryCase.</span>
@@ -90,15 +173,9 @@
             <span class="n">value</span> <span class="o">=</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
             <span class="n">data</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__transform_output__</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">res</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">transform_output</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
-        <span class="n">lettercase</span><span class="o">.</span><span class="n">mut_convert_keys</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">DROMEDARY</span><span class="p">)</span>
+        <span class="n">lettercase</span><span class="o">.</span><span class="n">mut_convert_keys</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">DROMEDARY</span><span class="p">,</span> <span class="n">memo</span><span class="o">=</span><span class="n">CONVERTER_MEMO</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">data</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
@@ -110,29 +187,36 @@
         <span class="k">return</span> <span class="n">obj</span></div>
 
 
-<div class="viewcode-block" id="build_from_raw"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.build_from_raw">[docs]</a><span class="k">def</span> <span class="nf">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">raw_data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">raw_data</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">raw_data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="build_from_raw"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.build_from_raw">[docs]</a><span class="k">def</span> <span class="nf">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">raw_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RawDataType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Build an instance of cls from the passed raw data.</span>
 
-<span class="sd">    The keys of raw data are mutated from dromedaryCase to snake_case</span>
-<span class="sd">    before it is passed to the `__transform_input__` **classmethod** of `cls`, if it exists.</span>
-<span class="sd">    This function may mutate the data or replace it completely by returning something</span>
-<span class="sd">    other than `None`.</span>
+<span class="sd">    In the spirit of the other transform functions, `None` is treated as a special value</span>
+<span class="sd">    and returned directly instead of handling it in any way.</span>
+
+
+<span class="sd">    The function uses `transform_input`, if the model provides a `__transform_input__` method</span>
+<span class="sd">    it will be called.</span>
 
 <span class="sd">    After transformation the data is used as the keyword arguments to the cls constructor.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        cls: Target type to build</span>
 <span class="sd">        raw_data: Data which should be used to build the instance.</span>
+<span class="sd">            If this is `None`, `None` is returned.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">lettercase</span><span class="o">.</span><span class="n">mut_convert_keys</span><span class="p">(</span><span class="n">raw_data</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">DROMEDARY</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">raw_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__transform_input__</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">raw_data</span> <span class="o">=</span> <span class="n">res</span>
+    <span class="n">lettercase</span><span class="o">.</span><span class="n">mut_convert_keys</span><span class="p">(</span><span class="n">raw_data</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">DROMEDARY</span><span class="p">,</span> <span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">,</span> <span class="n">memo</span><span class="o">=</span><span class="n">CONVERTER_MEMO</span><span class="p">)</span>
+    <span class="n">raw_data</span> <span class="o">=</span> <span class="n">transform_input</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_data</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">raw_data</span><span class="p">)</span></div>
 
@@ -233,7 +317,9 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        This method mutates the provided mapping, it does not return anything.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">map_convert_values</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">partial</span><span class="p">(</span><span class="n">build_from_raw</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">key_types</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span></div>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">key_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">build_from_raw</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
+        <span class="n">map_convert_value</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="map_build_all_values_from_raw"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_build_all_values_from_raw">[docs]</a><span class="k">def</span> <span class="nf">map_build_all_values_from_raw</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">RawDataType</span><span class="p">],</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -262,9 +348,7 @@
 
 
 <div class="viewcode-block" id="from_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.from_milli">[docs]</a><span class="k">def</span> <span class="nf">from_milli</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Convert a number from milli to base.</span>
-
-<span class="sd">    Let&#39;s be honest, this is just dividing by 1000.</span>
+    <span class="sd">&quot;&quot;&quot;Convert a number from thousandths to base.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        value: Value to convert from milli.</span>
@@ -287,7 +371,53 @@
 
 
 <div class="viewcode-block" id="to_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.to_milli">[docs]</a><span class="k">def</span> <span class="nf">to_milli</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Convert from base unit to milli.</span>
+    <span class="sd">&quot;&quot;&quot;Convert from base unit to thousandths.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value: Value to convert to milli.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[int]: `None` if you pass `None` as the value, otherwise an `int`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">from_centi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">from_centi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="from_centi"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.from_centi">[docs]</a><span class="k">def</span> <span class="nf">from_centi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Convert a number from hundredths to base.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value: Value to convert from centi.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[float]: `None` if you pass `None` as the value, otherwise a `float`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">value</span> <span class="o">/</span> <span class="mi">100</span></div>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">to_centi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">to_centi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="to_centi"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.to_centi">[docs]</a><span class="k">def</span> <span class="nf">to_centi</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Convert from base unit to hundredths.</span>
 
 <span class="sd">    This is really just multiplying by 1000.</span>
 
@@ -300,7 +430,7 @@
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">value</span>
 
-    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">value</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">value</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="map_convert_values_from_milli"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_convert_values_from_milli">[docs]</a><span class="k">def</span> <span class="nf">map_convert_values_from_milli</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -344,6 +474,26 @@
 
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">remove_keys</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="map_rename_keys"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_rename_keys">[docs]</a><span class="k">def</span> <span class="nf">map_rename_keys</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">key_maps</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Rename keys of a mapping.</span>
+<span class="sd">    This is just deleting the old key and assigning its value to the new key.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mutable mapping to manipulate</span>
+<span class="sd">        **key_maps: new -&gt; old name mapping.</span>
+<span class="sd">            The reason the mapping isn&#39;t from old to new is that you may want</span>
+<span class="sd">            to rename keys that aren&#39;t python-friendly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">old_key</span> <span class="ow">in</span> <span class="n">key_maps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old_key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mapping</span><span class="p">[</span><span class="n">new_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
 </pre></div>
 
           </div>
@@ -406,7 +556,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

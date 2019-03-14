@@ -91,7 +91,7 @@
 <span class="sd">            value: Value to set for the band. ( [0, 14] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low_inc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">band</span> <span class="o">=</span> <span class="n">value</span></div>
@@ -103,7 +103,7 @@
 <span class="sd">            value: Value to set for the gain. ( [-0.25, 1] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low_inc</span><span class="o">=-.</span><span class="mi">25</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">value</span></div></div>
@@ -176,7 +176,7 @@
 <span class="sd">            gain: Value to set for the gain. ( [-0.25, 1] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided gain is invalid.</span>
+<span class="sd">            ValueError: if the provided gain is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">set_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span></div></div>
 
@@ -218,7 +218,7 @@
 <span class="sd">            value: Value to set for the speed. ( (0, INF] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">value</span></div>
@@ -230,7 +230,7 @@
 <span class="sd">            value: Value to set for the pitch. ( (0, INF] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="n">value</span></div>
@@ -242,7 +242,7 @@
 <span class="sd">            value: Value to set for the rate. ( (0, INF] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rate</span> <span class="o">=</span> <span class="n">value</span></div></div>
@@ -266,7 +266,7 @@
 <span class="sd">            value: Value to set for the frequency. ( (0, INF] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
@@ -278,7 +278,7 @@
 <span class="sd">            value: Value to set for the depth. ( (0, 1] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
@@ -302,7 +302,7 @@
 <span class="sd">            value: Value to set for the frequency. ( (0, 14] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
@@ -314,7 +314,7 @@
 <span class="sd">            value: Value to set for the depth. ( (0, 1] )</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            `ValueError`: if the provided value is invalid.</span>
+<span class="sd">            ValueError: if the provided value is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
@@ -391,7 +391,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

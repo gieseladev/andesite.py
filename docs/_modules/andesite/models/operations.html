@@ -39,7 +39,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">map_build_values_from_raw</span><span class="p">,</span> <span class="n">map_convert_values_from_milli</span><span class="p">,</span> \
-    <span class="n">map_convert_values_to_milli</span>
+    <span class="n">map_convert_values_to_milli</span><span class="p">,</span> <span class="n">map_convert_values</span><span class="p">,</span> <span class="n">to_centi</span><span class="p">,</span> <span class="n">from_centi</span><span class="p">,</span> <span class="n">to_milli</span><span class="p">,</span> <span class="n">from_milli</span>
 <span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">Equalizer</span><span class="p">,</span> <span class="n">Karaoke</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">,</span> <span class="n">VolumeFilter</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Operation&quot;</span><span class="p">,</span> <span class="s2">&quot;VoiceServerUpdate&quot;</span><span class="p">,</span> <span class="s2">&quot;Play&quot;</span><span class="p">,</span> <span class="s2">&quot;Pause&quot;</span><span class="p">,</span> <span class="s2">&quot;Seek&quot;</span><span class="p">,</span> <span class="s2">&quot;Volume&quot;</span><span class="p">,</span> <span class="s2">&quot;FilterUpdate&quot;</span><span class="p">,</span> <span class="s2">&quot;Update&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerUpdate&quot;</span><span class="p">]</span>
@@ -79,7 +79,7 @@
 <span class="sd">        end (Optional[float]): timestamp, in seconds, to end the track</span>
 <span class="sd">        pause (Optional[bool]): whether or not to pause the player</span>
 <span class="sd">        volume (Optional[float]): volume to set on the player</span>
-<span class="sd">        no_replace (bool): if True and a track is already playing/paused, this command is ignored</span>
+<span class="sd">        no_replace (bool): if `True` and a track is already playing/paused, this command is ignored. (Defaults to `False`)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__op__</span> <span class="o">=</span> <span class="s2">&quot;play&quot;</span>
 
@@ -92,11 +92,13 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_from_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values_from_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">from_centi</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span></div>
+        <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">)</span></div>
 
 
 <span class="c1"># noinspection PyUnresolvedReferences</span>
@@ -146,11 +148,11 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_from_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">from_centi</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span></div>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">)</span></div>
 
 
 <span class="c1"># noinspection PyUnresolvedReferences</span>
@@ -196,12 +198,12 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_from_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">from_centi</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">from_milli</span><span class="p">)</span>
         <span class="n">map_build_values_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">FilterUpdate</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span></div>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">to_milli</span><span class="p">)</span></div>
 
 
 <span class="n">MixerPlayerUpdateMap</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Play</span><span class="p">,</span> <span class="n">Update</span><span class="p">]]</span>
@@ -293,7 +295,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

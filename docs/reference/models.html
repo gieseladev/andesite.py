@@ -61,8 +61,8 @@ to the <code class="xref py py-obj docutils literal notranslate"><span class="pr
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="#andesite.models.player.Player" title="andesite.models.player.Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a></li>
-<li><a class="reference internal" href="#andesite.models.player.MixerPlayer" title="andesite.models.player.MixerPlayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MixerPlayer</span></code></a></li>
+<li><a class="reference internal" href="#andesite.models.player.Player" title="andesite.models.player.Player"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Player</span></code></a></li>
+<li><a class="reference internal" href="#andesite.models.player.MixerPlayer" title="andesite.models.player.MixerPlayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MixerPlayer</span></code></a></li>
 </ul>
 </div>
 <dl class="attribute">
@@ -413,7 +413,7 @@ otherwise.</td>
 
 <dl class="class">
 <dt id="andesite.models.track.LoadedTrack">
-<em class="property">class </em><code class="descname">LoadedTrack</code><span class="sig-paren">(</span><em>load_type</em>, <em>tracks</em>, <em>playlist_info</em>, <em>cause</em>, <em>severity</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#LoadedTrack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.LoadedTrack" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">LoadedTrack</code><span class="sig-paren">(</span><em>load_type</em>, <em>tracks</em>, <em>playlist_info</em>, <em>cause=None</em>, <em>severity=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/track.html#LoadedTrack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.track.LoadedTrack" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="andesite.models.track.LoadedTrack.load_type">
 <code class="descname">load_type</code><a class="headerlink" href="#andesite.models.track.LoadedTrack.load_type" title="Permalink to this definition">¶</a></dt>
@@ -484,6 +484,16 @@ otherwise.</td>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt>
+<code class="descname">cause</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">severity</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
@@ -536,7 +546,7 @@ otherwise.</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Value to set for the band. ( [0, 14] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -554,7 +564,7 @@ otherwise.</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the gain. ( [-0.25, 1] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -636,7 +646,7 @@ If you don’t want to automatically create a band, pass
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided gain is invalid.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided gain is invalid.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -790,7 +800,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the pitch. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -808,7 +818,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the rate. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -826,7 +836,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the speed. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -892,7 +902,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the depth. ( (0, 1] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -910,7 +920,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the frequency. ( (0, INF] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -971,7 +981,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the depth. ( (0, 1] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -989,7 +999,7 @@ If you don’t want to automatically create a band, pass
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Value to set for the frequency. ( (0, 14] )</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if the provided value is invalid.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
 </tr>
@@ -1142,7 +1152,7 @@ If you don’t want to automatically create a band, pass
 <dl class="attribute">
 <dt id="andesite.models.operations.Play.no_replace">
 <code class="descname">no_replace</code><a class="headerlink" href="#andesite.models.operations.Play.no_replace" title="Permalink to this definition">¶</a></dt>
-<dd><p>if True and a track is already playing/paused, this command is ignored</p>
+<dd><p>if <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a> and a track is already playing/paused, this command is ignored. (Defaults to <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1477,7 +1487,7 @@ If you don’t want to automatically create a band, pass
 <span class="target" id="module-andesite.models.debug"></span><dl class="class">
 <dt id="andesite.models.debug.StackFrame">
 <em class="property">class </em><code class="descname">StackFrame</code><span class="sig-paren">(</span><em>class_loader</em>, <em>module_name</em>, <em>module_version</em>, <em>class_name</em>, <em>method_name</em>, <em>file_name</em>, <em>line_number</em>, <em>pretty</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#StackFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.StackFrame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Can be found in <a class="reference internal" href="#andesite.models.debug.Error.stack" title="andesite.models.debug.Error.stack"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Error.stack</span></code></a>.</p>
+<dd><p>Can be found in <a class="reference internal" href="#andesite.models.debug.Error.stack" title="andesite.models.debug.Error.stack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Error.stack</span></code></a>.</p>
 <dl class="attribute">
 <dt id="andesite.models.debug.StackFrame.class_loader">
 <code class="descname">class_loader</code><a class="headerlink" href="#andesite.models.debug.StackFrame.class_loader" title="Permalink to this definition">¶</a></dt>
@@ -1594,7 +1604,7 @@ If you don’t want to automatically create a band, pass
 
 <dl class="class">
 <dt id="andesite.models.debug.Error">
-<em class="property">class </em><code class="descname">Error</code><span class="sig-paren">(</span><em>class_name</em>, <em>message</em>, <em>stack</em>, <em>cause</em>, <em>suppressed</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.Error" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">Error</code><span class="sig-paren">(</span><em>class_name</em>, <em>message</em>, <em>stack</em>, <em>suppressed</em>, <em>cause</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Andesite error.</p>
 <dl class="attribute">
 <dt id="andesite.models.debug.Error.class_name">
@@ -1661,6 +1671,1193 @@ If you don’t want to automatically create a band, pass
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.Error" title="andesite.models.debug.Error">Error</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.PlayersStats">
+<em class="property">class </em><code class="descname">PlayersStats</code><span class="sig-paren">(</span><em>total</em>, <em>playing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#PlayersStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.PlayersStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Players statistics sent by Andesite.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.PlayersStats.total">
+<code class="descname">total</code><a class="headerlink" href="#andesite.models.debug.PlayersStats.total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total amount of players</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.PlayersStats.playing">
+<code class="descname">playing</code><a class="headerlink" href="#andesite.models.debug.PlayersStats.playing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Amount of players that are actively playing</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.RuntimeVMStats">
+<em class="property">class </em><code class="descname">RuntimeVMStats</code><span class="sig-paren">(</span><em>name</em>, <em>vendor</em>, <em>version</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#RuntimeVMStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.RuntimeVMStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>VM statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVMStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.RuntimeVMStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVMStats.vendor">
+<code class="descname">vendor</code><a class="headerlink" href="#andesite.models.debug.RuntimeVMStats.vendor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVMStats.version">
+<code class="descname">version</code><a class="headerlink" href="#andesite.models.debug.RuntimeVMStats.version" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.RuntimeSpecStats">
+<em class="property">class </em><code class="descname">RuntimeSpecStats</code><span class="sig-paren">(</span><em>name</em>, <em>vendor</em>, <em>version</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#RuntimeSpecStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.RuntimeSpecStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spec statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeSpecStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.RuntimeSpecStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeSpecStats.vendor">
+<code class="descname">vendor</code><a class="headerlink" href="#andesite.models.debug.RuntimeSpecStats.vendor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeSpecStats.version">
+<code class="descname">version</code><a class="headerlink" href="#andesite.models.debug.RuntimeSpecStats.version" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.RuntimeVersionStats">
+<em class="property">class </em><code class="descname">RuntimeVersionStats</code><span class="sig-paren">(</span><em>feature</em>, <em>interim</em>, <em>update</em>, <em>patch</em>, <em>pre</em>, <em>build</em>, <em>optional</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#RuntimeVersionStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version information stats.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.feature">
+<code class="descname">feature</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.feature" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.interim">
+<code class="descname">interim</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.interim" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.update">
+<code class="descname">update</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.update" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.patch">
+<code class="descname">patch</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.patch" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.pre">
+<code class="descname">pre</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.pre" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.build">
+<code class="descname">build</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.build" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeVersionStats.optional">
+<code class="descname">optional</code><a class="headerlink" href="#andesite.models.debug.RuntimeVersionStats.optional" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.RuntimeStats">
+<em class="property">class </em><code class="descname">RuntimeStats</code><span class="sig-paren">(</span><em>uptime</em>, <em>pid</em>, <em>management_spec_version</em>, <em>name</em>, <em>vm</em>, <em>spec</em>, <em>version</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#RuntimeStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.RuntimeStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runtime statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.uptime">
+<code class="descname">uptime</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.uptime" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.pid">
+<code class="descname">pid</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.pid" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.management_spec_version">
+<code class="descname">management_spec_version</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.management_spec_version" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.vm">
+<code class="descname">vm</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.vm" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.RuntimeVMStats" title="andesite.models.debug.RuntimeVMStats">RuntimeVMStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.spec">
+<code class="descname">spec</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.spec" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.RuntimeSpecStats" title="andesite.models.debug.RuntimeSpecStats">RuntimeSpecStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.RuntimeStats.version">
+<code class="descname">version</code><a class="headerlink" href="#andesite.models.debug.RuntimeStats.version" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.RuntimeVersionStats" title="andesite.models.debug.RuntimeVersionStats">RuntimeVersionStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.OSStats">
+<em class="property">class </em><code class="descname">OSStats</code><span class="sig-paren">(</span><em>processors</em>, <em>name</em>, <em>arch</em>, <em>version</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#OSStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.OSStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>OS statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.OSStats.processors">
+<code class="descname">processors</code><a class="headerlink" href="#andesite.models.debug.OSStats.processors" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.OSStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.OSStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.OSStats.arch">
+<code class="descname">arch</code><a class="headerlink" href="#andesite.models.debug.OSStats.arch" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.OSStats.version">
+<code class="descname">version</code><a class="headerlink" href="#andesite.models.debug.OSStats.version" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.CPUStats">
+<em class="property">class </em><code class="descname">CPUStats</code><span class="sig-paren">(</span><em>andesite</em>, <em>system</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#CPUStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.CPUStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>CPU statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.CPUStats.andesite">
+<code class="descname">andesite</code><a class="headerlink" href="#andesite.models.debug.CPUStats.andesite" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.CPUStats.system">
+<code class="descname">system</code><a class="headerlink" href="#andesite.models.debug.CPUStats.system" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.ClassLoadingStats">
+<em class="property">class </em><code class="descname">ClassLoadingStats</code><span class="sig-paren">(</span><em>loaded</em>, <em>total_loaded</em>, <em>unloaded</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#ClassLoadingStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.ClassLoadingStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class loading statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.ClassLoadingStats.loaded">
+<code class="descname">loaded</code><a class="headerlink" href="#andesite.models.debug.ClassLoadingStats.loaded" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.ClassLoadingStats.total_loaded">
+<code class="descname">total_loaded</code><a class="headerlink" href="#andesite.models.debug.ClassLoadingStats.total_loaded" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.ClassLoadingStats.unloaded">
+<code class="descname">unloaded</code><a class="headerlink" href="#andesite.models.debug.ClassLoadingStats.unloaded" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.ThreadStats">
+<em class="property">class </em><code class="descname">ThreadStats</code><span class="sig-paren">(</span><em>running</em>, <em>daemon</em>, <em>peak</em>, <em>total_started</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#ThreadStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.ThreadStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thread statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.ThreadStats.running">
+<code class="descname">running</code><a class="headerlink" href="#andesite.models.debug.ThreadStats.running" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.ThreadStats.daemon">
+<code class="descname">daemon</code><a class="headerlink" href="#andesite.models.debug.ThreadStats.daemon" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.ThreadStats.peak">
+<code class="descname">peak</code><a class="headerlink" href="#andesite.models.debug.ThreadStats.peak" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.ThreadStats.total_started">
+<code class="descname">total_started</code><a class="headerlink" href="#andesite.models.debug.ThreadStats.total_started" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.CompilationStats">
+<em class="property">class </em><code class="descname">CompilationStats</code><span class="sig-paren">(</span><em>name</em>, <em>total_time</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#CompilationStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.CompilationStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compilation statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.CompilationStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.CompilationStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.CompilationStats.total_time">
+<code class="descname">total_time</code><a class="headerlink" href="#andesite.models.debug.CompilationStats.total_time" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.MemoryCommonUsageStats">
+<em class="property">class </em><code class="descname">MemoryCommonUsageStats</code><span class="sig-paren">(</span><em>init</em>, <em>used</em>, <em>committed</em>, <em>max</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#MemoryCommonUsageStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.MemoryCommonUsageStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory usage statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryCommonUsageStats.init">
+<code class="descname">init</code><a class="headerlink" href="#andesite.models.debug.MemoryCommonUsageStats.init" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryCommonUsageStats.used">
+<code class="descname">used</code><a class="headerlink" href="#andesite.models.debug.MemoryCommonUsageStats.used" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryCommonUsageStats.committed">
+<code class="descname">committed</code><a class="headerlink" href="#andesite.models.debug.MemoryCommonUsageStats.committed" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryCommonUsageStats.max">
+<code class="descname">max</code><a class="headerlink" href="#andesite.models.debug.MemoryCommonUsageStats.max" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.MemoryStats">
+<em class="property">class </em><code class="descname">MemoryStats</code><span class="sig-paren">(</span><em>pending_finalization</em>, <em>heap</em>, <em>non_heap</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#MemoryStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.MemoryStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryStats.pending_finalization">
+<code class="descname">pending_finalization</code><a class="headerlink" href="#andesite.models.debug.MemoryStats.pending_finalization" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryStats.heap">
+<code class="descname">heap</code><a class="headerlink" href="#andesite.models.debug.MemoryStats.heap" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.MemoryCommonUsageStats" title="andesite.models.debug.MemoryCommonUsageStats">MemoryCommonUsageStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryStats.non_heap">
+<code class="descname">non_heap</code><a class="headerlink" href="#andesite.models.debug.MemoryStats.non_heap" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.MemoryCommonUsageStats" title="andesite.models.debug.MemoryCommonUsageStats">MemoryCommonUsageStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.GCStats">
+<em class="property">class </em><code class="descname">GCStats</code><span class="sig-paren">(</span><em>name</em>, <em>collection_count</em>, <em>collection_time</em>, <em>pools</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#GCStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.GCStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Garbage collection statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.GCStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.GCStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.GCStats.collection_count">
+<code class="descname">collection_count</code><a class="headerlink" href="#andesite.models.debug.GCStats.collection_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.GCStats.collection_time">
+<code class="descname">collection_time</code><a class="headerlink" href="#andesite.models.debug.GCStats.collection_time" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.GCStats.pools">
+<code class="descname">pools</code><a class="headerlink" href="#andesite.models.debug.GCStats.pools" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.MemoryPoolStats">
+<em class="property">class </em><code class="descname">MemoryPoolStats</code><span class="sig-paren">(</span><em>name</em>, <em>type</em>, <em>collection_usage</em>, <em>collection_usage_threshold</em>, <em>collection_usage_threshold_count</em>, <em>peak_usage</em>, <em>usage</em>, <em>usage_threshold</em>, <em>usage_threshold_count</em>, <em>managers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#MemoryPoolStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory pool statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the pool</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.type">
+<code class="descname">type</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of the pool. This is either “HEAP” or “NON_HEAP”.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.collection_usage">
+<code class="descname">collection_usage</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.collection_usage" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[MemoryHeapStats]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.collection_usage_threshold">
+<code class="descname">collection_usage_threshold</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.collection_usage_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.collection_usage_threshold_count">
+<code class="descname">collection_usage_threshold_count</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.collection_usage_threshold_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.peak_usage">
+<code class="descname">peak_usage</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.peak_usage" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.MemoryCommonUsageStats" title="andesite.models.debug.MemoryCommonUsageStats">MemoryCommonUsageStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.usage">
+<code class="descname">usage</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.usage" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.MemoryCommonUsageStats" title="andesite.models.debug.MemoryCommonUsageStats">MemoryCommonUsageStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.usage_threshold">
+<code class="descname">usage_threshold</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.usage_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.usage_threshold_count">
+<code class="descname">usage_threshold_count</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.usage_threshold_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryPoolStats.managers">
+<code class="descname">managers</code><a class="headerlink" href="#andesite.models.debug.MemoryPoolStats.managers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.MemoryManagerStats">
+<em class="property">class </em><code class="descname">MemoryManagerStats</code><span class="sig-paren">(</span><em>name</em>, <em>pools</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#MemoryManagerStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.MemoryManagerStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory manager statistics.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryManagerStats.name">
+<code class="descname">name</code><a class="headerlink" href="#andesite.models.debug.MemoryManagerStats.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the manager</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.MemoryManagerStats.pools">
+<code class="descname">pools</code><a class="headerlink" href="#andesite.models.debug.MemoryManagerStats.pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory pools</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.FrameStats">
+<em class="property">class </em><code class="descname">FrameStats</code><span class="sig-paren">(</span><em>user</em>, <em>guild</em>, <em>success</em>, <em>loss</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#FrameStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.FrameStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Frame statistics for a guild player.</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.FrameStats.user">
+<code class="descname">user</code><a class="headerlink" href="#andesite.models.debug.FrameStats.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>User ID</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.FrameStats.guild">
+<code class="descname">guild</code><a class="headerlink" href="#andesite.models.debug.FrameStats.guild" title="Permalink to this definition">¶</a></dt>
+<dd><p>Guild ID</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.FrameStats.success">
+<code class="descname">success</code><a class="headerlink" href="#andesite.models.debug.FrameStats.success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Amount of successful frames</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.FrameStats.loss">
+<code class="descname">loss</code><a class="headerlink" href="#andesite.models.debug.FrameStats.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Amount of lost frames</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">This statistic can be found in <a class="reference internal" href="#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stats</span></code></a> which is retrieved from Andesite by
+the clients. Both <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTP</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code> are able to get them.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.models.debug.Stats">
+<em class="property">class </em><code class="descname">Stats</code><span class="sig-paren">(</span><em>players</em>, <em>runtime</em>, <em>os</em>, <em>cpu</em>, <em>class_loading</em>, <em>thread</em>, <em>compilation</em>, <em>memory</em>, <em>gc</em>, <em>memory_pools</em>, <em>memory_managers</em>, <em>frame_stats</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/debug.html#Stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.debug.Stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statistics sent by Andesite</p>
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.players">
+<code class="descname">players</code><a class="headerlink" href="#andesite.models.debug.Stats.players" title="Permalink to this definition">¶</a></dt>
+<dd><p>Player statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.PlayersStats" title="andesite.models.debug.PlayersStats">PlayersStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.runtime">
+<code class="descname">runtime</code><a class="headerlink" href="#andesite.models.debug.Stats.runtime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runtime statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.RuntimeStats" title="andesite.models.debug.RuntimeStats">RuntimeStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.os">
+<code class="descname">os</code><a class="headerlink" href="#andesite.models.debug.Stats.os" title="Permalink to this definition">¶</a></dt>
+<dd><p>OS statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.OSStats" title="andesite.models.debug.OSStats">OSStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.cpu">
+<code class="descname">cpu</code><a class="headerlink" href="#andesite.models.debug.Stats.cpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>CPU statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.CPUStats" title="andesite.models.debug.CPUStats">CPUStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.class_loading">
+<code class="descname">class_loading</code><a class="headerlink" href="#andesite.models.debug.Stats.class_loading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class loading statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.ClassLoadingStats" title="andesite.models.debug.ClassLoadingStats">ClassLoadingStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.thread">
+<code class="descname">thread</code><a class="headerlink" href="#andesite.models.debug.Stats.thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thread statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.ThreadStats" title="andesite.models.debug.ThreadStats">ThreadStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.compilation">
+<code class="descname">compilation</code><a class="headerlink" href="#andesite.models.debug.Stats.compilation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compilation statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.CompilationStats" title="andesite.models.debug.CompilationStats">CompilationStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.memory">
+<code class="descname">memory</code><a class="headerlink" href="#andesite.models.debug.Stats.memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#andesite.models.debug.MemoryStats" title="andesite.models.debug.MemoryStats">MemoryStats</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.gc">
+<code class="descname">gc</code><a class="headerlink" href="#andesite.models.debug.Stats.gc" title="Permalink to this definition">¶</a></dt>
+<dd><p>GC statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.GCStats" title="andesite.models.debug.GCStats">GCStats</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.memory_pools">
+<code class="descname">memory_pools</code><a class="headerlink" href="#andesite.models.debug.Stats.memory_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory pool statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.MemoryPoolStats" title="andesite.models.debug.MemoryPoolStats">MemoryPoolStats</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.memory_managers">
+<code class="descname">memory_managers</code><a class="headerlink" href="#andesite.models.debug.Stats.memory_managers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory manager statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.MemoryManagerStats" title="andesite.models.debug.MemoryManagerStats">MemoryManagerStats</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.models.debug.Stats.frame_stats">
+<code class="descname">frame_stats</code><a class="headerlink" href="#andesite.models.debug.Stats.frame_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Frame statistics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">List[<a class="reference internal" href="#andesite.models.debug.FrameStats" title="andesite.models.debug.FrameStats">FrameStats</a>]</td>
 </tr>
 </tbody>
 </table>
@@ -1740,7 +2937,7 @@ If you don’t want to automatically create a band, pass
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

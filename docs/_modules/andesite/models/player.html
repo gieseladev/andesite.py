@@ -39,7 +39,8 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">map_build_all_values_from_raw</span><span class="p">,</span> <span class="n">map_convert_values_from_milli</span><span class="p">,</span> <span class="n">map_convert_values_to_milli</span>
+<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">from_centi</span><span class="p">,</span> <span class="n">map_build_all_values_from_raw</span><span class="p">,</span> <span class="n">map_convert_values</span><span class="p">,</span> \
+    <span class="n">map_convert_values_from_milli</span><span class="p">,</span> <span class="n">map_convert_values_to_milli</span><span class="p">,</span> <span class="n">to_centi</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FilterMap&quot;</span><span class="p">,</span> <span class="s2">&quot;BasePlayer&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerPlayer&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerMap&quot;</span><span class="p">,</span> <span class="s2">&quot;Player&quot;</span><span class="p">]</span>
 
@@ -52,8 +53,8 @@
     <span class="sd">&quot;&quot;&quot;Abstract class for Andesite players.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        - :py:class:`Player`</span>
-<span class="sd">        - :py:class:`MixerPlayer`</span>
+<span class="sd">        - `Player`</span>
+<span class="sd">        - `MixerPlayer`</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        time (datetime): current utc datetime on the node</span>
@@ -87,14 +88,16 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_from_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values_from_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">from_centi</span><span class="p">)</span>
 
         <span class="n">time_float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">time_float</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">)</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">)</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span></div>
 
 
@@ -183,7 +186,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

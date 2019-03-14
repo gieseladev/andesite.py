@@ -50,8 +50,24 @@
 <p>Defined in <code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.http_client</span></code>.</p>
 <dl class="class">
 <dt id="andesite.AndesiteHTTP">
-<em class="property">class </em><code class="descname">AndesiteHTTP</code><span class="sig-paren">(</span><em>*</em>, <em>loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">AndesiteHTTP</code><span class="sig-paren">(</span><em>uri</em>, <em>password</em>, <em>*</em>, <em>loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Client for Andesite’s HTTP endpoints.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>password</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Password to use for authorization. Use <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if
+the Andesite node does not have a password set.</li>
+<li><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use for the <a class="reference external" href="https://aiohttp.readthedocs.io/en/stable/client_reference.html#aiohttp.ClientSession" title="(in aiohttp v3.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aiohttp.ClientSession</span></code></a>.
+If you don’t pass this parameter (i.e. it’s <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>), the event loop
+is retrieved using <a class="reference external" href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.get_event_loop" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.get_event_loop</span></code></a> because it is required for the
+underlying <a class="reference external" href="https://aiohttp.readthedocs.io/en/stable/client_reference.html#aiohttp.ClientSession" title="(in aiohttp v3.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aiohttp.ClientSession</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <p>This does not include the player routes, as they are already covered by the <a class="reference internal" href="#andesite.AndesiteWebSocket" title="andesite.AndesiteWebSocket"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code></a>.</p>
 <dl class="attribute">
 <dt id="andesite.AndesiteHTTP.aiohttp_session">
@@ -124,8 +140,17 @@ encoded strings at once!</p>
 
 <dl class="method">
 <dt id="andesite.AndesiteHTTP.get_stats">
-<em class="property">coroutine </em><code class="descname">get_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.get_stats" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">coroutine </em><code class="descname">get_stats</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.get_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the node’s statistics.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stats</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="andesite.AndesiteHTTP.load_tracks">
@@ -158,7 +183,31 @@ encoded strings at once!</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – When Andesite returns an error.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.AndesiteHTTP.search_tracks">
+<em class="property">coroutine </em><code class="descname">search_tracks</code><span class="sig-paren">(</span><em>self</em>, <em>query</em>, <em>*</em>, <em>searcher='ytsearch'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.search_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.search_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search tracks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Search query to search for</li>
+<li><strong>searcher</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Specify the searcher to use. Defaults to YouTube.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -173,8 +222,28 @@ encoded strings at once!</p>
 <p>Defined in <code class="xref py py-obj docutils literal notranslate"><span class="pre">andesite.web_socket_client</span></code>.</p>
 <dl class="class">
 <dt id="andesite.AndesiteWebSocket">
-<em class="property">class </em><code class="descname">AndesiteWebSocket</code><span class="sig-paren">(</span><em>*</em>, <em>loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">AndesiteWebSocket</code><span class="sig-paren">(</span><em>ws_uri</em>, <em>user_id</em>, <em>password</em>, <em>*</em>, <em>max_connect_attempts=None</em>, <em>loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket" title="Permalink to this definition">¶</a></dt>
 <dd><p>Client for the Andesite WebSocket handler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ws_uri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Websocket endpoint to connect to.</li>
+<li><strong>user_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Bot’s id</li>
+<li><strong>password</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Authorization for the Andesite node.
+Set to <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if the node doesn’t have a password.</li>
+<li><strong>max_connect_attempts</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – Max amount of connection attempts to start before giving up.
+If <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, there is no upper limit.
+This value can be overwritten when calling <a class="reference internal" href="#andesite.AndesiteWebSocket.connect" title="andesite.AndesiteWebSocket.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a>.</li>
+<li><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use for asynchronous operations.
+If no loop is provided it is dynamically retrieved when
+needed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="andesite.AndesiteWebSocket.max_connect_attempts">
 <code class="descname">max_connect_attempts</code><a class="headerlink" href="#andesite.AndesiteWebSocket.max_connect_attempts" title="Permalink to this definition">¶</a></dt>
@@ -211,9 +280,28 @@ the client is connected, use the <a class="reference internal" href="#andesite.A
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use for asynchronous operations.
-If no loop is provided it is dynamically retrieved when
-needed.</td>
+<tr class="field-odd field"><th class="field-name">Events:</th><td class="field-body"><ul class="first last simple">
+<li><dl class="first docutils">
+<dt><strong>raw_msg_receive</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgReceiveEvent</span></code>): Whenever a message body is received.</dt>
+<dd>For this event to be dispatched, the received message needs to be valid JSON
+and an object.</dd>
+</dl>
+</li>
+<li><strong>msg_receive</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">MsgReceiveEvent</span></code>): After a message has been parsed into its python representation</li>
+<li><dl class="first docutils">
+<dt><strong>raw_msg_send</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code>): When sending a message.</dt>
+<dd>This event is dispatched regardless of whether the message
+was actually sent.</dd>
+</dl>
+</li>
+<li><strong>player_update</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">PlayerUpdateEvent</span></code>): When a <code class="xref py py-obj docutils literal notranslate"><span class="pre">PlayerUpdate</span></code> is received.</li>
+<li><strong>track_start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackStartEvent</span></code>)</li>
+<li><strong>track_end</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackEndEvent</span></code>)</li>
+<li><strong>track_exception</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackExceptionEvent</span></code>)</li>
+<li><strong>track_stuck</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackStuckEvent</span></code>)</li>
+<li><strong>unknown_andesite_event</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">UnknownAndesiteEvent</span></code>): When an unknown event is received.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -231,7 +319,7 @@ queue are sent in order and a <code class="xref py py-obj docutils literal notra
 If this is not set, <a class="reference internal" href="#andesite.AndesiteWebSocket.max_connect_attempts" title="andesite.AndesiteWebSocket.max_connect_attempts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_connect_attempts</span></code></a> is used instead.
 If <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, unlimited attempts will be performed.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></a> – If the client is already connected.
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – If the client is already connected.
 Check <a class="reference internal" href="#andesite.AndesiteWebSocket.connected" title="andesite.AndesiteWebSocket.connected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connected</span></code></a> first!</td>
 </tr>
 </tbody>
@@ -261,6 +349,24 @@ receive events from Andesite.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.AndesiteWebSocket.connection_id">
+<code class="descname">connection_id</code><a class="headerlink" href="#andesite.AndesiteWebSocket.connection_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Andesite connection id.</p>
+<p>This should be set after connecting to the node.
+The connection id can be used to resume connections.</p>
+<p class="rubric">Notes</p>
+<p>The client already does this automatically.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</td>
 </tr>
 </tbody>
 </table>
@@ -339,7 +445,7 @@ instead</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Target guild id</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.player.Player" title="andesite.models.player.Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -355,7 +461,7 @@ instead</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Target guild id</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stats</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -484,7 +590,7 @@ this command is ignored (Default: False)</li>
 <p>If sending the message fails because the connection is closed,
 it is added to the message queue and a connection attempt is started.</p>
 <p>Regardless of whether the payload was actually sent or
-not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ws_send</span></code> event is dispatched.</p>
+not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_msg_send</span></code>) event is dispatched.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -629,6 +735,37 @@ use the <a class="reference internal" href="#andesite.AndesiteWebSocket.send_ope
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="andesite.AndesiteWebSocket.wait_for_update">
+<em class="property">coroutine </em><code class="descname">wait_for_update</code><span class="sig-paren">(</span><em>self</em>, <em>op</em>, <em>*</em>, <em>check=None</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.wait_for_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.wait_for_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for a Andesite update.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>op</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.Operation" title="andesite.models.operations.Operation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Operation</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Operation to wait for.
+You can also pass an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Operation</span></code>.</li>
+<li><strong>check</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="event_target.html#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]]) – Additional checks to perform before accepting an Event.
+The function is called with the <code class="xref py py-obj docutils literal notranslate"><span class="pre">MsgReceiveEvent</span></code> and should
+return a <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>. If not set, all events with the correct op are
+accepted.</li>
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Timeout in seconds to wait before aborting.
+If you don’t set this, the method will wait forever.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.Operation" title="andesite.models.operations.Operation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Operation</span></code></a>]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Operation</span></code> that was accepted.
+<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if it timed-out.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -703,7 +840,7 @@ use the <a class="reference internal" href="#andesite.AndesiteWebSocket.send_ope
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
