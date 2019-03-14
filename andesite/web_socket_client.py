@@ -14,7 +14,7 @@ from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtoc
 
 from .event_target import Event, EventTarget
 from .models import Equalizer, FilterUpdate, Karaoke, Operation, Play, Timescale, Tremolo, Update, Vibrato, VolumeFilter
-from .transform import convert_to_raw, map_convert_values_to_milli, map_filter_none, to_milli
+from .transform import convert_to_raw, map_filter_none, to_centi, to_milli
 
 __all__ = ["AndesiteWebSocket", "WebSocketMessageEvent", "WebSocketSendEvent"]
 
@@ -77,6 +77,18 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
 class AndesiteWebSocket(EventTarget):
     """Client for the Andesite WebSocket handler.
 
+    Args:
+        ws_uri: Websocket endpoint to connect to.
+        user_id: Bot's id
+        password: Authorization for the Andesite node.
+            Set to `None` if the node doesn't have a password.
+        max_connect_attempts: Max amount of connection attempts to start before giving up.
+            If `None`, there is no upper limit.
+            This value can be overwritten when calling `connect`.
+        loop: Event loop to use for asynchronous operations.
+            If no loop is provided it is dynamically retrieved when
+            needed.
+
     Attributes:
         max_connect_attempts (Optional[int]):
             Max amount of connection attempts before giving up.
@@ -86,24 +98,28 @@ class AndesiteWebSocket(EventTarget):
             This attribute will be set once `connect` is called.
             Don't use the presence of this attribute to check whether
             the client is connected, use the `connected` property.
-
-    Args:
-        loop: Event loop to use for asynchronous operations.
-            If no loop is provided it is dynamically retrieved when
-            needed.
     """
     max_connect_attempts: Optional[int]
     web_socket_client: Optional[WebSocketClientProtocol]
 
+    _ws_uri: str
+    _headers: Dict[str, str]
     _message_queue: Deque[str]
     _read_loop: Optional[Future]
     _json_encoder: JSONEncoder
     _json_decoder: JSONDecoder
 
-    def __init__(self, *, loop: AbstractEventLoop = None) -> None:
+    def __init__(self, ws_uri: str, user_id: int, password: Optional[str], *,
+                 max_connect_attempts: int = None,
+                 loop: AbstractEventLoop = None) -> None:
         super().__init__(loop=loop)
+        self._ws_uri = ws_uri
 
-        self.max_connect_attempts = None
+        self._headers = {"User-Id": str(user_id)}
+        if password is not None:
+            self._headers["Authorization"] = password
+
+        self.max_connect_attempts = max_connect_attempts
         self.web_socket_client = None
 
         self._message_queue = deque()
@@ -129,7 +145,7 @@ class AndesiteWebSocket(EventTarget):
                 If `None`, unlimited attempts will be performed.
 
         Raises:
-            `ValueError`: If the client is already connected.
+            ValueError: If the client is already connected.
                 Check `connected` first!
 
         Notes:
@@ -142,25 +158,21 @@ class AndesiteWebSocket(EventTarget):
         if self.connected:
             raise ValueError("Already connected!")
 
-        uri = ""
-        headers = {
-            "Authorization": "",
-            "User-Id": ""
-        }
-
         attempt: int = 1
         max_attempts = max_attempts or self.max_connect_attempts
 
         while max_attempts is None or attempt <= max_attempts:
-            client = await try_connect(uri, extra_headers=headers, loop=self._loop)
+            client = await try_connect(self._ws_uri, extra_headers=self._headers, loop=self._loop)
             if client:
                 break
 
             timeout = int(math.pow(attempt, 1.5))
             log.info(f"Connection unsuccessful, trying again in {timeout} seconds")
             await asyncio.sleep(timeout, loop=self._loop)
+
+            attempt += 1
         else:
-            raise ConnectionError(f"Couldn't connect to {uri} after {attempt} attempts")
+            raise ConnectionError(f"Couldn't connect to {self._ws_uri} after {attempt} attempts")
 
         self.web_socket_client = client
         self._start_read_loop()
@@ -335,9 +347,8 @@ class AndesiteWebSocket(EventTarget):
         if isinstance(track, Play):
             payload = convert_to_raw(track)
         else:
-            payload = dict(track=track, start=start, end=end, pause=pause, volume=volume, noReplace=no_replace)
+            payload = dict(track=track, start=to_milli(start), end=to_milli(end), pause=pause, volume=to_centi(volume), noReplace=no_replace)
             map_filter_none(payload)
-            map_convert_values_to_milli(payload, "start", "end", "volume")
 
         await self.send(guild_id, "play", payload)
 
@@ -378,7 +389,7 @@ class AndesiteWebSocket(EventTarget):
             guild_id: ID of the guild for which to set the volume
             volume: Volume to set
         """
-        payload = dict(volume=to_milli(volume))
+        payload = dict(volume=to_centi(volume))
         await self.send(guild_id, "volume", payload)
 
     @overload
@@ -419,9 +430,8 @@ class AndesiteWebSocket(EventTarget):
             if filters:
                 filters = convert_to_raw(filters)
 
-            payload = dict(pause=pause, position=position, volume=volume, filters=filters)
+            payload = dict(pause=pause, position=to_milli(position), volume=to_centi(volume), filters=filters)
             map_filter_none(payload)
-            map_convert_values_to_milli(payload, "position", "volume")
 
         await self.send(guild_id, "update", payload)
 

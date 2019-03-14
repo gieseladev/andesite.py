@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from andesite.transform import RawDataType, build_from_raw, convert_to_raw, from_milli, map_build_all_values_from_raw, map_build_values_from_raw, \
-    map_convert_value, map_convert_values, map_convert_values_all, map_convert_values_from_milli, map_convert_values_to_milli, map_filter_none, \
-    seq_build_all_items_from_raw, to_milli
+from andesite.transform import RawDataType, build_from_raw, convert_to_raw, from_centi, from_milli, map_build_all_values_from_raw, \
+    map_build_values_from_raw, map_convert_value, map_convert_values, map_convert_values_all, map_convert_values_from_milli, \
+    map_convert_values_to_milli, map_filter_none, seq_build_all_items_from_raw, to_centi, to_milli
 
 
 @dataclass
@@ -135,6 +135,16 @@ def test_from_milli():
 def test_to_milli():
     assert to_milli(5.5) == 5500
     assert to_milli(None) is None
+
+
+def test_from_centi():
+    assert from_centi(100) == 1.0
+    assert from_centi(None) is None
+
+
+def test_to_centi():
+    assert to_centi(1.2) == 120
+    assert to_centi(None) is None
 
 
 def test_map_convert_values_from_milli():

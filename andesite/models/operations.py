@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 from andesite.transform import RawDataType, build_from_raw, map_build_values_from_raw, map_convert_values_from_milli, \
-    map_convert_values_to_milli
+    map_convert_values_to_milli, map_convert_values, to_centi, from_centi, to_milli, from_milli
 from .filters import Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter
 
 __all__ = ["Operation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
@@ -56,11 +56,13 @@ class Play(Operation):
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
-        map_convert_values_from_milli(data, "start", "end", "volume")
+        map_convert_values_from_milli(data, "start", "end")
+        map_convert_values(data, volume=from_centi)
 
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:
-        map_convert_values_to_milli(data, "start", "end", "volume")
+        map_convert_values_to_milli(data, "start", "end")
+        map_convert_values(data, volume=to_centi)
 
 
 # noinspection PyUnresolvedReferences
@@ -110,11 +112,11 @@ class Volume(Operation):
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
-        map_convert_values_from_milli(data, "volume")
+        map_convert_values(data, volume=from_centi)
 
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:
-        map_convert_values_to_milli(data, "volume")
+        map_convert_values(data, volume=to_centi)
 
 
 # noinspection PyUnresolvedReferences
@@ -160,12 +162,12 @@ class Update(Operation):
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
-        map_convert_values_from_milli(data, "position", "volume")
+        map_convert_values(data, volume=from_centi, position=from_milli)
         map_build_values_from_raw(data, filters=FilterUpdate)
 
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:
-        map_convert_values_to_milli(data, "position", "volume")
+        map_convert_values(data, volume=to_centi, position=to_milli)
 
 
 MixerPlayerUpdateMap = Dict[str, Union[Play, Update]]

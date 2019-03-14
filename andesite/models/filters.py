@@ -55,7 +55,7 @@ class EqualizerBand:
             value: Value to set for the band. ( [0, 14] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low_inc=0, up_inc=14)
         self.band = value
@@ -67,7 +67,7 @@ class EqualizerBand:
             value: Value to set for the gain. ( [-0.25, 1] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low_inc=-.25, up_inc=1)
         self.gain = value
@@ -140,7 +140,7 @@ class Equalizer:
             gain: Value to set for the gain. ( [-0.25, 1] )
 
         Raises:
-            `ValueError`: if the provided gain is invalid.
+            ValueError: if the provided gain is invalid.
         """
         self.get_band(band).set_gain(gain)
 
@@ -182,7 +182,7 @@ class Timescale:
             value: Value to set for the speed. ( (0, INF] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0)
         self.speed = value
@@ -194,7 +194,7 @@ class Timescale:
             value: Value to set for the pitch. ( (0, INF] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0)
         self.pitch = value
@@ -206,7 +206,7 @@ class Timescale:
             value: Value to set for the rate. ( (0, INF] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0)
         self.rate = value
@@ -230,7 +230,7 @@ class Tremolo:
             value: Value to set for the frequency. ( (0, INF] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0)
         self.frequency = value
@@ -242,7 +242,7 @@ class Tremolo:
             value: Value to set for the depth. ( (0, 1] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0, up_inc=1)
         self.depth = value
@@ -266,7 +266,7 @@ class Vibrato:
             value: Value to set for the frequency. ( (0, 14] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0, up_inc=14)
         self.frequency = value
@@ -278,7 +278,7 @@ class Vibrato:
             value: Value to set for the depth. ( (0, 1] )
 
         Raises:
-            `ValueError`: if the provided value is invalid.
+            ValueError: if the provided value is invalid.
         """
         _ensure_in_interval(value, low=0, up_inc=1)
         self.depth = value

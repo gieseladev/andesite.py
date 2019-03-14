@@ -13,7 +13,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Giesela Inc.",
-    packages=find_packages(exclude=("docs", "tests")),
+    packages=find_packages(exclude=("examples", "docs", "tests")),
     python_requires=">=3.7",
     install_requires=[
         "aiohttp",

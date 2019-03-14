@@ -2,13 +2,13 @@
 
 import asyncio
 from asyncio import AbstractEventLoop
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, Union
 
 from aiohttp import ClientSession
 from yarl import URL
 
 from . import __version__
-from .models import LoadedTrack, TrackInfo
+from .models import LoadedTrack, Stats, TrackInfo
 from .transform import build_from_raw, seq_build_all_items_from_raw
 
 USER_AGENT = f"andesite.py/{__version__} (https://github.com/gieseladev/andesite.py)"
@@ -16,6 +16,14 @@ USER_AGENT = f"andesite.py/{__version__} (https://github.com/gieseladev/andesite
 
 class AndesiteHTTP:
     """Client for Andesite's HTTP endpoints.
+
+    Args:
+        password: Password to use for authorization. Use `None` if
+            the Andesite node does not have a password set.
+        loop: Event loop to use for the `aiohttp.ClientSession`.
+            If you don't pass this parameter (i.e. it's `None`), the event loop
+            is retrieved using `asyncio.get_event_loop` because it is required for the
+            underlying `aiohttp.ClientSession`.
 
     This does not include the player routes, as they are already covered by the `AndesiteWebSocket`.
 
@@ -27,18 +35,14 @@ class AndesiteHTTP:
     _loop: AbstractEventLoop
     _base_url: URL
 
-    def __init__(self, *, loop: AbstractEventLoop = None) -> None:
-        """Initialise the client.
+    def __init__(self, uri: Union[str, URL], password: Optional[str], *, loop: AbstractEventLoop = None) -> None:
+        self._loop = loop if loop is not None else asyncio.get_event_loop()
+        self._base_url = URL(uri)
 
-        Args:
-            loop: Event loop to use for the `aiohttp.ClientSession`.
-        """
-        self._loop = loop or asyncio.get_event_loop()
+        headers = {"User-Agent": USER_AGENT}
 
-        headers = {
-            "Authorization": "",
-            "User-Agent": USER_AGENT
-        }
+        if password is not None:
+            headers["Authorization"] = password
 
         self.aiohttp_session = ClientSession(headers=headers, loop=self._loop)
 
@@ -59,8 +63,10 @@ class AndesiteHTTP:
         async with self.aiohttp_session.request(method, url, **kwargs) as resp:
             return await resp.json(content_type=None)
 
-    async def get_stats(self):
+    async def get_stats(self) -> Stats:
+        """Get the node's statistics."""
         data = await self.request("GET", "stats")
+        return build_from_raw(Stats, data)
 
     async def load_tracks(self, identifier: str) -> LoadedTrack:
         """Load tracks.
@@ -71,6 +77,15 @@ class AndesiteHTTP:
         data = await self.request("GET", "loadtracks", params=dict(identifier=identifier))
 
         return build_from_raw(LoadedTrack, data)
+
+    async def search_tracks(self, query: str, *, searcher: str = "ytsearch") -> LoadedTrack:
+        """Search tracks.
+
+        Args:
+            query: Search query to search for
+            searcher: Specify the searcher to use. Defaults to YouTube.
+        """
+        return await self.load_tracks(f"{searcher}:{query}")
 
     async def decode_track(self, track: str) -> Optional[TrackInfo]:
         """Get the `TrackInfo` from the encoded track data.

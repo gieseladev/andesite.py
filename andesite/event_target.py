@@ -6,7 +6,7 @@ import logging
 from asyncio import AbstractEventLoop, CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, TypeVar, Union, overload
+from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, Set, TypeVar, Union, overload
 
 __all__ = ["Event", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
 
@@ -16,14 +16,45 @@ log = logging.getLogger(__name__)
 class Event:
     """Base type of all events.
 
+    Args:
+        name: Name of the event
+        **kwargs: Attributes to set on the event.
+
     Attributes:
         name (str): Name of the event.
+
+    Dynamic attributes (those passed to the constructor) can also be accessed
+    using the `get` method.
     """
     name: str
 
+    _keys: Set[str]
+
     def __init__(self, name: str, **kwargs: Any) -> None:
         self.name = name
+
+        self._keys = set(kwargs.keys())
         self.__dict__.update(kwargs)
+
+    def __repr__(self) -> str:
+        type_name = type(self).__name__
+        name = self.name
+        return f"{type_name} ({name}) {self._keys}"
+
+    def get(self, key: str, *, default: Any = None) -> Optional[Any]:
+        """Get the value of a key.
+
+        Unlike `getattr`, the key must have been passed to the event.
+        If you need to get any attribute, use `getattr` instead.
+
+        Args:
+            key: Name of the key to retrieve
+            default: Default value to return if the key doesn't exist.
+                (Default is `None`)
+        """
+        if key in self._keys:
+            return getattr(self, key, default=default)
+        return default
 
 
 EventHandler = Callable[[Event], Any]
@@ -194,6 +225,49 @@ class EventTarget:
 
         return removed_some
 
+    @overload
+    def has_listener(self, event: str) -> bool:
+        ...
+
+    @overload
+    def has_listener(self, event: str, target: Union[EventHandler, EventListener, OneTimeEventListener]) -> bool:
+        ...
+
+    def has_listener(self, event: str, target: Union[EventHandler, EventListener, OneTimeEventListener] = None) -> bool:
+        """Check whether an event has a listener.
+
+        This includes one-time listeners.
+
+        Args:
+            event: Name of the event to check
+            target: Listener to check whether it has been added.
+                If this is `None` the method checks whether the
+                event has **any** listeners.
+        """
+        if target is None:
+            return bool(self._listeners.get(event)) or bool(self._one_time_listeners.get(event))
+        elif isinstance(target, OneTimeEventListener):
+            try:
+                listeners = self._one_time_listeners[event]
+            except KeyError:
+                return False
+            else:
+                return target in listeners
+        else:
+            try:
+                listeners = self._listeners[event]
+            except KeyError:
+                return False
+
+            if isinstance(target, EventListener):
+                return target in listeners
+            else:
+                for listener in listeners:
+                    if listener.handler == target:
+                        return True
+
+                return False
+
     def dispatch(self, event: Event) -> Optional[Future]:
         """Dispatch an event.
 
@@ -210,7 +284,7 @@ class EventTarget:
             Optional[Future]: Future aggregating all asynchronous dispatches.
                 Can be awaited to make sure all handlers have been executed.
         """
-        log.debug("dispatching", event)
+        log.debug(f"dispatching: {event}")
 
         futures: List[Union[Coroutine, Future]] = []
         event_name = event.name

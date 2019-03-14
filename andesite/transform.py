@@ -11,10 +11,14 @@ from typing import Any, Callable, Dict, MutableMapping, MutableSequence, Optiona
 import lettercase
 from lettercase import ConversionMemo, LetterCase
 
-__all__ = ["RawDataType", "convert_to_raw", "build_from_raw", "seq_build_all_items_from_raw", "map_build_all_values_from_raw", "MapFunction",
-           "map_convert_value",
-           "map_convert_values", "map_convert_values_all", "map_build_values_from_raw", "from_milli", "to_milli", "map_convert_values_from_milli",
-           "map_convert_values_to_milli",
+__all__ = ["RawDataType",
+           "convert_to_raw", "build_from_raw",
+           "seq_build_all_items_from_raw",
+           "map_build_all_values_from_raw",
+           "MapFunction", "map_convert_value", "map_convert_values", "map_convert_values_all", "map_build_values_from_raw",
+           "from_milli", "to_milli",
+           "from_centi", "to_centi",
+           "map_convert_values_from_milli", "map_convert_values_to_milli",
            "map_filter_none"]
 
 T = TypeVar("T")
@@ -58,10 +62,11 @@ def convert_to_raw(obj: Any) -> RawDataType:
             data[field.name] = value
 
         try:
-            res = obj.__transform_output__(data)
+            transform = obj.__transform_output__
         except AttributeError:
             pass
         else:
+            res = transform(data)
             if res is not None:
                 data = res
 
@@ -77,8 +82,19 @@ def convert_to_raw(obj: Any) -> RawDataType:
         return obj
 
 
-def build_from_raw(cls: Type[T], raw_data: RawDataType) -> T:
+@overload
+def build_from_raw(cls: Type[T], raw_data: None) -> None: ...
+
+
+@overload
+def build_from_raw(cls: Type[T], raw_data: RawDataType) -> T: ...
+
+
+def build_from_raw(cls: Type[T], raw_data: Optional[RawDataType]) -> Optional[T]:
     """Build an instance of cls from the passed raw data.
+
+    In the spirit of the other transform functions, `None` is treated as a special value
+    and returned directly instead of handling it in any way.
 
     The keys of raw data are mutated from dromedaryCase to snake_case
     before it is passed to the `__transform_input__` **classmethod** of `cls`, if it exists.
@@ -90,14 +106,19 @@ def build_from_raw(cls: Type[T], raw_data: RawDataType) -> T:
     Args:
         cls: Target type to build
         raw_data: Data which should be used to build the instance.
+            If this is `None`, `None` is returned.
     """
+    if raw_data is None:
+        return None
+
     lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE, memo=CONVERTER_MEMO)
 
     try:
-        res = cls.__transform_input__(raw_data)
+        transform = cls.__transform_input__
     except AttributeError:
         pass
     else:
+        res = transform(raw_data)
         if res is not None:
             raw_data = res
 
@@ -200,7 +221,9 @@ def map_build_values_from_raw(mapping: RawDataType, **key_types: Type[T]) -> Non
     Returns:
         This method mutates the provided mapping, it does not return anything.
     """
-    map_convert_values(mapping, **{key: partial(build_from_raw, cls) for key, cls in key_types.items()})
+    for key, cls in key_types.items():
+        func = partial(build_from_raw, cls)
+        map_convert_value(mapping, key, func)
 
 
 def map_build_all_values_from_raw(mapping: MutableMapping[Any, RawDataType], cls: Type[T]) -> None:
@@ -229,9 +252,7 @@ def from_milli(value: None) -> None: ...
 
 
 def from_milli(value: Optional[int]) -> Optional[float]:
-    """Convert a number from milli to base.
-
-    Let's be honest, this is just dividing by 1000.
+    """Convert a number from thousandths to base.
 
     Args:
         value: Value to convert from milli.
@@ -254,7 +275,53 @@ def to_milli(value: None) -> None: ...
 
 
 def to_milli(value: Optional[float]) -> Optional[int]:
-    """Convert from base unit to milli.
+    """Convert from base unit to thousandths.
+
+    Args:
+        value: Value to convert to milli.
+
+    Returns:
+        Optional[int]: `None` if you pass `None` as the value, otherwise an `int`.
+    """
+    if value is None:
+        return value
+
+    return round(1000 * value)
+
+
+@overload
+def from_centi(value: int) -> float: ...
+
+
+@overload
+def from_centi(value: None) -> None: ...
+
+
+def from_centi(value: Optional[int]) -> Optional[float]:
+    """Convert a number from hundredths to base.
+
+    Args:
+        value: Value to convert from centi.
+
+    Returns:
+        Optional[float]: `None` if you pass `None` as the value, otherwise a `float`.
+    """
+    if value is None:
+        return value
+
+    return value / 100
+
+
+@overload
+def to_centi(value: float) -> int: ...
+
+
+@overload
+def to_centi(value: None) -> None: ...
+
+
+def to_centi(value: Optional[float]) -> Optional[int]:
+    """Convert from base unit to hundredths.
 
     This is really just multiplying by 1000.
 
@@ -267,7 +334,7 @@ def to_milli(value: Optional[float]) -> Optional[int]:
     if value is None:
         return value
 
-    return round(1000 * value)
+    return round(100 * value)
 
 
 def map_convert_values_from_milli(mapping: RawDataType, *keys) -> None:

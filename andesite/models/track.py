@@ -102,8 +102,8 @@ class LoadedTrack:
     tracks: Optional[List[TrackInfo]]
     playlist_info: Optional[PlaylistInfo]
 
-    cause: Optional[Error]
-    severity: Optional[str]
+    cause: Optional[Error] = None
+    severity: Optional[str] = None
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:

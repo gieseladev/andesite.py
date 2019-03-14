@@ -3,9 +3,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, cast
 
-from andesite.transform import RawDataType, map_build_all_values_from_raw, map_convert_values_from_milli, map_convert_values_to_milli
+from andesite.transform import RawDataType, from_centi, map_build_all_values_from_raw, map_build_values_from_raw, map_convert_values, \
+    map_convert_values_from_milli, map_convert_values_to_milli, to_centi
 
-__all__ = ["FilterMap", "BasePlayer", "MixerPlayer", "MixerMap", "Player"]
+__all__ = ["FilterMap", "BasePlayer", "MixerPlayer", "MixerMap", "Player", "PlayerUpdate"]
 
 FilterMap = Dict[str, Any]
 
@@ -51,14 +52,16 @@ class BasePlayer(abc.ABC):
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
-        map_convert_values_from_milli(data, "position", "volume")
+        map_convert_values_from_milli(data, "position")
+        map_convert_values(data, volume=from_centi)
 
         time_float = float(data["time"])
         data["time"] = datetime.utcfromtimestamp(time_float)
 
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:
-        map_convert_values_to_milli(data, "position", "volume")
+        map_convert_values_to_milli(data, "position")
+        map_convert_values(data, volume=to_centi)
         data["time"] = int(cast(datetime, data["time"]).timestamp())
 
 
@@ -85,3 +88,28 @@ class Player(BasePlayer):
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
         map_build_all_values_from_raw(data["mixer"], MixerPlayer)
+
+
+# noinspection PyUnresolvedReferences
+@dataclass
+class PlayerUpdate:
+    """
+
+    Attributes:
+        guild_id (int): guild id
+        user_id (int): user id
+        state (Player): player
+    """
+
+    guild_id: int
+    user_id: int
+    state: Player
+
+    @classmethod
+    def __transform_input__(cls, data: RawDataType) -> None:
+        map_convert_values(data, guild_id=int, user_id=int)
+        map_build_values_from_raw(data, state=Player)
+
+    @classmethod
+    def __transform_output__(cls, data: RawDataType) -> None:
+        map_convert_values(data, guild_id=str, user_id=str)
