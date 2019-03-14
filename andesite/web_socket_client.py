@@ -6,26 +6,31 @@ import math
 import time
 from asyncio import AbstractEventLoop, CancelledError, Future
 from collections import deque
+from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
-from typing import Any, Deque, Dict, Optional, Union, overload
+from typing import Any, Deque, Dict, Generic, Optional, Type, TypeVar, Union, overload
 
 import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 
-from .event_target import Event, EventTarget
-from .models import Equalizer, FilterUpdate, Karaoke, Operation, Play, Timescale, Tremolo, Update, Vibrato, VolumeFilter
-from .transform import convert_to_raw, map_filter_none, to_centi, to_milli
+from .event_target import Event, EventFilter, EventTarget, NamedEvent
+from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterUpdate, Karaoke, Operation, Play, Player, PlayerUpdate, Stats, StatsUpdate, \
+    Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
+from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 
-__all__ = ["AndesiteWebSocket", "WebSocketMessageEvent", "WebSocketSendEvent"]
+__all__ = ["AndesiteWebSocket", "RawMsgReceiveEvent", "RawMsgSendEvent"]
+
+OPT = TypeVar("OPT", bound=Operation)
+ET = TypeVar("ET", bound=AndesiteEvent)
 
 log = logging.getLogger(__name__)
 
 
-class WebSocketMessageEvent(Event):
+class RawMsgReceiveEvent(NamedEvent):
     """Event emitted when a web socket message is received.
 
     Attributes:
-        body: Raw body of the received message.
+        body (Dict[str, Any]): Raw body of the received message.
             Note: The body isn't manipulated in any way other
                 than being loaded from the raw JSON string.
                 For example, the names are still in dromedaryCase.
@@ -33,23 +38,49 @@ class WebSocketMessageEvent(Event):
     body: Dict[str, Any]
 
     def __init__(self, body: Dict[str, Any]) -> None:
-        super().__init__("ws_message", body=body)
+        super().__init__(body=body)
 
 
-class WebSocketSendEvent(Event):
+class MsgReceiveEvent(NamedEvent, Generic[OPT]):
+    """Event emitted when a web socket message is received.
+
+    Attributes:
+        op (str): Operation.
+            This will be one of the following:
+            - connection-id
+            - player-update
+            - stats
+            - event
+        data (Operation): Loaded message model.
+            The type of this depends on the op.
+    """
+    op: str
+    data: OPT
+
+    def __init__(self, op: str, data: OPT) -> None:
+        super().__init__(op=op, data=data)
+
+
+class PlayerUpdateEvent(NamedEvent, PlayerUpdate):
+    def __init__(self, player_update: PlayerUpdate) -> None:
+        super().__init__()
+        self.__dict__.update(player_update.__dict__)
+
+
+class RawMsgSendEvent(NamedEvent):
     """Event dispatched before a web socket message is sent.
 
     Attributes:
-        guild_id: guild id
-        op: Op-code to be executed
-        body: Raw body of the message
+        guild_id (int): guild id
+        op (str): Op-code to be executed
+        body (Dict[str, Any]): Raw body of the message
     """
     guild_id: int
     op: str
     body: Dict[str, Any]
 
     def __init__(self, guild_id: int, op: str, body: Dict[str, Any]) -> None:
-        super().__init__("ws_send", guild_id=guild_id, op=op, body=body)
+        super().__init__(guild_id=guild_id, op=op, body=body)
 
 
 async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
@@ -98,12 +129,30 @@ class AndesiteWebSocket(EventTarget):
             This attribute will be set once `connect` is called.
             Don't use the presence of this attribute to check whether
             the client is connected, use the `connected` property.
+
+    :Events:
+        - **raw_msg_receive** (`RawMsgReceiveEvent`): Whenever a message body is received.
+            For this event to be dispatched, the received message needs to be valid JSON
+            and an object.
+        - **msg_receive** (`MsgReceiveEvent`): After a message has been parsed into its python representation
+        - **raw_msg_send** (`RawMsgSendEvent`): When sending a message.
+            This event is dispatched regardless of whether the message
+            was actually sent.
+
+        - **player_update** (`PlayerUpdateEvent`): When a `PlayerUpdate` is received.
+
+        - **track_start** (`TrackStartEvent`)
+        - **track_end** (`TrackEndEvent`)
+        - **track_exception** (`TrackExceptionEvent`)
+        - **track_stuck** (`TrackStuckEvent`)
+        - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown event is received.
     """
     max_connect_attempts: Optional[int]
     web_socket_client: Optional[WebSocketClientProtocol]
 
     _ws_uri: str
     _headers: Dict[str, str]
+    _last_connection_id: Optional[str]
     _message_queue: Deque[str]
     _read_loop: Optional[Future]
     _json_encoder: JSONEncoder
@@ -122,6 +171,7 @@ class AndesiteWebSocket(EventTarget):
         self.max_connect_attempts = max_connect_attempts
         self.web_socket_client = None
 
+        self._last_connection_id = None
         self._message_queue = deque()
         self._read_loop = None
 
@@ -132,6 +182,18 @@ class AndesiteWebSocket(EventTarget):
     def connected(self) -> bool:
         """Whether the client is connected and usable."""
         return self.web_socket_client and self.web_socket_client.open
+
+    @property
+    def connection_id(self) -> Optional[str]:
+        """Andesite connection id.
+
+        This should be set after connecting to the node.
+        The connection id can be used to resume connections.
+
+        Notes:
+            The client already does this automatically.
+        """
+        return self._last_connection_id
 
     async def connect(self, max_attempts: int = None) -> None:
         """Connect to the web socket server.
@@ -158,11 +220,20 @@ class AndesiteWebSocket(EventTarget):
         if self.connected:
             raise ValueError("Already connected!")
 
+        headers = self._headers
+
+        # inject the connection id to resume previous connection
+        if self._last_connection_id is not None:
+            headers["Andesite-Resume-Id"] = self._last_connection_id
+        else:
+            with suppress(KeyError):
+                del headers["Andesite-Resume-Id"]
+
         attempt: int = 1
         max_attempts = max_attempts or self.max_connect_attempts
 
         while max_attempts is None or attempt <= max_attempts:
-            client = await try_connect(self._ws_uri, extra_headers=self._headers, loop=self._loop)
+            client = await try_connect(self._ws_uri, extra_headers=headers, loop=self._loop)
             if client:
                 break
 
@@ -235,11 +306,43 @@ class AndesiteWebSocket(EventTarget):
             log.debug(f"Received message {raw_msg}")
 
             try:
-                data = self._json_decoder.decode(raw_msg)
+                data: Dict[str, Any] = self._json_decoder.decode(raw_msg)
             except JSONDecodeError:
                 raise
 
-            _ = self.dispatch(WebSocketMessageEvent(data))
+            if not isinstance(data, dict):
+                log.warning(f"Received invalid message type. Expecting object, received type {type(data).__name__}: {data}")
+                return
+
+            _ = self.dispatch(RawMsgReceiveEvent(data))
+
+            try:
+                op = data.pop("op")
+            except KeyError:
+                log.info(f"Ignoring message without op code: {data}")
+                return
+
+            event_type = data.get("type")
+            cls = get_update_model(op, event_type)
+            if cls is None:
+                log.warning(f"Ignoring message with unknown op \"{op}\": {data}")
+                return
+
+            try:
+                message: Operation = build_from_raw(cls, data)
+            except Exception as e:
+                log.error(f"Couldn't parse message from Andesite node ({e}): {data}")
+                return
+
+            _ = self.dispatch(MsgReceiveEvent(op, message))
+
+            if isinstance(message, ConnectionUpdate):
+                log.info("received connection update, setting last connection id.")
+                self._last_connection_id = message.id
+            elif isinstance(message, PlayerUpdate):
+                _ = self.dispatch(PlayerUpdateEvent(message))
+            elif isinstance(message, AndesiteEvent):
+                _ = self.dispatch(message)
 
     def _start_read_loop(self) -> None:
         """Start the web socket reader.
@@ -261,6 +364,57 @@ class AndesiteWebSocket(EventTarget):
 
         self._read_loop.cancel()
 
+    @overload
+    async def wait_for_update(self, op: Type[OPT], *, check: EventFilter = None) -> OPT:
+        ...
+
+    @overload
+    async def wait_for_update(self, op: Type[OPT], *, check: EventFilter = None, timeout: float = None) -> Optional[OPT]:
+        ...
+
+    @overload
+    async def wait_for_update(self, op: str, *, check: EventFilter = None) -> Operation:
+        ...
+
+    @overload
+    async def wait_for_update(self, op: str, *, check: EventFilter = None, timeout: float = None) -> Optional[Operation]:
+        ...
+
+    async def wait_for_update(self, op: Union[Operation, str], *, check: EventFilter = None, timeout: float = None) -> Optional[Operation]:
+        """Wait for a Andesite update.
+
+        Args:
+            op: Operation to wait for.
+                You can also pass an `Operation`.
+            check: Additional checks to perform before accepting an Event.
+                The function is called with the `MsgReceiveEvent` and should
+                return a `bool`. If not set, all events with the correct op are
+                accepted.
+            timeout: Timeout in seconds to wait before aborting.
+                If you don't set this, the method will wait forever.
+
+        Returns:
+            `Operation` that was accepted.
+            `None` if it timed-out.
+        """
+        if isinstance(op, Operation):
+            op = op.__op__
+
+        def _check(_event: MsgReceiveEvent) -> bool:
+            if _event.op == op:
+                if check is None:
+                    return True
+                else:
+                    return check(_event)
+            else:
+                return False
+
+        event: Optional[MsgReceiveEvent] = await self.wait_for(MsgReceiveEvent, check=_check, timeout=timeout)
+        if event is not None:
+            return event.data
+        else:
+            return None
+
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
         """Send a payload.
 
@@ -270,7 +424,7 @@ class AndesiteWebSocket(EventTarget):
         it is added to the message queue and a connection attempt is started.
 
         Regardless of whether the payload was actually sent or
-        not a `ws_send` event is dispatched.
+        not a `RawMsgSendEvent` (`raw_msg_send`) event is dispatched.
 
         Args:
             guild_id: Target guild id
@@ -280,7 +434,7 @@ class AndesiteWebSocket(EventTarget):
         """
         payload.update(guildId=str(guild_id), op=op)
 
-        _ = self.dispatch(WebSocketSendEvent(guild_id, op, payload))
+        _ = self.dispatch(RawMsgSendEvent(guild_id, op, payload))
 
         log.debug(f"sending payload: {payload}")
 
@@ -498,21 +652,29 @@ class AndesiteWebSocket(EventTarget):
 
         await self.send(guild_id, "filters", payload)
 
-    async def get_player(self, guild_id: int) -> None:
+    async def get_player(self, guild_id: int) -> Player:
         """Get the player.
 
         Args:
             guild_id: Target guild id
         """
-        await self.send(guild_id, "get-player", {})
 
-    async def get_stats(self, guild_id: int) -> None:
+        def player_check(event: MsgReceiveEvent[PlayerUpdate]) -> bool:
+            return event.data.guild_id == guild_id
+
+        await self.send(guild_id, "get-player", {})
+        player_update = await self.wait_for_update(PlayerUpdate, check=player_check)
+        return player_update.state
+
+    async def get_stats(self, guild_id: int) -> Stats:
         """Get the Andesite stats.
 
         Args:
             guild_id: Target guild id
         """
         await self.send(guild_id, "get-stats", {})
+        stats_update = await self.wait_for_update(StatsUpdate)
+        return stats_update.stats
 
     async def ping(self, guild_id: int) -> float:
         """Ping the Andesite server.
@@ -524,14 +686,14 @@ class AndesiteWebSocket(EventTarget):
             Amount of seconds it took for the response to be received.
             Note: This is not accurate.
         """
+
+        def check_ping_response(event: RawMsgReceiveEvent) -> bool:
+            return event.body.get("ping", False)
+
         start = time.time()
 
         await self.send(guild_id, "ping", {"ping": True})
-
-        def check_ping_response(event: WebSocketMessageEvent) -> bool:
-            return event.body.get("ping", False)
-
-        await self.wait_for("ws_message", check=check_ping_response)
+        await self.wait_for(RawMsgReceiveEvent, check=check_ping_response)
 
         return time.time() - start
 

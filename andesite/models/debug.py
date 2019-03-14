@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, seq_build_all_items_from_raw
+from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_rename_keys, seq_build_all_items_from_raw
 
 __all__ = ["StackFrame", "Error",
            "PlayersStats", "RuntimeVMStats", "RuntimeSpecStats", "RuntimeVersionStats", "RuntimeStats", "OSStats", "CPUStats", "ClassLoadingStats",
@@ -60,6 +60,7 @@ class Error:
         seq_build_all_items_from_raw(data["stack"], StackFrame)
         seq_build_all_items_from_raw(data["suppressed"], Error)
         map_build_values_from_raw(data, cause=Error)
+        map_rename_keys(data, class_name="class")
 
 
 # STATISTICS

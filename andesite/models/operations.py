@@ -43,7 +43,7 @@ class Play(Operation):
         end (Optional[float]): timestamp, in seconds, to end the track
         pause (Optional[bool]): whether or not to pause the player
         volume (Optional[float]): volume to set on the player
-        no_replace (bool): if True and a track is already playing/paused, this command is ignored
+        no_replace (bool): if `True` and a track is already playing/paused, this command is ignored. (Defaults to `False`)
     """
     __op__ = "play"
 

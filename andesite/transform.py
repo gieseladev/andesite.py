@@ -12,6 +12,7 @@ import lettercase
 from lettercase import ConversionMemo, LetterCase
 
 __all__ = ["RawDataType",
+           "transform_input", "transform_output",
            "convert_to_raw", "build_from_raw",
            "seq_build_all_items_from_raw",
            "map_build_all_values_from_raw",
@@ -19,7 +20,7 @@ __all__ = ["RawDataType",
            "from_milli", "to_milli",
            "from_centi", "to_centi",
            "map_convert_values_from_milli", "map_convert_values_to_milli",
-           "map_filter_none"]
+           "map_filter_none", "map_rename_keys"]
 
 T = TypeVar("T")
 KT = TypeVar("KT")
@@ -31,15 +32,90 @@ RawDataType = Dict[str, Any]
 CONVERTER_MEMO = ConversionMemo(LetterCase.DROMEDARY, LetterCase.SNAKE)
 
 
+def _transform(transformer: Callable[[RawDataType], Optional[RawDataType]], data: RawDataType) -> RawDataType:
+    """Perform a transformation.
+
+    Args:
+        transformer: Transformer which is called with the data
+        data: Data to be transformed
+
+    Returns:
+        If the transformer returned something other than `None`, it is returned.
+        Otherwise it is assumed, that the transformer manipulated the data
+        and the original data is returned.
+    """
+    res = transformer(data)
+    if res is None:
+        return data
+    else:
+        return res
+
+
+def transform_input(cls: Any, data: RawDataType) -> RawDataType:
+    """Call the __transform_input__ classmethod on a model.
+
+    This is different from calling the method directly because it
+    always returns the current data.
+
+    Args:
+        cls: Target model whose transformation to apply
+        data: Data to be transformed
+
+    The transform method can either manipulate the provided data
+    or replace it entirely by returning something other than `None`.
+
+    Notes:
+        When using this function inside of a transformation, make sure
+        that you continue to work on the data returned by this function.
+        Also, you cannot return `None` when using this function, you have
+        to return the data. This is because you can't be sure whether the
+        data has been modified or replaced and modifications on a replaced
+        value wouldn't propagate upward unless you return them.
+    """
+    try:
+        transformer = cls.__transform_input__
+    except AttributeError:
+        return data
+    else:
+        return _transform(transformer, data)
+
+
+def transform_output(cls: Any, data: RawDataType) -> RawDataType:
+    """Call the __transform_output__ classmethod on a model.
+
+    This is different from calling the method directly because it
+    always returns the current data.
+
+    Args:
+        cls: Target model whose transformation to apply
+        data: Data to be transformed
+
+    The transform method can either manipulate the provided data
+    or replace it entirely by returning something other than `None`.
+
+    Notes:
+        When using this function inside of a transformation, make sure
+        that you continue to work on the data returned by this function.
+        Also, you cannot return `None` when using this function, you have
+        to return the data. This is because you can't be sure whether the
+        data has been modified or replaced and modifications on a replaced
+        value wouldn't propagate upward unless you return them.
+    """
+    try:
+        transformer = cls.__transform_output__
+    except AttributeError:
+        return data
+    else:
+        return _transform(transformer, data)
+
+
 def convert_to_raw(obj: Any) -> RawDataType:
     """Convert a dataclass to a `dict`.
 
     This behaves similar to `dataclasses.asdict`. The difference is outlined below.
 
-    This function calls `__transform_output__` on the dataclasses
-    if such a method exists. Similarly to the `__transform_input__`
-    function it may mutate the data or replace it by returning something
-    other than `None`.
+    The function uses `transform_output`, if the model provides a `__transform_output__` method
+    it will be called.
 
     After transformation the keys of the data dict are converted from
     snake_case to dromedaryCase.
@@ -61,14 +137,7 @@ def convert_to_raw(obj: Any) -> RawDataType:
             value = convert_to_raw(getattr(obj, field.name))
             data[field.name] = value
 
-        try:
-            transform = obj.__transform_output__
-        except AttributeError:
-            pass
-        else:
-            res = transform(data)
-            if res is not None:
-                data = res
+        data = transform_output(obj, data)
 
         lettercase.mut_convert_keys(data, LetterCase.SNAKE, LetterCase.DROMEDARY, memo=CONVERTER_MEMO)
 
@@ -96,10 +165,9 @@ def build_from_raw(cls: Type[T], raw_data: Optional[RawDataType]) -> Optional[T]
     In the spirit of the other transform functions, `None` is treated as a special value
     and returned directly instead of handling it in any way.
 
-    The keys of raw data are mutated from dromedaryCase to snake_case
-    before it is passed to the `__transform_input__` **classmethod** of `cls`, if it exists.
-    This function may mutate the data or replace it completely by returning something
-    other than `None`.
+
+    The function uses `transform_input`, if the model provides a `__transform_input__` method
+    it will be called.
 
     After transformation the data is used as the keyword arguments to the cls constructor.
 
@@ -112,15 +180,7 @@ def build_from_raw(cls: Type[T], raw_data: Optional[RawDataType]) -> Optional[T]
         return None
 
     lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE, memo=CONVERTER_MEMO)
-
-    try:
-        transform = cls.__transform_input__
-    except AttributeError:
-        pass
-    else:
-        res = transform(raw_data)
-        if res is not None:
-            raw_data = res
+    raw_data = transform_input(cls, raw_data)
 
     return cls(**raw_data)
 
@@ -378,3 +438,23 @@ def map_filter_none(mapping: MutableMapping[Any, Any]) -> None:
 
     for key in remove_keys:
         del mapping[key]
+
+
+def map_rename_keys(mapping: MutableMapping[str, Any], **key_maps: str) -> None:
+    """Rename keys of a mapping.
+    This is just deleting the old key and assigning its value to the new key.
+
+    Args:
+        mapping: Mutable mapping to manipulate
+        **key_maps: new -> old name mapping.
+            The reason the mapping isn't from old to new is that you may want
+            to rename keys that aren't python-friendly.
+    """
+
+    for new_key, old_key in key_maps.items():
+        try:
+            value = mapping.pop(old_key)
+        except KeyError:
+            continue
+        else:
+            mapping[new_key] = value

@@ -6,9 +6,11 @@ import logging
 from asyncio import AbstractEventLoop, CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, Set, TypeVar, Union, overload
+from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, Set, Type, TypeVar, Union, overload
 
-__all__ = ["Event", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
+import lettercase
+
+__all__ = ["Event", "NamedEvent", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +57,48 @@ class Event:
         if key in self._keys:
             return getattr(self, key, default=default)
         return default
+
+
+class NamedEvent(Event):
+    """Event which automatically gets its name from its class.
+
+    Args:
+        **kwargs: Attributes to set on the event.
+            (Passed to the `Event` constructor)
+
+    This is useful for subclasses of `Event` whose name is used for the event name.
+    You may also manually set the event name by setting `__event_name__` on the class.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(self.get_event_name(), **kwargs)
+
+    @classmethod
+    def _create_name(cls) -> str:
+        """Generate the name for the event representing this class.
+
+        This uses the class name and converts it to snake_case. ("NamedEvent" -> "named_event")
+        If the class name endswith "Event" it is stripped. So "NamedEvent" would become "named".
+
+        Returns:
+            Generated name
+        """
+        cls_name = cls.__name__
+        if cls_name.endswith("Event"):
+            cls_name = cls_name[:-len("Event")]
+
+        name = lettercase.convert_to(cls_name, lettercase.LetterCase.SNAKE)
+        cls.__event_name__ = name
+        return name
+
+    @classmethod
+    def get_event_name(cls) -> str:
+        """Get the event name for the event representing this class."""
+        try:
+            # noinspection PyUnresolvedReferences
+            return cls.__event_name__
+        except AttributeError:
+            return cls._create_name()
 
 
 EventHandler = Callable[[Event], Any]
@@ -123,6 +167,18 @@ def _push_map_list(mapping: MutableMapping[str, List[T]], key: str, item: T) -> 
         items.append(item)
 
 
+EventSpecifierType = Union[str, Type[NamedEvent]]
+
+
+def _resolve_event_specifier(event: EventSpecifierType) -> str:
+    if isinstance(event, str):
+        return event
+    elif isinstance(event, NamedEvent):
+        return event.get_event_name()
+    else:
+        raise TypeError(f"Unknown event specifier type {type(event).__name__}: {event}")
+
+
 class EventTarget:
     """An object that can dispatch `Event` instances to listeners.
 
@@ -141,21 +197,22 @@ class EventTarget:
         self._listeners = {}
 
     @overload
-    def wait_for(self, event: str, *, check: EventFilter) -> Awaitable[Event]:
+    def wait_for(self, event: EventSpecifierType, *, check: EventFilter) -> Awaitable[Event]:
         ...
 
     @overload
-    def wait_for(self, event: str, *, check: EventFilter, timeout: float) -> Awaitable[Optional[Event]]:
+    def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float) -> Awaitable[Optional[Event]]:
         ...
 
-    def wait_for(self, event: str, *, check: EventFilter, timeout: float = None) -> Awaitable[Optional[Event]]:
+    def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float = None) -> Awaitable[Optional[Event]]:
         """Wait for an event to be dispatched.
 
         This is similar to adding a listener, but it only listens once and
         returns the event that was dispatched instead of calling a callback.
 
         Args:
-            event: Name of the event to listen to
+            event: Name of the event to listen to.
+                Also accepts `NamedEvent` types.
             check: Callback which takes an `Event` and returns `True`
                 to accept the event and `False` otherwise.
                 If not provided, all events are accepted.
@@ -167,6 +224,8 @@ class EventTarget:
             If a timeout was given the result will be `None`
             if it timed-out.
         """
+        event = _resolve_event_specifier(event)
+
         # not using self._loop.create_future because loop may be None
         future = Future(loop=self._loop)
         listener = OneTimeEventListener(future, check)
@@ -175,11 +234,12 @@ class EventTarget:
 
         return asyncio.wait_for(future, timeout=timeout, loop=self._loop)
 
-    def add_listener(self, event: str, listener: Union[EventHandler, EventListener]) -> EventListener:
+    def add_listener(self, event: EventSpecifierType, listener: Union[EventHandler, EventListener]) -> EventListener:
         """Add a listener for an `Event` which is called whenever said event is dispatched.
 
         Args:
-            event: Name of the event to listen to
+            event: Name of the event to listen to.
+                Also accepts `NamedEvent` types.
             listener: Listener to add.
 
         Returns:
@@ -187,24 +247,29 @@ class EventTarget:
             If the provided listener already is an `EventListener`,
             the return value is the same value.
         """
+        event = _resolve_event_specifier(event)
+
         if not isinstance(listener, EventListener):
             listener = EventListener(listener)
 
         _push_map_list(self._listeners, event, listener)
         return listener
 
-    def remove_listener(self, event: str, target: Union[EventHandler, EventListener]) -> bool:
+    def remove_listener(self, event: EventSpecifierType, target: Union[EventHandler, EventListener]) -> bool:
         """Remove a previously added event listener.
 
         When a `EventHandler` is passed, all event listeners with the given handler are removed.
 
         Args:
             event: Name of the event for which to remove a listener.
+                Also accepts `NamedEvent` types.
             target: Listener to remove.
 
         Returns:
             bool: Whether the listener was successfully removed.
         """
+        event = _resolve_event_specifier(event)
+
         try:
             listeners = self._listeners[event]
         except KeyError:
@@ -226,24 +291,27 @@ class EventTarget:
         return removed_some
 
     @overload
-    def has_listener(self, event: str) -> bool:
+    def has_listener(self, event: EventSpecifierType) -> bool:
         ...
 
     @overload
-    def has_listener(self, event: str, target: Union[EventHandler, EventListener, OneTimeEventListener]) -> bool:
+    def has_listener(self, event: EventSpecifierType, target: Union[EventHandler, EventListener, OneTimeEventListener]) -> bool:
         ...
 
-    def has_listener(self, event: str, target: Union[EventHandler, EventListener, OneTimeEventListener] = None) -> bool:
+    def has_listener(self, event: EventSpecifierType, target: Union[EventHandler, EventListener, OneTimeEventListener] = None) -> bool:
         """Check whether an event has a listener.
 
         This includes one-time listeners.
 
         Args:
-            event: Name of the event to check
+            event: Name of the event to check.
+                Also accepts `NamedEvent` types.
             target: Listener to check whether it has been added.
                 If this is `None` the method checks whether the
                 event has **any** listeners.
         """
+        event = _resolve_event_specifier(event)
+
         if target is None:
             return bool(self._listeners.get(event)) or bool(self._one_time_listeners.get(event))
         elif isinstance(target, OneTimeEventListener):

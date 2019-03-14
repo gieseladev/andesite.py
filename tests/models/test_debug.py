@@ -1,5 +1,6 @@
-from andesite import CPUStats, ClassLoadingStats, CompilationStats, FrameStats, GCStats, MemoryCommonUsageStats, MemoryManagerStats, MemoryPoolStats, \
-    MemoryStats, OSStats, PlayersStats, RuntimeSpecStats, RuntimeStats, RuntimeVMStats, RuntimeVersionStats, Stats, ThreadStats, build_from_raw
+from andesite import CPUStats, ClassLoadingStats, CompilationStats, Error, FrameStats, GCStats, MemoryCommonUsageStats, MemoryManagerStats, \
+    MemoryPoolStats, MemoryStats, OSStats, PlayersStats, RuntimeSpecStats, RuntimeStats, RuntimeVMStats, RuntimeVersionStats, StackFrame, Stats, \
+    ThreadStats, build_from_raw
 
 
 def test_stats_load():
@@ -92,3 +93,38 @@ def test_stats_load():
          MemoryManagerStats("GPGC Old", ["GenPauseless Old Gen", "GenPauseless Perm Gen"])],
         [FrameStats(549905730099216384, 549904277108424715, 0, 1500)]
     )
+
+
+def test_error_load():
+    raw_data = {"class": "java.lang.NullPointerException", "message": None, "suppressed": [],
+                "stack": [
+                    {"classLoader": "app", "moduleName": None, "moduleVersion": None,
+                     "className": "andesite.node.handler.RestHandler",
+                     "methodName": "lambda$trackRoutes$25", "fileName": "RestHandler.java", "lineNumber": 288,
+                     "pretty": "andesite.node.handler.RestHandler.lambda$trackRoutes$25(RestHandler.java:288)"},
+                    {"classLoader": "app", "moduleName": None, "moduleVersion": None,
+                     "className": "io.netty.util.concurrent.SingleThreadEventExecutor$5",
+                     "methodName": "run", "fileName": "SingleThreadEventExecutor.java", "lineNumber": 897,
+                     "pretty": "io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:897)"},
+                    {"classLoader": "app", "moduleName": None, "moduleVersion": None,
+                     "className": "io.netty.util.concurrent.FastThreadLocalRunnable",
+                     "methodName": "run", "fileName": "FastThreadLocalRunnable.java", "lineNumber": 30,
+                     "pretty": "io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)"},
+                    {"classLoader": None, "moduleName": "java.base", "moduleVersion": "11.0.2",
+                     "className": "java.lang.Thread",
+                     "methodName": "run", "fileName": "Thread.java", "lineNumber": 834,
+                     "pretty": "java.base/java.lang.Thread.run(Thread.java:834)"}
+                ],
+                "cause": None}
+
+    error = build_from_raw(Error, raw_data)
+
+    assert error == Error("java.lang.NullPointerException", None, [
+        StackFrame("app", None, None, "andesite.node.handler.RestHandler", "lambda$trackRoutes$25", "RestHandler.java", 288,
+                   "andesite.node.handler.RestHandler.lambda$trackRoutes$25(RestHandler.java:288)"),
+        StackFrame("app", None, None, "io.netty.util.concurrent.SingleThreadEventExecutor$5", "run", "SingleThreadEventExecutor.java", 897,
+                   "io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:897)"),
+        StackFrame("app", None, None, "io.netty.util.concurrent.FastThreadLocalRunnable", "run", "FastThreadLocalRunnable.java", 30,
+                   "io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)"),
+        StackFrame(None, "java.base", "11.0.2", "java.lang.Thread", "run", "Thread.java", 834, "java.base/java.lang.Thread.run(Thread.java:834)")
+    ], [], None)

@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, cast
 
-from andesite.transform import RawDataType, from_centi, map_build_all_values_from_raw, map_build_values_from_raw, map_convert_values, \
+from andesite.transform import RawDataType, from_centi, map_build_all_values_from_raw, map_convert_values, \
     map_convert_values_from_milli, map_convert_values_to_milli, to_centi
 
-__all__ = ["FilterMap", "BasePlayer", "MixerPlayer", "MixerMap", "Player", "PlayerUpdate"]
+__all__ = ["FilterMap", "BasePlayer", "MixerPlayer", "MixerMap", "Player"]
 
 FilterMap = Dict[str, Any]
 
@@ -17,8 +17,8 @@ class BasePlayer(abc.ABC):
     """Abstract class for Andesite players.
 
     See Also:
-        - :py:class:`Player`
-        - :py:class:`MixerPlayer`
+        - `Player`
+        - `MixerPlayer`
 
     Attributes:
         time (datetime): current utc datetime on the node
@@ -88,28 +88,3 @@ class Player(BasePlayer):
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
         map_build_all_values_from_raw(data["mixer"], MixerPlayer)
-
-
-# noinspection PyUnresolvedReferences
-@dataclass
-class PlayerUpdate:
-    """
-
-    Attributes:
-        guild_id (int): guild id
-        user_id (int): user id
-        state (Player): player
-    """
-
-    guild_id: int
-    user_id: int
-    state: Player
-
-    @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
-        map_convert_values(data, guild_id=int, user_id=int)
-        map_build_values_from_raw(data, state=Player)
-
-    @classmethod
-    def __transform_output__(cls, data: RawDataType) -> None:
-        map_convert_values(data, guild_id=str, user_id=str)

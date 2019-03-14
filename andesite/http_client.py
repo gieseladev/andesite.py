@@ -14,6 +14,25 @@ from .transform import build_from_raw, seq_build_all_items_from_raw
 USER_AGENT = f"andesite.py/{__version__} (https://github.com/gieseladev/andesite.py)"
 
 
+class AndesiteHTTPError(Exception):
+    """Andesite Error.
+
+    Attributes:
+        code (int): HTTP error code
+        message (str): Message
+    """
+    code: int
+    message: str
+
+    def __init__(self, code: int, message: str) -> None:
+        super().__init__(message, code)
+        self.code = code,
+        self.message = message
+
+    def __str__(self) -> str:
+        return f"AndesiteError ({self.code}): {self.message}"
+
+
 class AndesiteHTTP:
     """Client for Andesite's HTTP endpoints.
 
@@ -57,11 +76,25 @@ class AndesiteHTTP:
             method: HTTP method to use
             path: Path relative to the base url. Must not start with a slash!
             **kwargs: Keyword arguments passed to the request
+
+        Raises:
+            AndesiteHTTPError: When Andesite returns an error.
         """
         url = self._base_url / path
 
         async with self.aiohttp_session.request(method, url, **kwargs) as resp:
-            return await resp.json(content_type=None)
+            data = await resp.json(content_type=None)
+
+            if resp.status >= 400:
+                try:
+                    code = data["code"]
+                    message = data["message"]
+                except KeyError:
+                    resp.raise_for_status()
+                else:
+                    raise AndesiteHTTPError(code, message)
+
+            return data
 
     async def get_stats(self) -> Stats:
         """Get the node's statistics."""
@@ -100,7 +133,12 @@ class AndesiteHTTP:
         Returns:
             `TrackInfo` of the provided data, `None` if the data is invalid.
         """
-        data = await self.request("POST", "decodetrack", params=dict(track=track))
+        try:
+            data = await self.request("POST", "decodetrack", json=dict(track=track))
+        except AndesiteHTTPError:
+            return None
+        else:
+            return build_from_raw(TrackInfo, data)
 
     async def decode_tracks(self, tracks: Iterable[str]) -> List[TrackInfo]:
         """Get the `TrackInfo` from multiple encoded track data strings.

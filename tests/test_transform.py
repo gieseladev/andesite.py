@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from andesite.transform import RawDataType, build_from_raw, convert_to_raw, from_centi, from_milli, map_build_all_values_from_raw, \
     map_build_values_from_raw, map_convert_value, map_convert_values, map_convert_values_all, map_convert_values_from_milli, \
-    map_convert_values_to_milli, map_filter_none, seq_build_all_items_from_raw, to_centi, to_milli
+    map_convert_values_to_milli, map_filter_none, map_rename_keys, seq_build_all_items_from_raw, to_centi, to_milli, transform_input, transform_output
 
 
 @dataclass
@@ -29,6 +29,28 @@ class DataTest:
         new_data = {**data}
         new_data["nest"] = build_from_raw(NestedTest, new_data["nest"])
         return new_data
+
+
+@dataclass
+class NoTransform:
+    test: str
+    value: int
+
+
+def test_transform_input():
+    # nested data still needs to be raw because the transformer uses "build_from_raw"
+    data = {"nest": {"coolThing": 5500, "test": 3}}
+    transformed_data = transform_input(DataTest, data.copy())
+    assert transformed_data == {"nest": NestedTest(5.5, 3)}
+    assert transform_input(NoTransform, data) is data
+
+
+def test_transform_output():
+    data = {"cool_thing": 5.5, "test": 3}
+    transformed_data = transform_output(NestedTest, data.copy())
+    assert transformed_data == {"cool_thing": 5500, "test": 3}
+
+    assert transform_output(NoTransform, data) is data
 
 
 def test_convert_to_raw():
@@ -163,3 +185,10 @@ def test_map_filter_none():
     data = {"hello": "world", "test": None, "5": None}
     map_filter_none(data)
     assert data == {"hello": "world"}
+
+
+def test_map_rename_keys_none():
+    unique_object = object()
+    data = {"hello": "world", "test": unique_object, "5": None}
+    map_rename_keys(data, world="hello", lol="test")
+    assert data == {"world": "world", "lol": unique_object, "5": None}
