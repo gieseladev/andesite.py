@@ -19,7 +19,8 @@ import logging
 from asyncio import AbstractEventLoop, CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMapping, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Awaitable, Callable, Coroutine, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Type, TypeVar, Union, \
+    overload
 
 import lettercase
 
@@ -38,6 +39,9 @@ class Event:
 
     Args:
         name: Name of the event
+        arg: Acts like **kwargs, but doesn't need to be unpacked, thus being more
+            efficient. This argument is optional. **kwargs values will override the
+            values in this mapping.
         **kwargs: Attributes to set on the event.
 
     Attributes:
@@ -50,16 +54,37 @@ class Event:
 
     _keys: Set[str]
 
+    @overload
+    def __init__(self, name: str, arg: Mapping[str, Any], **kwargs: Any) -> None:
+        ...
+
+    @overload
+    def __init__(self, name: str, arg: Iterable[Tuple[str, Any]], **kwargs: Any) -> None:
+        ...
+
+    @overload
     def __init__(self, name: str, **kwargs: Any) -> None:
+        ...
+
+    def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         self.name = name
 
-        self._keys = set(kwargs.keys())
-        self.__dict__.update(kwargs)
+        body = dict(*args, **kwargs)
+        self.__dict__.update(body)
+
+        try:
+            keys = self._keys
+        except AttributeError:
+            keys = self._keys = set()
+
+        keys.update(body.keys())
 
     def __repr__(self) -> str:
         type_name = type(self).__name__
         name = self.name
-        return f"{type_name} ({name}) {self._keys}"
+
+        attrs_str = ", ".join(self._keys)
+        return f"{type_name} ({name}) {{{attrs_str}}}"
 
     def get(self, key: str, *, default: Any = None) -> Optional[Any]:
         """Get the value of a key.
@@ -77,6 +102,19 @@ class Event:
         return default
 
 
+def _trim_suffix(s: str, suffix: str) -> str:
+    """Return the string without the given suffix.
+
+    Args:
+        s: String to remove suffix from
+        suffix: Exact suffix to remove
+    """
+    if s.endswith(suffix):
+        return s[:-len(suffix)]
+    else:
+        return s
+
+
 class NamedEvent(Event, abc.ABC):
     """Event which automatically gets its name from its class.
 
@@ -91,8 +129,8 @@ class NamedEvent(Event, abc.ABC):
     or subclass this class.
     """
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(self.get_event_name(), **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(self.get_event_name(), *args, **kwargs)
 
     @classmethod
     def _create_name(cls) -> str:
@@ -104,9 +142,7 @@ class NamedEvent(Event, abc.ABC):
         Returns:
             Generated name
         """
-        cls_name = cls.__name__
-        if cls_name.endswith("Event"):
-            cls_name = cls_name[:-len("Event")]
+        cls_name = _trim_suffix(cls.__name__, "Event")
 
         name = lettercase.convert_to(cls_name, lettercase.LetterCase.SNAKE)
         cls.__event_name__ = name
@@ -144,7 +180,6 @@ class EventErrorEvent(Event):
 EventFilter = Callable[[Event], bool]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass()
 class OneTimeEventListener:
     """One-time event listener.
@@ -165,7 +200,6 @@ class OneTimeEventListener:
     condition: Optional[EventFilter] = None
 
 
-# noinspection PyUnresolvedReferences
 @dataclass()
 class EventListener:
     """Persistent event listener.
@@ -378,7 +412,10 @@ class EventTarget:
             Optional[Future]: Future aggregating all asynchronous dispatches.
                 Can be awaited to make sure all handlers have been executed.
         """
-        log.debug(f"dispatching: {event}")
+        if log.isEnabledFor(logging.DEBUG):
+            # converting event to string may be expensive, so only
+            # do it if we want it logged
+            log.debug(f"dispatching: {event}")
 
         futures: List[Union[Coroutine, Future]] = []
         event_name = event.name

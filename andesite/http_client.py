@@ -6,6 +6,7 @@ Attributes:
 """
 
 import asyncio
+import logging
 from asyncio import AbstractEventLoop
 from enum import Enum
 from typing import Any, Iterable, List, Optional, Union
@@ -18,6 +19,8 @@ from .models import LoadedTrack, Stats, TrackInfo
 from .transform import build_from_raw, seq_build_all_items_from_raw
 
 __all__ = ["USER_AGENT", "AndesiteHTTPError", "AndesiteSearcher", "AndesiteSearcherType", "get_andesite_searcher", "AndesiteHTTP"]
+
+log = logging.getLogger(__name__)
 
 USER_AGENT = f"andesite.py/{__version__} (https://github.com/gieseladev/andesite.py)"
 
@@ -135,6 +138,9 @@ class AndesiteHTTP:
         """
         url = self._base_url / path
 
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug(f"performing {method} request for endpoint {path} with arguments: {kwargs}")
+
         async with self.aiohttp_session.request(method, url, **kwargs) as resp:
             data = await resp.json(content_type=None)
 
@@ -143,6 +149,7 @@ class AndesiteHTTP:
                     code = data["code"]
                     message = data["message"]
                 except KeyError:
+                    log.debug("Couldn't extract keys \"code\" and \"message\" from data, letting aiohttp raise!")
                     resp.raise_for_status()
                 else:
                     raise AndesiteHTTPError(code, message)
@@ -210,7 +217,9 @@ class AndesiteHTTP:
         """
         try:
             data = await self.request("POST", "decodetrack", json=dict(track=track))
-        except AndesiteHTTPError:
+        except AndesiteHTTPError as e:
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug(f"Couldn't decode track: {e}")
             return None
         else:
             return build_from_raw(TrackInfo, data)

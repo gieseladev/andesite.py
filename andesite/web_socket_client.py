@@ -65,8 +65,7 @@ class PlayerUpdateEvent(NamedEvent, PlayerUpdate):
     """Event emitted when a player update is received."""
 
     def __init__(self, player_update: PlayerUpdate) -> None:
-        super().__init__()
-        self.__dict__.update(player_update.__dict__)
+        super().__init__(player_update.__dict__)
 
 
 class RawMsgSendEvent(NamedEvent):
@@ -308,7 +307,8 @@ class AndesiteWebSocket(EventTarget):
                 await self.connect()
                 continue
 
-            log.debug(f"Received message {raw_msg}")
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug(f"Received message {raw_msg}")
 
             try:
                 data: Dict[str, Any] = self._json_decoder.decode(raw_msg)
@@ -443,7 +443,8 @@ class AndesiteWebSocket(EventTarget):
 
         _ = self.dispatch(RawMsgSendEvent(guild_id, op, payload))
 
-        log.debug(f"sending payload: {payload}")
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug(f"sending payload: {payload}")
 
         data = self._json_encoder.encode(payload)
 
