@@ -1,4 +1,8 @@
-"""Track models."""
+"""Track models.
+
+Attributes:
+    UNKNOWN_ARTIST (str): Value used by Lavaplayer if an artist is unknown.
+"""
 from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
@@ -17,7 +21,8 @@ class PlaylistInfo:
 
     Attributes:
         name: name of the playlist
-        selected_track: index of the selected track in the tracks list, or None if no track is selected
+        selected_track: index of the selected track in the tracks list,
+            or `None` if no track is selected
     """
     name: str
     selected_track: Optional[int]
@@ -29,6 +34,9 @@ class PlaylistInfo:
             res.append(f"[{self.selected_track}]")
 
         return " ".join(res)
+
+
+UNKNOWN_ARTIST: str = "Unknown artist"
 
 
 @dataclass
@@ -58,6 +66,18 @@ class TrackMetadata:
 
     def __str__(self) -> str:
         return f"{self.author} - {self.title}"
+
+    @property
+    def author_unknown(self) -> bool:
+        """Whether or not the author is unknown.
+
+        Uses constant `UNKNOWN_ARTIST` to check against.
+
+        Keep in mind that there is no way to detect whether
+        the author's name just happens to coincide with the
+        `UNKNOWN_ARTIST` text. Use with caution.
+        """
+        return self.author == UNKNOWN_ARTIST
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
