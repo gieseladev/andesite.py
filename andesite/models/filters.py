@@ -287,9 +287,9 @@ class Vibrato:
 # noinspection PyUnresolvedReferences
 @dataclass
 class VolumeFilter:
-    """
+    """Volume filter settings.
 
     Attributes:
-        volume (float)
+        volume (float): Volume modifier. This acts as a factor for the actual volume.
     """
     volume: float = 1

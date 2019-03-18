@@ -146,6 +146,9 @@ class AndesiteWebSocket(EventTarget):
         - **track_exception** (`TrackExceptionEvent`)
         - **track_stuck** (`TrackStuckEvent`)
         - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown event is received.
+
+    The client automatically keeps track of the current connection id and resumes the previous connection
+    when calling `connect`, if there is any.
     """
     max_connect_attempts: Optional[int]
     web_socket_client: Optional[WebSocketClientProtocol]
@@ -198,9 +201,6 @@ class AndesiteWebSocket(EventTarget):
     async def connect(self, max_attempts: int = None) -> None:
         """Connect to the web socket server.
 
-        After successfully connecting all messages in the message
-        queue are sent in order and a `ws_connected` event is dispatched.
-
         Args:
             max_attempts: Amount of connection attempts to perform before aborting.
                 If this is not set, `max_connect_attempts` is used instead.
@@ -209,6 +209,9 @@ class AndesiteWebSocket(EventTarget):
         Raises:
             ValueError: If the client is already connected.
                 Check `connected` first!
+
+        After successfully connecting all messages in the message
+        queue are sent in order and a `ws_connected` event is dispatched.
 
         Notes:
             This method doesn't have to be called manually,

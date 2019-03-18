@@ -15,3 +15,6 @@ A Python client library for [Andesite](https://github.com/natanbc/andesite-node)
 You can find the documentation on the project's website.
 [Click here](https://gieseladev.github.io/andesite.py/docs) to open the
 documentation.
+
+You can also take a look at the [examples](examples) directory
+for a reference.
