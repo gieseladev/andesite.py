@@ -4,7 +4,7 @@ import asyncio
 import logging
 import math
 import time
-from asyncio import AbstractEventLoop, CancelledError, Future
+from asyncio import AbstractEventLoop, CancelledError, Future, Lock
 from collections import deque
 from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
@@ -157,8 +157,12 @@ class AndesiteWebSocket(EventTarget):
     _ws_uri: str
     _headers: Dict[str, str]
     _last_connection_id: Optional[str]
+
+    _connect_lock: Lock
     _message_queue: Deque[str]
+
     _read_loop: Optional[Future]
+
     _json_encoder: JSONEncoder
     _json_decoder: JSONDecoder
 
@@ -172,11 +176,14 @@ class AndesiteWebSocket(EventTarget):
         if password is not None:
             self._headers["Authorization"] = password
 
+        self._last_connection_id = None
+
         self.max_connect_attempts = max_connect_attempts
         self.web_socket_client = None
 
-        self._last_connection_id = None
+        self._connect_lock = Lock(loop=loop)
         self._message_queue = deque()
+
         self._read_loop = None
 
         self._json_encoder = JSONEncoder()
@@ -199,27 +206,15 @@ class AndesiteWebSocket(EventTarget):
         """
         return self._last_connection_id
 
-    async def connect(self, max_attempts: int = None) -> None:
-        """Connect to the web socket server.
+    async def _connect(self, max_attempts: int = None) -> None:
+        """Internal connect method.
 
         Args:
-            max_attempts: Amount of connection attempts to perform before aborting.
-                If this is not set, `max_connect_attempts` is used instead.
-                If `None`, unlimited attempts will be performed.
+            max_attempts: Max amount of connection attempts to perform before aborting.
+                This overwrites the instance attribute `max_connect_attempts`.
 
         Raises:
-            ValueError: If the client is already connected.
-                Check `connected` first!
-
-        After successfully connecting all messages in the message
-        queue are sent in order and a `ws_connected` event is dispatched.
-
-        Notes:
-            This method doesn't have to be called manually,
-            it is called as soon as the first message needs to be sent.
-            However, there are good reasons to call it anyway, such
-            as the ability to check the validity of the URI, or to
-            receive events from Andesite.
+            ValueError: If client is already connected
         """
         if self.connected:
             raise ValueError("Already connected!")
@@ -255,6 +250,32 @@ class AndesiteWebSocket(EventTarget):
         _ = self.dispatch(Event("ws_connected"))
 
         await self._replay_message_queue()
+
+    async def connect(self, max_attempts: int = None) -> None:
+        """Connect to the web socket server.
+
+        Args:
+            max_attempts: Amount of connection attempts to perform before aborting.
+                If this is not set, `max_connect_attempts` is used instead.
+                If `None`, unlimited attempts will be performed.
+
+        The method uses a lock to make sure only one connection attempt is started
+        at a time. If the client is already connected calling this won't perform any
+        action.
+
+        After successfully connecting all messages in the message
+        queue are sent in order and a `ws_connected` event is dispatched.
+
+        Notes:
+            This method doesn't have to be called manually,
+            it is called as soon as the first message needs to be sent.
+            However, there are good reasons to call it anyway, such
+            as the ability to check the validity of the URI, or to
+            receive events from Andesite.
+        """
+        async with self._connect_lock:
+            if not self.connected:
+                await self._connect(max_attempts)
 
     async def disconnect(self) -> None:
         """Disconnect the web socket.
@@ -312,12 +333,14 @@ class AndesiteWebSocket(EventTarget):
 
             try:
                 data: Dict[str, Any] = self._json_decoder.decode(raw_msg)
-            except JSONDecodeError:
-                raise
+            except JSONDecodeError as e:
+                # TODO Dispatch event
+                log.error(f"Couldn't parse received JSON data: {e}\nmsg: {raw_msg}")
+                continue
 
             if not isinstance(data, dict):
                 log.warning(f"Received invalid message type. Expecting object, received type {type(data).__name__}: {data}")
-                return
+                continue
 
             _ = self.dispatch(RawMsgReceiveEvent(data))
 
@@ -325,19 +348,24 @@ class AndesiteWebSocket(EventTarget):
                 op = data.pop("op")
             except KeyError:
                 log.info(f"Ignoring message without op code: {data}")
-                return
+                continue
 
             event_type = data.get("type")
             cls = get_update_model(op, event_type)
             if cls is None:
-                log.warning(f"Ignoring message with unknown op \"{op}\": {data}")
-                return
+                # we use op=pong for the ping method.
+                # there might be a more elegant solution
+                # than this but it works for now.
+                if op not in {"pong"}:
+                    log.warning(f"Ignoring message with unknown op \"{op}\": {data}")
+
+                continue
 
             try:
                 message: ReceiveOperation = build_from_raw(cls, data)
             except Exception as e:
                 log.error(f"Couldn't parse message from Andesite node ({e}): {data}")
-                return
+                continue
 
             _ = self.dispatch(MsgReceiveEvent(op, message))
 
@@ -448,12 +476,17 @@ class AndesiteWebSocket(EventTarget):
 
         data = self._json_encoder.encode(payload)
 
-        try:
-            await self.web_socket_client.send(data)
-        except ConnectionClosed:
-            log.info("Not connected, adding message to queue.")
-            self._message_queue.append(data)
-            await self.connect()
+        if self.web_socket_client is not None:
+            try:
+                await self.web_socket_client.send(data)
+            except ConnectionClosed:
+                pass
+            else:
+                return
+
+        log.info("Not connected, adding message to queue.")
+        self._message_queue.append(data)
+        await self.connect()
 
     async def send_operation(self, guild_id: int, operation: SendOperation) -> None:
         """Send a `SendOperation`.

@@ -144,6 +144,9 @@ class AndesiteHTTP:
         async with self.aiohttp_session.request(method, url, **kwargs) as resp:
             data = await resp.json(content_type=None)
 
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug(f"got data: {data}")
+
             if resp.status >= 400:
                 try:
                     code = data["code"]

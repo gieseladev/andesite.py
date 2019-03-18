@@ -3,13 +3,12 @@
 Attributes:
     UNKNOWN_ARTIST (str): Value used by Lavaplayer if an artist is unknown.
 """
-from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
 
-from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_value, map_convert_values_from_milli, map_convert_values_to_milli, \
-    seq_build_all_items_from_raw
+from andesite.transform import RawDataType, build_from_raw, map_build_values_from_raw, map_convert_value, map_convert_values_from_milli, \
+    map_convert_values_to_milli, seq_build_all_items_from_raw
 from .debug import Error
 
 __all__ = ["PlaylistInfo", "TrackMetadata", "TrackInfo", "LoadType", "LoadedTrack"]
@@ -47,7 +46,10 @@ class TrackMetadata:
         class_name (str): class name of the lavaplayer track
         title (str): title of the track
         author (str): author of the track
-        length (float): duration of the track, in seconds
+        length (Optional[float]): duration of the track, in seconds.
+            Set to `None` if it's a stream. Andesite would normally return
+            2^63 - 1 (Long.MAX_VALUE), but that value doesn't have any significance
+            in Python so it's represented with something more meaningful.
         identifier (str): identifier of the track
         uri (str): uri of the track
         is_stream (bool): whether or not the track is a livestream
@@ -57,7 +59,7 @@ class TrackMetadata:
     class_name: str
     title: str
     author: str
-    length: float
+    length: Optional[float]
     identifier: str
     uri: str
     is_stream: bool
@@ -82,6 +84,16 @@ class TrackMetadata:
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
         data["class_name"] = data.pop("class")
+
+        # set length to None if we're dealing with a stream.
+        try:
+            is_stream = data["is_stream"]
+        except KeyError:
+            pass
+        else:
+            if is_stream:
+                data["length"] = None
+
         map_convert_values_from_milli(data, "length", "position")
 
     @classmethod
@@ -168,10 +180,28 @@ class LoadedTrack:
     def __transform_input__(cls, data: RawDataType) -> None:
         map_convert_value(data, "load_type", LoadType)
 
-        map_build_values_from_raw(data, playlist_info=PlaylistInfo, cause=Error)
+        try:
+            playlist_info = data["playlist_info"]
+        except KeyError:
+            pass
+        else:
+            # my god, Andesite now sends an empty object if the playlist_info is null
+            # and we absolutely don't want that! So if it's falsy, use None
+            if playlist_info:
+                playlist_info = build_from_raw(PlaylistInfo, playlist_info)
+            else:
+                playlist_info = None
 
-        with suppress(KeyError):
-            seq_build_all_items_from_raw(data["tracks"], TrackInfo)
+            data["playlist_info"] = playlist_info
+
+        map_build_values_from_raw(data, cause=Error)
+
+        try:
+            tracks = data["tracks"]
+        except KeyError:
+            pass
+        else:
+            seq_build_all_items_from_raw(tracks, TrackInfo)
 
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:

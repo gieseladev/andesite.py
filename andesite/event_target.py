@@ -233,10 +233,10 @@ def resolve_event_specifier(event: EventSpecifierType) -> str:
     """
     if isinstance(event, str):
         return event
-    elif isinstance(event, NamedEvent):
+    elif issubclass(event, NamedEvent):
         return event.get_event_name()
     else:
-        raise TypeError(f"Unknown event specifier type {type(event).__name__}: {event}")
+        raise TypeError(f"Unknown event specifier type {type(event).__name__!r}: {event}")
 
 
 class EventTarget:
@@ -361,7 +361,8 @@ class EventTarget:
     def has_listener(self, event: EventSpecifierType, target: Union[EventHandler, EventListener, OneTimeEventListener] = None) -> bool:
         """Check whether an event has a listener.
 
-        This includes one-time listeners.
+        This includes one-time listeners, but does not check method
+        listeners (on_<event> methods defined in the event target class).
 
         Args:
             event: Name of the event to check.

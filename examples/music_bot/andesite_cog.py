@@ -4,6 +4,7 @@ With some small modifications you could use this cog for yourself.
 """
 import logging
 import random
+from datetime import timedelta
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from discord import Colour, Embed, VoiceState
@@ -135,18 +136,23 @@ class AndesiteCog(Cog, name="Andesite"):
 
                 track_info = result.tracks[0]
 
+        log.info(f"playing {track_info.track} in {ctx.guild}")
         await self.ws_client.play(ctx.guild.id, track_info.track)
+
+        await ctx.send("Now playing", embed=get_track_embed(track_info.info))
 
     @guild_only()
     @command("pause")
     async def pause_cmd(self, ctx: Context) -> None:
         """Pause the player"""
+        log.info(f"pausing in {ctx.guild}")
         await self.ws_client.pause(ctx.guild.id, True)
 
     @guild_only()
     @command("unpause")
     async def unpause_cmd(self, ctx: Context) -> None:
         """Unpause the player"""
+        log.info(f"unpausing in {ctx.guild}")
         await self.ws_client.pause(ctx.guild.id, False)
 
     @guild_only()
@@ -156,3 +162,14 @@ class AndesiteCog(Cog, name="Andesite"):
         async with ctx.typing():
             delay = await self.ws_client.ping(ctx.guild.id)
             await ctx.send(embed=Embed(title="Pong", description=f"After {round(1000 * delay)} milliseconds", colour=Colour.blue()))
+
+
+def get_track_embed(track: andesite.TrackMetadata) -> Embed:
+    """Build an `Embed` for the given track."""
+    embed = Embed(title=track.title, url=track.uri, colour=Colour.blurple())
+    embed.set_author(name=track.author)
+
+    if track.length is not None:
+        embed.set_footer(text=str(timedelta(seconds=track.length)))
+
+    return embed
