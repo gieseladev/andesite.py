@@ -1,9 +1,17 @@
-from dataclasses import dataclass
-from typing import List, Optional, overload
+"""Andesite audio filters.
 
-from andesite.transform import RawDataType, seq_build_all_items_from_raw
+Attributes:
+    FILTER_MAP (Mapping[str, Type[Filter]]): Mapping from filter name to filter class.
+        See: `get_filter_model`.
+"""
+import abc
+from dataclasses import dataclass, field
+from operator import eq
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Set, Type, TypeVar, Union, overload
 
-__all__ = ["EqualizerBand", "Equalizer", "Karaoke", "Timescale", "Tremolo", "Vibrato", "VolumeFilter"]
+from andesite.transform import RawDataType, build_from_raw, convert_to_raw
+
+__all__ = ["Filter", "EqualizerBand", "Equalizer", "Karaoke", "Timescale", "Tremolo", "Vibrato", "VolumeFilter", "get_filter_model", "FilterMap"]
 
 
 def _ensure_in_interval(value: float, *,
@@ -37,6 +45,41 @@ def _ensure_in_interval(value: float, *,
         raise ValueError(f"Provided value ({value}) not in interval {low_symbol}, {up_symbol}!")
 
 
+class _Filter(abc.ABC):
+    """Filter with name."""
+    __filter_name__: str
+
+
+@dataclass
+class Filter(_Filter, abc.ABC):
+    """Audio filter for Andesite.
+
+    Attributes:
+        enabled (bool): Whether or not the filter is enabled.
+            This value is mostly useful when receiving the filters from Andesite.
+            However you can also set it to `False` when sending filters. This
+            will cause the settings to be ignored and instead the default values
+            are sent to Andesite which will cause the filter to be disabled.
+
+    When creating a new `Filter` instance its values are set to the
+    default value.
+    """
+    enabled: bool = True
+
+    def reset(self) -> None:
+        """Reset the filter settings back to their default values."""
+        self.__init__()
+
+    @classmethod
+    def __transform_output__(cls, data: RawDataType) -> RawDataType:
+        enabled = data.pop("enabled")
+        if enabled:
+            return data
+        else:
+            # create a new instance (which uses the defaults) and return its data
+            return convert_to_raw(cls())
+
+
 @dataclass
 class EqualizerBand:
     """
@@ -46,7 +89,7 @@ class EqualizerBand:
         gain (float): value to set for the band ( [-0.25, 1.0] )
     """
     band: int
-    gain: float = 0
+    gain: float = 0.0
 
     def set_band(self, value: int) -> None:
         """Setter for :py:attr:`band` which performs a value check.
@@ -74,17 +117,53 @@ class EqualizerBand:
 
 
 @dataclass
-class Equalizer:
+class Equalizer(Filter):
     """
 
     Attributes:
         bands (List[EqualizerBand]): array of bands to configure
     """
-    bands: List[EqualizerBand]
+    __filter_name__ = "equalizer"
+
+    bands: List[EqualizerBand] = field(default_factory=list)
+
+    def __iter__(self) -> Iterator[EqualizerBand]:
+        return iter(self.bands)
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Equalizer):
+            for my_gain, other_gain in zip(self.iter_band_gains(), other.iter_band_gains()):
+                if my_gain != other_gain:
+                    return False
+
+            return True
+        else:
+            return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(self.iter_band_gains())
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
-        seq_build_all_items_from_raw(data["bands"], EqualizerBand)
+        # Andesite sends the equalizer filter as an array of floats
+        bands = data["bands"]
+        for i, gain in enumerate(bands):
+            bands[i] = EqualizerBand(i, gain)
+
+    @classmethod
+    def from_gains(cls, gains: Iterable[Optional[float]]) -> "Equalizer":
+        """Create an `Equalizer` filter from a list of gains.
+
+        Args:
+            gains: Iterable of `float` which correspond to the gain for the band,
+                or `None` if the band doesn't specify a gain.
+        """
+        bands: List[EqualizerBand] = []
+        for i, gain in enumerate(gains):
+            if gain is not None:
+                bands.append(EqualizerBand(i, gain))
+
+        return cls(bands)
 
     @overload
     def get_band(self, band: int) -> EqualizerBand:
@@ -143,9 +222,38 @@ class Equalizer:
         """
         self.get_band(band).set_gain(gain)
 
+    @overload
+    def iter_band_gains(self, use_default: bool) -> List[Optional[float]]:
+        ...
+
+    @overload
+    def iter_band_gains(self) -> List[float]:
+        ...
+
+    def iter_band_gains(self, use_default: bool = True) -> List[Optional[float]]:
+        """Get a list of all the bands' gains in order.
+
+        Args:
+            use_default: Whether or not to replace non-existant values
+                with the default gain.
+                If `False` and band doesn't have a gain set, `None`
+                is used instead.
+        """
+        default_value: Union[float, None] = EqualizerBand.gain if use_default else None
+
+        gains: List[Optional[float]] = 15 * [default_value]
+        for band in self:
+            gain = band.gain
+            if use_default and gain is None:
+                continue
+
+            gains[band.band] = gain
+
+        return gains
+
 
 @dataclass
-class Karaoke:
+class Karaoke(Filter):
     """
 
     Attributes:
@@ -154,14 +262,16 @@ class Karaoke:
         filter_band (float)
         filter_width (float)
     """
-    level: float = 1
-    mono_level: float = 1
-    filter_band: float = 220
-    filter_width: float = 100
+    __filter_name__ = "karaoke"
+
+    level: float = 1.0
+    mono_level: float = 1.0
+    filter_band: float = 220.0
+    filter_width: float = 220.0
 
 
 @dataclass
-class Timescale:
+class Timescale(Filter):
     """
 
     Attributes:
@@ -169,9 +279,11 @@ class Timescale:
         pitch (float): pitch to set (> 0)
         rate (float): rate to set (> 0)
     """
-    speed: float = 1
-    pitch: float = 1
-    rate: float = 1
+    __filter_name__ = "timescale"
+
+    speed: float = 1.0
+    pitch: float = 1.0
+    rate: float = 1.0
 
     def set_speed(self, value: float) -> None:
         """Setter for :py:attr:`speed` which performs a value check.
@@ -211,14 +323,16 @@ class Timescale:
 
 
 @dataclass
-class Tremolo:
+class Tremolo(Filter):
     """
 
     Attributes:
         frequency (float): (> 0)
         depth (float): ( (0, 1] )
     """
-    frequency: float = 2
+    __filter_name__ = "tremolo"
+
+    frequency: float = 2.0
     depth: float = 0.5
 
     def set_frequency(self, value: float) -> None:
@@ -247,14 +361,16 @@ class Tremolo:
 
 
 @dataclass
-class Vibrato:
+class Vibrato(Filter):
     """
 
     Attributes:
         frequency (float): ( (0, 14] )
         depth (float): ( (0, 1] )
     """
-    frequency: float = 2
+    __filter_name__ = "vibrato"
+
+    frequency: float = 2.0
     depth: float = 0.5
 
     def set_frequency(self, value: float) -> None:
@@ -283,10 +399,145 @@ class Vibrato:
 
 
 @dataclass
-class VolumeFilter:
+class VolumeFilter(Filter):
     """Volume filter settings.
 
     Attributes:
         volume (float): Volume modifier. This acts as a factor for the actual volume.
     """
-    volume: float = 1
+    __filter_name__ = "volume"
+
+    volume: float = 1.0
+
+
+_FILTERS: Set[Type[Filter]] = {Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter}
+FILTER_MAP: Mapping[str, Type[Filter]] = {andesite_filter.__filter_name__: andesite_filter for andesite_filter in _FILTERS}
+
+
+def get_filter_model(name: str) -> Optional[Type[Filter]]:
+    """Get the corresponding filter model for the given name.
+
+    If no model for the name exists, `None` is returned.
+
+    Args:
+        name: Name of the filter
+    """
+    return FILTER_MAP.get(name)
+
+
+FT = TypeVar("FT", bound=Filter)
+
+
+@dataclass
+class FilterMap(Mapping):
+    """Custom mapping type for filters.
+
+    Attributes:
+        filters (Dict[str, Any]): Dictionary containing all filters.
+
+    Theoretically this is just a wrapper around the `filters` dictionary which
+    contains the actual filter data. The class exposes the known filters as
+    properties, but it also supports unknown filters should the library
+    become outdated.
+    """
+
+    filters: Dict[str, Any] = field(default_factory=dict)
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, FilterMap):
+            return eq(self.filters, other.filters)
+        elif isinstance(other, Mapping):
+            return eq(self.filters, other)
+        else:
+            return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(self.filters)
+
+    def __len__(self) -> int:
+        return len(self.filters)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.filters)
+
+    def __getitem__(self, item: str) -> Any:
+        return self.filters[item]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.filters[key] = value
+
+    def get_filter(self, name: str, cls: Type[FT]) -> FT:
+        """Get the filter with the name.
+
+        Args:
+            name: Name of the filter to get
+            cls: `Filter` class to use for the filter.
+        """
+        try:
+            value = self[name]
+        except KeyError:
+            value = self[name] = cls()
+        else:
+            if not isinstance(value, cls):
+                if isinstance(value, dict):
+                    value = self[name] = cls(**value)
+                else:
+                    raise TypeError(f"Expected {cls}, found {type(value)!r}: {value}")
+
+        return value
+
+    @property
+    def equalizer(self) -> Equalizer:
+        """Equalizer filter settings"""
+        return self.get_filter("equalizer", Equalizer)
+
+    @property
+    def karaoke(self) -> Karaoke:
+        """Karaoke filter settings"""
+        return self.get_filter("karaoke", Karaoke)
+
+    @property
+    def timescale(self) -> Timescale:
+        """Timescale filter settings"""
+        return self.get_filter("timescale", Timescale)
+
+    @property
+    def tremolo(self) -> Tremolo:
+        """Tremolo filter settings"""
+        return self.get_filter("tremolo", Tremolo)
+
+    @property
+    def vibrato(self) -> Vibrato:
+        """Vibrato filter settings"""
+        return self.get_filter("vibrato", Vibrato)
+
+    @property
+    def volume(self) -> VolumeFilter:
+        """Volume filter settings"""
+        return self.get_filter("equalizer", VolumeFilter)
+
+    def set_filter(self, andesite_filter: Filter) -> None:
+        """Set the value for a filter.
+
+        Args:
+            andesite_filter: Filter to set
+        """
+        self[andesite_filter.__filter_name__] = andesite_filter
+
+    @classmethod
+    def __transform_input__(cls, data: RawDataType) -> RawDataType:
+        filters: Dict[str, Any] = {}
+
+        for name, filter_value in data.items():
+            filter_cls = get_filter_model(name)
+
+            if filter_cls is not None:
+                filter_value = build_from_raw(filter_cls, filter_value)
+
+            filters[name] = filter_value
+
+        return dict(filters=filters)
+
+    @classmethod
+    def __transform_output__(cls, data: RawDataType) -> RawDataType:
+        return data["filters"]

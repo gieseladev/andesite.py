@@ -1,21 +1,27 @@
 """Player models.
 
 Attributes:
-    FilterMap (Dict[str, Any]): (Type alias) Mapping from filter name to filter settings.
     MixerMap (Dict[str, MixerPlayer]): (Type alias) Mapping from player id to `MixerPlayer`
 """
 
 import abc
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional, cast
+from typing import Dict, Optional, cast
 
-from andesite.transform import RawDataType, from_centi, map_build_all_values_from_raw, map_convert_values, \
-    map_convert_values_from_milli, map_convert_values_to_milli, to_centi
+from andesite.transform import RawDataType, from_centi, from_milli, map_build_all_values_from_raw, map_build_values_from_raw, map_convert_values, \
+    map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli, transform_input
+from .filters import FilterMap
 
-__all__ = ["FilterMap", "BasePlayer", "MixerPlayer", "MixerMap", "Player"]
+__all__ = ["PlayerFrameStats", "BasePlayer", "MixerPlayer", "MixerMap", "Player"]
 
-FilterMap = Dict[str, Any]
+
+@dataclass
+class PlayerFrameStats:
+    """Frame statistics of a player."""
+    loss: int
+    success: int
+    usable: bool
 
 
 @dataclass
@@ -32,12 +38,14 @@ class BasePlayer(abc.ABC):
         paused (bool): whether or not the player is paused
         volume (float): the volume of the player
         filters (FilterMap): map of filter name -> filter settings for each filter present
+        frame (PlayerFrameStats) Player frame stats
     """
     time: datetime
     position: Optional[float]
     paused: bool
     volume: float
     filters: FilterMap
+    frame: PlayerFrameStats
 
     @property
     def live_position(self) -> Optional[float]:
@@ -60,15 +68,16 @@ class BasePlayer(abc.ABC):
     def __transform_input__(cls, data: RawDataType) -> None:
         map_convert_values_from_milli(data, "position")
         map_convert_values(data, volume=from_centi)
+        map_build_values_from_raw(data, filters=FilterMap, frame=PlayerFrameStats)
 
-        time_float = float(data["time"])
+        time_float = from_milli(int(data["time"]))
         data["time"] = datetime.utcfromtimestamp(time_float)
 
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:
         map_convert_values_to_milli(data, "position")
         map_convert_values(data, volume=to_centi)
-        data["time"] = int(cast(datetime, data["time"]).timestamp())
+        data["time"] = to_milli(cast(datetime, data["time"]).timestamp())
 
 
 @dataclass
@@ -91,5 +100,7 @@ class Player(BasePlayer):
     mixer_enabled: bool
 
     @classmethod
-    def __transform_input__(cls, data: RawDataType) -> None:
+    def __transform_input__(cls, data: RawDataType) -> RawDataType:
+        data = transform_input(super(), data)
         map_build_all_values_from_raw(data["mixer"], MixerPlayer)
+        return data

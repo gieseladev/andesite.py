@@ -12,7 +12,7 @@ from typing import Any, Dict, Optional, Union
 
 from andesite.transform import RawDataType, build_from_raw, from_centi, from_milli, map_build_values_from_raw, map_convert_values, \
     map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli
-from .filters import Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter
+from .filters import FilterMap
 
 __all__ = ["SendOperation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
 
@@ -124,25 +124,13 @@ class Volume(SendOperation):
 
 
 @dataclass
-class FilterUpdate(SendOperation):
-    """
+class FilterUpdate(FilterMap, SendOperation):
+    """Adjust the filter settings.
 
-    Attributes:
-        equalizer (Optional[Equalizer]): configures the equalizer
-        karaoke (Optional[Karaoke]): configures the karaoke filter
-        timescale (Optional[Timescale]): configures the timescale filter
-        tremolo (Optional[Tremolo]): configures the tremolo filter
-        vibrato (Optional[Vibrato]): configures the vibrato filter
-        volume (Optional[VolumeFilter]): configures the volume filter
+    See Also:
+        This class inherits from `FilterMap`.
     """
     __op__ = "filters"
-
-    equalizer: Optional[Equalizer] = None
-    karaoke: Optional[Karaoke] = None
-    timescale: Optional[Timescale] = None
-    tremolo: Optional[Tremolo] = None
-    vibrato: Optional[Vibrato] = None
-    volume: Optional[VolumeFilter] = None
 
 
 @dataclass

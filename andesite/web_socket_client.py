@@ -14,8 +14,8 @@ import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 
 from .event_target import Event, EventFilter, EventTarget, NamedEvent
-from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, \
-    Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
+from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterMap, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, \
+    SendOperation, Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 
 __all__ = ["AndesiteWebSocket", "RawMsgReceiveEvent", "RawMsgSendEvent"]
@@ -196,7 +196,7 @@ class AndesiteWebSocket(EventTarget):
         The connection id can be used to resume connections.
 
         Notes:
-            The client already does this automatically.
+            The client already performs resuming automatically.
         """
         return self._last_connection_id
 
@@ -385,8 +385,9 @@ class AndesiteWebSocket(EventTarget):
     async def wait_for_update(self, op: str, *, check: EventFilter = None, timeout: float = None) -> Optional[ReceiveOperation]:
         ...
 
-    async def wait_for_update(self, op: Union[ReceiveOperation, str], *, check: EventFilter = None, timeout: float = None) -> Optional[
-        ReceiveOperation]:
+    async def wait_for_update(self, op: Union[ReceiveOperation, str], *,
+                              check: EventFilter = None,
+                              timeout: float = None) -> Optional[ReceiveOperation]:
         """Wait for a Andesite update.
 
         Args:
@@ -617,7 +618,7 @@ class AndesiteWebSocket(EventTarget):
         await self.send(guild_id, "mixer", payload)
 
     @overload
-    async def filters(self, guild_id: int, filter_update: FilterUpdate) -> None:
+    async def filters(self, guild_id: int, filter_update: FilterMap) -> None:
         ...
 
     @overload
@@ -630,7 +631,7 @@ class AndesiteWebSocket(EventTarget):
                       volume: VolumeFilter = None) -> None:
         ...
 
-    async def filters(self, guild_id: int, filter_update: FilterUpdate = None, *,
+    async def filters(self, guild_id: int, filter_update: FilterMap = None, *,
                       equalizer: Equalizer = None,
                       karaoke: Karaoke = None,
                       timescale: Timescale = None,
@@ -642,8 +643,8 @@ class AndesiteWebSocket(EventTarget):
         Args:
             guild_id: ID of the guild for which to configure the filters
             filter_update: Instead of specifying the other keyword arguments
-                you may provide a `FilterUpdate` operation which will be used
-                instead
+                you may provide a `FilterMap` operation which will be used
+                instead.
             equalizer: Equalizer filter settings
             karaoke: Karaoke filter settings
             timescale: Timescale filter settings
@@ -690,7 +691,7 @@ class AndesiteWebSocket(EventTarget):
 
         Returns:
             Amount of seconds it took for the response to be received.
-            Note: This is not accurate.
+            Note: This is not necessarily an accurate reflection of the actual latency.
         """
 
         def check_ping_response(event: RawMsgReceiveEvent) -> bool:
