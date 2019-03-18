@@ -12,7 +12,8 @@ See Also:
 import abc
 import copy
 from dataclasses import dataclass
-from typing import Mapping, Optional, Set, Type
+from enum import Enum
+from typing import Mapping, Optional, Set, Type, cast
 
 from andesite.event_target import NamedEvent
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_convert_values_from_milli, \
@@ -22,7 +23,9 @@ from .player import Player
 
 __all__ = ["ReceiveOperation",
            "ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
-           "AndesiteEvent", "TrackStartEvent", "TrackEndEvent", "TrackExceptionEvent", "TrackStuckEvent", "UnknownAndesiteEvent",
+           "AndesiteEvent", "TrackStartEvent",
+           "TrackEndReason", "TrackEndEvent",
+           "TrackExceptionEvent", "TrackStuckEvent", "UnknownAndesiteEvent",
            "get_event_model", "get_update_model"]
 
 
@@ -130,16 +133,51 @@ class TrackStartEvent(AndesiteEvent):
     ...
 
 
+class TrackEndReason(Enum):
+    """Reason why a track stopped playing.
+
+    See Also:
+        `TrackEndEvent`
+
+    Attributes:
+        FINISHED: Usually caused by the track reaching the end,
+            however it will also be used when it ends due to an exception.
+        LOAD_FAILED: Track failed to start, throwing an exception before providing any audio.
+        STOPPED: Track was stopped due to the player being stopped.
+        REPLACED: Track stopped playing because a new track started playing.
+        CLEANUP: Track was stopped because the cleanup threshold for the audio player was reached.
+    """
+    FINISHED = "FINISHED"
+    LOAD_FAILED = "LOAD_FAILED"
+    STOPPED = "STOPPED"
+    REPLACED = "REPLACED"
+    CLEANUP = "CLEANUP"
+
+
 @dataclass
 class TrackEndEvent(AndesiteEvent):
     """Event emitted when a track ended.
 
     Attributes:
-        reason (str): Reason the track ended.
-        may_start_next (bool): Whether or not one may start the next track.
+        reason (TrackEndReason): Reason why a track stopped playing.
+        may_start_next (bool): Indicates whether a new track should be started on receiving this event.
+            If this is `False`, either this event is already triggered because another track started (`TrackEndReason.REPLACED`) or
+            because the player is stopped (`TrackEndReason.STOPPED`, `TrackEndReason.CLEANUP`).
     """
-    reason: str
+    reason: TrackEndReason
     may_start_next: bool
+
+    @classmethod
+    def __transform_input__(cls, data: RawDataType) -> RawDataType:
+        data = transform_input(super(), data)
+        map_convert_values(data, reason=TrackEndReason)
+        return data
+
+    @classmethod
+    def __transform_output__(cls, data: RawDataType) -> RawDataType:
+        data = transform_output(super(), data)
+        data["reason"] = cast(TrackEndReason, data["reason"]).value
+        return data
 
 
 @dataclass

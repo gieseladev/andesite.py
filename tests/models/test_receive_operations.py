@@ -1,6 +1,6 @@
-from andesite import ConnectionUpdate, PlayerUpdate, StatsUpdate, TrackEndEvent, TrackExceptionEvent, TrackStartEvent, TrackStuckEvent, \
-    UnknownAndesiteEvent, get_event_model, get_update_model
-from andesite.transform import build_from_raw
+from andesite import ConnectionUpdate, PlayerUpdate, StatsUpdate, TrackEndEvent, TrackEndReason, TrackExceptionEvent, TrackStartEvent, \
+    TrackStuckEvent, UnknownAndesiteEvent, get_event_model, get_update_model
+from andesite.transform import build_from_raw, convert_to_raw
 
 
 def test_track_start_event_build():
@@ -9,6 +9,34 @@ def test_track_start_event_build():
 
     # noinspection PyArgumentList
     assert build_from_raw(TrackStartEvent, raw_data) == TrackStartEvent("TrackStartEvent", 549905730099216384, 549904277108424715, "QAAAiwIAJ0x1aXMg")
+
+
+def test_track_start_event_dump():
+    # noinspection PyArgumentList
+    data = TrackStartEvent("TrackStartEvent", 549905730099216384, 549904277108424715, "QAAAiwIAJ0x1aXMg")
+
+    assert convert_to_raw(data) == {"type": "TrackStartEvent", "guildId": "549904277108424715", "userId": "549905730099216384",
+                                    "track": "QAAAiwIAJ0x1aXMg"}
+
+
+def test_track_end_event_build():
+    raw_data = {"type": "TrackEndEvent", "guildId": "549904277108424715", "userId": "549905730099216384",
+                "track": "QAAAmAIANUFudWVsIEFBIC0gRW",
+                "reason": "FINISHED", "mayStartNext": True}
+
+    # noinspection PyArgumentList
+    assert build_from_raw(TrackEndEvent, raw_data) == TrackEndEvent("TrackEndEvent", 549905730099216384, 549904277108424715,
+                                                                    "QAAAmAIANUFudWVsIEFBIC0gRW", TrackEndReason.FINISHED, True)
+
+
+def test_track_end_event_dump():
+    # noinspection PyArgumentList
+    data = TrackEndEvent("TrackEndEvent", 549905730099216384, 549904277108424715,
+                         "QAAAmAIANUFudWVsIEFBIC0gRW", TrackEndReason.FINISHED, True)
+
+    assert convert_to_raw(data) == {"type": "TrackEndEvent", "guildId": "549904277108424715", "userId": "549905730099216384",
+                                    "track": "QAAAmAIANUFudWVsIEFBIC0gRW",
+                                    "reason": "FINISHED", "mayStartNext": True}
 
 
 def test_get_event_model():
