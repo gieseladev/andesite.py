@@ -14,13 +14,13 @@ import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 
 from .event_target import Event, EventFilter, EventTarget, NamedEvent
-from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterUpdate, Karaoke, Operation, Play, Player, PlayerUpdate, Stats, StatsUpdate, \
-    Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
+from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, \
+    Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 
 __all__ = ["AndesiteWebSocket", "RawMsgReceiveEvent", "RawMsgSendEvent"]
 
-OPT = TypeVar("OPT", bound=Operation)
+ROPT = TypeVar("ROPT", bound=ReceiveOperation)
 ET = TypeVar("ET", bound=AndesiteEvent)
 
 log = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class RawMsgReceiveEvent(NamedEvent):
         super().__init__(body=body)
 
 
-class MsgReceiveEvent(NamedEvent, Generic[OPT]):
+class MsgReceiveEvent(NamedEvent, Generic[ROPT]):
     """Event emitted when a web socket message is received.
 
     Attributes:
@@ -51,17 +51,19 @@ class MsgReceiveEvent(NamedEvent, Generic[OPT]):
             - player-update
             - stats
             - event
-        data (Operation): Loaded message model.
+        data (ReceiveOperation): Loaded message model.
             The type of this depends on the op.
     """
     op: str
-    data: OPT
+    data: ROPT
 
-    def __init__(self, op: str, data: OPT) -> None:
+    def __init__(self, op: str, data: ROPT) -> None:
         super().__init__(op=op, data=data)
 
 
 class PlayerUpdateEvent(NamedEvent, PlayerUpdate):
+    """Event emitted when a player update is received."""
+
     def __init__(self, player_update: PlayerUpdate) -> None:
         super().__init__()
         self.__dict__.update(player_update.__dict__)
@@ -332,7 +334,7 @@ class AndesiteWebSocket(EventTarget):
                 return
 
             try:
-                message: Operation = build_from_raw(cls, data)
+                message: ReceiveOperation = build_from_raw(cls, data)
             except Exception as e:
                 log.error(f"Couldn't parse message from Andesite node ({e}): {data}")
                 return
@@ -368,27 +370,28 @@ class AndesiteWebSocket(EventTarget):
         self._read_loop.cancel()
 
     @overload
-    async def wait_for_update(self, op: Type[OPT], *, check: EventFilter = None) -> OPT:
+    async def wait_for_update(self, op: Type[ROPT], *, check: EventFilter = None) -> ROPT:
         ...
 
     @overload
-    async def wait_for_update(self, op: Type[OPT], *, check: EventFilter = None, timeout: float = None) -> Optional[OPT]:
+    async def wait_for_update(self, op: Type[ROPT], *, check: EventFilter = None, timeout: float = None) -> Optional[ROPT]:
         ...
 
     @overload
-    async def wait_for_update(self, op: str, *, check: EventFilter = None) -> Operation:
+    async def wait_for_update(self, op: str, *, check: EventFilter = None) -> ReceiveOperation:
         ...
 
     @overload
-    async def wait_for_update(self, op: str, *, check: EventFilter = None, timeout: float = None) -> Optional[Operation]:
+    async def wait_for_update(self, op: str, *, check: EventFilter = None, timeout: float = None) -> Optional[ReceiveOperation]:
         ...
 
-    async def wait_for_update(self, op: Union[Operation, str], *, check: EventFilter = None, timeout: float = None) -> Optional[Operation]:
+    async def wait_for_update(self, op: Union[ReceiveOperation, str], *, check: EventFilter = None, timeout: float = None) -> Optional[
+        ReceiveOperation]:
         """Wait for a Andesite update.
 
         Args:
             op: Operation to wait for.
-                You can also pass an `Operation`.
+                You can also pass an `ReceiveOperation`.
             check: Additional checks to perform before accepting an Event.
                 The function is called with the `MsgReceiveEvent` and should
                 return a `bool`. If not set, all events with the correct op are
@@ -397,10 +400,10 @@ class AndesiteWebSocket(EventTarget):
                 If you don't set this, the method will wait forever.
 
         Returns:
-            `Operation` that was accepted.
+            `ReceiveOperation` that was accepted.
             `None` if it timed-out.
         """
-        if isinstance(op, Operation):
+        if isinstance(op, ReceiveOperation):
             op = op.__op__
 
         def _check(_event: MsgReceiveEvent) -> bool:
@@ -450,15 +453,15 @@ class AndesiteWebSocket(EventTarget):
             self._message_queue.append(data)
             await self.connect()
 
-    async def send_operation(self, guild_id: int, operation: Operation) -> None:
-        """Send an `Operation`.
+    async def send_operation(self, guild_id: int, operation: SendOperation) -> None:
+        """Send a `SendOperation`.
 
         Args:
             guild_id: Target guild id
             operation: Operation to send
 
         Notes:
-            Using `Operation` instances to send messages is currently
+            Using `SendOperation` instances to send messages is currently
             less efficient than calling the `AndesiteWebSocket` methods
             directly. This is mainly due to the overhead of conversion.
         """

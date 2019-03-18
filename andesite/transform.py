@@ -2,6 +2,11 @@
 
 These functions are used to transform the data sent by Andesite
 into the Python models.
+
+Attributes:
+    RawDataType (Dict[str, Any]): (Type alias) JSON-like object data type.
+    CONVERTER_MEMO (lettercase.ConversionMemo): Memory used for letter case conversion.
+    MapFunction ((T) -> `Any`): (Type alias) Callable that takes an argument and returns a new one.
 """
 
 import dataclasses

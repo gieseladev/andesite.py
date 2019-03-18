@@ -1,25 +1,33 @@
-from abc import ABC
+"""Operations sent from the client to Andesite.
+
+See Also:
+    `andesite.models.receive_operations` for operations sent by Andesite.
+
+Attributes:
+    MixerPlayerUpdateMap (Dict[str, Union[Play, Update]]): (Type alias) str -> `Play`/`Update` map used by the `MixerUpdate`.
+"""
+import abc
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from andesite.transform import RawDataType, build_from_raw, map_build_values_from_raw, map_convert_values_from_milli, \
-    map_convert_values_to_milli, map_convert_values, to_centi, from_centi, to_milli, from_milli
+from andesite.transform import RawDataType, build_from_raw, from_centi, from_milli, map_build_values_from_raw, map_convert_values, \
+    map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli
 from .filters import Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter
 
-__all__ = ["Operation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
+__all__ = ["SendOperation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
 
 
-class Operation(ABC):
-    """Operation is a model that can be passed as a payload to the :py:class:`AndesiteWebSocket` client.
+class SendOperation(abc.ABC):
+    """SendOperation is a model that can be passed as a payload to the `AndesiteWebSocket` client.
 
-    See Also: :py:meth:`AndesiteWebSocket.send_operation`
+    See Also:
+        `AndesiteWebSocket.send_operation`
     """
     __op__: str
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class VoiceServerUpdate(Operation):
+class VoiceServerUpdate(SendOperation):
     """
 
     Attributes:
@@ -32,9 +40,8 @@ class VoiceServerUpdate(Operation):
     event: Dict[str, Any]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class Play(Operation):
+class Play(SendOperation):
     """
 
     Attributes:
@@ -65,9 +72,8 @@ class Play(Operation):
         map_convert_values(data, volume=to_centi)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class Pause(Operation):
+class Pause(SendOperation):
     """
 
     Attributes:
@@ -78,9 +84,8 @@ class Pause(Operation):
     pause: bool
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class Seek(Operation):
+class Seek(SendOperation):
     """
     Attributes:
         position (float): timestamp to set the current track to, in seconds
@@ -98,9 +103,8 @@ class Seek(Operation):
         map_convert_values_to_milli(data, "position")
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class Volume(Operation):
+class Volume(SendOperation):
     """
 
     Attributes:
@@ -119,9 +123,8 @@ class Volume(Operation):
         map_convert_values(data, volume=to_centi)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class FilterUpdate(Operation):
+class FilterUpdate(SendOperation):
     """
 
     Attributes:
@@ -142,9 +145,8 @@ class FilterUpdate(Operation):
     volume: Optional[VolumeFilter] = None
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class Update(Operation):
+class Update(SendOperation):
     """
 
     Attributes:
@@ -173,9 +175,8 @@ class Update(Operation):
 MixerPlayerUpdateMap = Dict[str, Union[Play, Update]]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
-class MixerUpdate(Operation):
+class MixerUpdate(SendOperation):
     """
 
     Attributes:

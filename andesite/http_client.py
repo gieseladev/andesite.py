@@ -1,4 +1,9 @@
-"""Client for Andesite's HTTP routes."""
+"""Client for Andesite's HTTP routes.
+
+Attributes:
+    USER_AGENT (str): User agent used by the `AndesiteHTTP` client.
+    AndesiteSearcherType (Union[AndesiteSearcher, str]): (Type alias) Types supported by `get_andesite_searcher`
+"""
 
 import asyncio
 from asyncio import AbstractEventLoop

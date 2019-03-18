@@ -12,7 +12,6 @@ __all__ = ["StackFrame", "Error",
            "Stats"]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class StackFrame:
     """
@@ -38,8 +37,19 @@ class StackFrame:
     line_number: Optional[int]
     pretty: str
 
+    def __str__(self) -> str:
+        spec: List[str] = []
 
-# noinspection PyUnresolvedReferences
+        for name, value in [("module", self.module_name), ("file", self.file_name), ("line", self.line_number)]:
+            # only show 'em if we know 'em
+            if value is not None:
+                spec.append(f"{name} {value}")
+
+        spec.append(f"{self.class_name}#{self.method_name}")
+
+        return ", ".join(spec)
+
+
 @dataclass
 class Error:
     """Andesite error.
@@ -64,11 +74,48 @@ class Error:
         map_build_values_from_raw(data, cause=Error)
         map_rename_keys(data, class_name="class")
 
+    def as_python_exception(self) -> "AndesiteException":
+        """Create an `AndesiteException` which can be raised.
+
+        If `cause` is not `None` it is added to the exception.
+        """
+        exc = AndesiteException(self.class_name, self.message, self.stack, self.suppressed)
+
+        if self.cause is not None:
+            exc.__cause__ = self.cause.as_python_exception()
+
+        return exc
+
+
+class AndesiteException(Exception):
+    """Andesite's `Error` represented as python exceptions.
+
+    Attributes:
+        class_name (str): Class name of the error
+        message (str): message of the error
+        stack (List[StackFrame]): cause of the error
+        suppressed (List[Error]): suppressed errors
+    """
+
+    class_name: str
+    message: str
+    stack: List[StackFrame]
+    suppressed: List[Error]
+
+    def __init__(self, class_name: str, message: str, stack: List[StackFrame], suppressed: List[Error]) -> None:
+        super().__init__(class_name, message)
+        self.class_name = class_name
+        self.message = message
+        self.stack = stack
+        self.suppressed = suppressed
+
+    def __str__(self) -> str:
+        return f"{self.class_name}: {self.message}"
+
 
 # STATISTICS
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class PlayersStats:
     """Players statistics sent by Andesite.
@@ -85,7 +132,6 @@ class PlayersStats:
     playing: int
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class RuntimeVMStats:
     """VM statistics.
@@ -104,7 +150,6 @@ class RuntimeVMStats:
     version: str
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class RuntimeSpecStats:
     """Spec statistics.
@@ -123,7 +168,6 @@ class RuntimeSpecStats:
     version: str
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class RuntimeVersionStats:
     """Version information stats.
@@ -150,7 +194,6 @@ class RuntimeVersionStats:
     optional: str
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class RuntimeStats:
     """Runtime statistics.
@@ -181,7 +224,6 @@ class RuntimeStats:
         map_build_values_from_raw(data, vm=RuntimeVMStats, spec=RuntimeSpecStats, version=RuntimeVersionStats)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class OSStats:
     """OS statistics.
@@ -202,7 +244,6 @@ class OSStats:
     version: str
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class CPUStats:
     """CPU statistics.
@@ -219,7 +260,6 @@ class CPUStats:
     system: float
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class ClassLoadingStats:
     """Class loading statistics.
@@ -234,7 +274,6 @@ class ClassLoadingStats:
     unloaded: int
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class ThreadStats:
     """Thread statistics.
@@ -255,7 +294,6 @@ class ThreadStats:
     total_started: int
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class CompilationStats:
     """Compilation statistics.
@@ -272,7 +310,6 @@ class CompilationStats:
     total_time: int
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class MemoryCommonUsageStats:
     """Memory usage statistics.
@@ -293,7 +330,6 @@ class MemoryCommonUsageStats:
     max: int
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class MemoryStats:
     """Memory statistics.
@@ -316,7 +352,6 @@ class MemoryStats:
         map_build_values_from_raw(data, heap=MemoryCommonUsageStats, non_heap=MemoryCommonUsageStats)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class GCStats:
     """Garbage collection statistics.
@@ -337,7 +372,6 @@ class GCStats:
     pools: List[str]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class MemoryPoolStats:
     """Memory pool statistics.
@@ -374,7 +408,6 @@ class MemoryPoolStats:
         map_build_values_from_raw(data, collection_usage=MemoryCommonUsageStats, peak_usage=MemoryCommonUsageStats, usage=MemoryCommonUsageStats)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class MemoryManagerStats:
     """Memory manager statistics.
@@ -391,7 +424,6 @@ class MemoryManagerStats:
     pools: List[str]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class FrameStats:
     """Frame statistics for a guild player.
@@ -420,7 +452,6 @@ class FrameStats:
         map_convert_values(data, user=str, guild=str)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class Stats:
     """Statistics sent by Andesite

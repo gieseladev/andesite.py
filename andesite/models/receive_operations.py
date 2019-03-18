@@ -1,4 +1,14 @@
-"""Messages sent by Andesite."""
+"""Operations sent by Andesite.
+
+Attributes:
+    EVENT_MAP (Mapping[str, Type[AndesiteEvent]]): Mapping from the event name to the corresponding `AndesiteEvent` type.
+        See: `get_event_model`
+    OP_MAP (Mapping[str, Type[ReceiveOperation]]): Mapping from the op code to the corresponding `ReceiveOperation` type.
+        See: `get_update_model`
+
+See Also:
+    `andesite.models.send_operations` for operations sent to Andesite.
+"""
 import abc
 import copy
 from dataclasses import dataclass
@@ -8,20 +18,21 @@ from andesite.event_target import NamedEvent
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_convert_values_from_milli, \
     map_convert_values_to_milli, transform_input, transform_output
 from .debug import Error, Stats
-from .operations import Operation
 from .player import Player
 
-__all__ = ["ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
+__all__ = ["ReceiveOperation",
+           "ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
            "AndesiteEvent", "TrackStartEvent", "TrackEndEvent", "TrackExceptionEvent", "TrackStuckEvent", "UnknownAndesiteEvent",
            "get_event_model", "get_update_model"]
 
 
-# class Update(abc.ABC):
-#     """Updates are messages sent by Andesite."""
-#     __op__: str
+class ReceiveOperation(abc.ABC):
+    """Message sent by Andesite."""
+    __op__: str
+
 
 @dataclass
-class ConnectionUpdate(Operation):
+class ConnectionUpdate(ReceiveOperation):
     """Message sent upon connecting to the Web socket.
 
     Attributes:
@@ -33,7 +44,7 @@ class ConnectionUpdate(Operation):
 
 
 @dataclass
-class StatsUpdate(Operation):
+class StatsUpdate(ReceiveOperation):
     """Message containing statistics.
 
     Attributes:
@@ -56,7 +67,7 @@ class StatsUpdate(Operation):
 
 
 @dataclass
-class PlayerUpdate(Operation):
+class PlayerUpdate(ReceiveOperation):
     """Player update sent by Andesite for active players.
 
     Attributes:
@@ -82,7 +93,7 @@ class PlayerUpdate(Operation):
 
 
 @dataclass
-class AndesiteEvent(NamedEvent, Operation, abc.ABC):
+class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
     """Event sent by Andesite.
 
     Attributes:
@@ -90,6 +101,8 @@ class AndesiteEvent(NamedEvent, Operation, abc.ABC):
         user_id (int): User ID
         guild_id (int): Guild ID
         track (str): Base64 encoded track data
+
+    Inherits from `NamedEvent` so it can be dispatched by an `EventTarget`.
     """
     __op__ = "event"
     __event_name__ = "andesite_event"
@@ -215,11 +228,11 @@ def get_event_model(event_type: str) -> Type[AndesiteEvent]:
         return UnknownAndesiteEvent
 
 
-_OPS: Set[Type[Operation]] = {ConnectionUpdate, StatsUpdate, PlayerUpdate}
-OP_MAP: Mapping[str, Type[Operation]] = {op.__op__: op for op in _OPS}
+_OPS: Set[Type[ReceiveOperation]] = {ConnectionUpdate, StatsUpdate, PlayerUpdate}
+OP_MAP: Mapping[str, Type[ReceiveOperation]] = {op.__op__: op for op in _OPS}
 
 
-def get_update_model(op: str, event_type: str = None) -> Optional[Type[Operation]]:
+def get_update_model(op: str, event_type: str = None) -> Optional[Type[ReceiveOperation]]:
     """Get the model corresponding to the given op code.
 
     Args:

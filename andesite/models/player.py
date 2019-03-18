@@ -1,3 +1,10 @@
+"""Player models.
+
+Attributes:
+    FilterMap (Dict[str, Any]): (Type alias) Mapping from filter name to filter settings.
+    MixerMap (Dict[str, MixerPlayer]): (Type alias) Mapping from player id to `MixerPlayer`
+"""
+
 import abc
 from dataclasses import dataclass
 from datetime import datetime
@@ -11,7 +18,6 @@ __all__ = ["FilterMap", "BasePlayer", "MixerPlayer", "MixerMap", "Player"]
 FilterMap = Dict[str, Any]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class BasePlayer(abc.ABC):
     """Abstract class for Andesite players.
@@ -73,7 +79,6 @@ class MixerPlayer(BasePlayer):
 MixerMap = Dict[str, MixerPlayer]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class Player(BasePlayer):
     """

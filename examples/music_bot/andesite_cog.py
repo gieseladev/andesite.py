@@ -15,8 +15,6 @@ import andesite
 if TYPE_CHECKING:
     from .bot import OptionsType
 
-__all__ = ["AndesiteCog"]
-
 log = logging.getLogger(__name__)
 
 
@@ -46,6 +44,11 @@ class AndesiteCog(Cog, name="Andesite"):
 
     @Cog.listener()
     async def on_socket_response(self, data: Dict[str, Any]) -> None:
+        """Intercept voice server updates and send them to Andesite.
+
+        This handler also intercepts voice state updates to get the
+        session id.
+        """
         try:
             key = data["t"]
             body = data["d"]
@@ -68,6 +71,7 @@ class AndesiteCog(Cog, name="Andesite"):
                 log.debug(f"not sending voice server update for guild {guild_id} because session id missing.")
 
     def get_discord_websocket(self, guild_id: int) -> DiscordWebSocket:
+        """Utility method to get access to discord.py's gateway websocket."""
         # noinspection PyProtectedMember
         return self.bot._connection._get_websocket(guild_id)
 

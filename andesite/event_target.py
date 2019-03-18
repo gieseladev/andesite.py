@@ -1,5 +1,18 @@
-"""Event dispatching and listening."""
+"""Event dispatching and listening.
 
+This module provides a simple `EventTarget` which can be used
+to dispatch events.
+The easiest way to use it is to inherit from it.
+
+Attributes:
+    EventHandler ((Event) -> `Any`): (Type alias) Callable which takes an event. If the callable is a coroutine it is awaited.
+    EventFilter ((Event) -> `bool`): (Type alias) Callable which takes an event and returns a `bool`.
+        This is used to "filter" events.
+    EventSpecifierType (Union[str, Type[NamedEvent]]): (Type alias) Type of an object which conveys the name of an `Event`.
+        Usually this is just a string with the name of the event, however you can
+        also use a `NamedEvent` class.
+"""
+import abc
 import asyncio
 import inspect
 import logging
@@ -10,7 +23,12 @@ from typing import Any, Awaitable, Callable, Coroutine, Dict, List, MutableMappi
 
 import lettercase
 
-__all__ = ["Event", "NamedEvent", "EventHandler", "EventErrorEvent", "EventFilter", "OneTimeEventListener", "EventListener", "EventTarget"]
+__all__ = ["Event", "NamedEvent",
+           "EventErrorEvent",
+           "EventHandler", "EventFilter",
+           "OneTimeEventListener", "EventListener",
+           "EventSpecifierType", "resolve_event_specifier",
+           "EventTarget"]
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +77,7 @@ class Event:
         return default
 
 
-class NamedEvent(Event):
+class NamedEvent(Event, abc.ABC):
     """Event which automatically gets its name from its class.
 
     Args:
@@ -68,6 +86,9 @@ class NamedEvent(Event):
 
     This is useful for subclasses of `Event` whose name is used for the event name.
     You may also manually set the event name by setting `__event_name__` on the class.
+
+    This is an abstract class, you cannot use it directly. You can either use an `Event`
+    or subclass this class.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -136,7 +157,7 @@ class OneTimeEventListener:
             When an event occurs which meets the conditions it is set
             as the result of this future. If an error occurs, it is
             set as the exception.
-        condition (Optional[EventFilter): Callback which takes an `Event` and returns `True`
+        condition (Optional[EventFilter]): Callback which takes an `Event` and returns `True`
             to accept the event and `False` otherwise.
             If not provided, all events are accepted.
     """
@@ -170,7 +191,12 @@ def _push_map_list(mapping: MutableMapping[str, List[T]], key: str, item: T) -> 
 EventSpecifierType = Union[str, Type[NamedEvent]]
 
 
-def _resolve_event_specifier(event: EventSpecifierType) -> str:
+def resolve_event_specifier(event: EventSpecifierType) -> str:
+    """Resolve an `EventSpecifierType` to the name of the event.
+
+    Raises:
+        TypeError: If something other than an `EventSpecifierType` is passed.
+    """
     if isinstance(event, str):
         return event
     elif isinstance(event, NamedEvent):
@@ -224,7 +250,7 @@ class EventTarget:
             If a timeout was given the result will be `None`
             if it timed-out.
         """
-        event = _resolve_event_specifier(event)
+        event = resolve_event_specifier(event)
 
         # not using self._loop.create_future because loop may be None
         future = Future(loop=self._loop)
@@ -247,7 +273,7 @@ class EventTarget:
             If the provided listener already is an `EventListener`,
             the return value is the same value.
         """
-        event = _resolve_event_specifier(event)
+        event = resolve_event_specifier(event)
 
         if not isinstance(listener, EventListener):
             listener = EventListener(listener)
@@ -268,7 +294,7 @@ class EventTarget:
         Returns:
             bool: Whether the listener was successfully removed.
         """
-        event = _resolve_event_specifier(event)
+        event = resolve_event_specifier(event)
 
         try:
             listeners = self._listeners[event]
@@ -310,7 +336,7 @@ class EventTarget:
                 If this is `None` the method checks whether the
                 event has **any** listeners.
         """
-        event = _resolve_event_specifier(event)
+        event = resolve_event_specifier(event)
 
         if target is None:
             return bool(self._listeners.get(event)) or bool(self._one_time_listeners.get(event))

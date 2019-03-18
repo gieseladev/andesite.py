@@ -1,3 +1,4 @@
+"""Track models."""
 from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
@@ -10,20 +11,26 @@ from .debug import Error
 __all__ = ["PlaylistInfo", "TrackMetadata", "TrackInfo", "LoadType", "LoadedTrack"]
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class PlaylistInfo:
     """
 
     Attributes:
         name: name of the playlist
-        selected_track: index of the selected track in the tracks array, or None if no track is selected
+        selected_track: index of the selected track in the tracks list, or None if no track is selected
     """
     name: str
     selected_track: Optional[int]
 
+    def __str__(self) -> str:
+        res: List[str] = [self.name]
 
-# noinspection PyUnresolvedReferences
+        if self.selected_track is not None:
+            res.append(f"[{self.selected_track}]")
+
+        return " ".join(res)
+
+
 @dataclass
 class TrackMetadata:
     """
@@ -49,6 +56,9 @@ class TrackMetadata:
     is_seekable: bool
     position: float
 
+    def __str__(self) -> str:
+        return f"{self.author} - {self.title}"
+
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
         data["class_name"] = data.pop("class")
@@ -60,7 +70,6 @@ class TrackMetadata:
         map_convert_values_to_milli(data, "length", "position")
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class TrackInfo:
     """
@@ -85,8 +94,15 @@ class LoadType(Enum):
     NO_MATCHES = "NO_MATCHES"
     LOAD_FAILED = "LOAD_FAILED"
 
+    @property
+    def success(self) -> bool:
+        """Whether the load type is a successful one.
 
-# noinspection PyUnresolvedReferences
+        Only `LOAD_FAILED` counts as unsuccessful.
+        """
+        return self != LoadType.LOAD_FAILED
+
+
 @dataclass
 class LoadedTrack:
     """
@@ -97,6 +113,9 @@ class LoadedTrack:
         playlist_info (Optional[PlaylistInfo]): metadata of the loaded playlist
         cause (Optional[Error]): error that happened while loading tracks
         severity (Optional[str]): severity of the error
+
+    This class provides the magic methods `__bool__` and `__len__` which
+    operate in respect to `tracks`.
     """
     load_type: LoadType
     tracks: Optional[List[TrackInfo]]
@@ -104,6 +123,26 @@ class LoadedTrack:
 
     cause: Optional[Error] = None
     severity: Optional[str] = None
+
+    def __bool__(self) -> bool:
+        """Return `True` if tracks have been loaded, `False` otherwise.
+
+        This doesn't check the `load_type`, instead it simply returns the
+        `bool` value of `tracks`.
+        """
+        return bool(self.tracks)
+
+    def __len__(self) -> int:
+        """Return the amount of tracks.
+
+        Returns:
+            Amount of tracks loaded, if `tracks` is `None` (i.e. no tracks have been loaded)
+            it returns 0.
+        """
+        if self.tracks is None:
+            return 0
+        else:
+            return len(self.tracks)
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
@@ -117,3 +156,35 @@ class LoadedTrack:
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> None:
         data["load_type"] = data["load_type"].value
+
+    def get_selected_track(self) -> Optional[TrackInfo]:
+        """Get the selected track.
+
+        "Selected" means that either the result is a playlist with a
+        entry selected (`PlaylistInfo.selected_track`), or the result
+        is a `LoadType.TRACK_LOADED` result (in which case the first and only
+        track is returned).
+
+        All other cases will return in `None` being returned.
+
+        Returns:
+            The selected track if there is any, or `None`
+            if the selected track doesn't exist.
+        """
+        if self.tracks is None:
+            return None
+
+        if self.playlist_info:
+            selected_track = self.playlist_info.selected_track
+        elif self.load_type == LoadType.TRACK_LOADED:
+            selected_track = 0
+        else:
+            selected_track = None
+
+        if selected_track is None:
+            return None
+
+        try:
+            return self.tracks[selected_track]
+        except IndexError:
+            return None

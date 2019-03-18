@@ -73,7 +73,6 @@ class EqualizerBand:
         self.gain = value
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class Equalizer:
     """
@@ -145,7 +144,6 @@ class Equalizer:
         self.get_band(band).set_gain(gain)
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class Karaoke:
     """
@@ -284,7 +282,6 @@ class Vibrato:
         self.depth = value
 
 
-# noinspection PyUnresolvedReferences
 @dataclass
 class VolumeFilter:
     """Volume filter settings.
