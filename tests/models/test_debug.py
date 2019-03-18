@@ -1,6 +1,7 @@
 from andesite import CPUStats, ClassLoadingStats, CompilationStats, Error, FrameStats, GCStats, MemoryCommonUsageStats, MemoryManagerStats, \
     MemoryPoolStats, MemoryStats, OSStats, PlayersStats, RuntimeSpecStats, RuntimeStats, RuntimeVMStats, RuntimeVersionStats, StackFrame, Stats, \
-    ThreadStats, build_from_raw
+    ThreadStats
+from andesite.transform import build_from_raw
 
 
 def test_stats_load():

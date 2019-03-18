@@ -1,4 +1,5 @@
-from andesite import LoadType, LoadedTrack, PlaylistInfo, TrackInfo, TrackMetadata, build_from_raw
+from andesite import LoadType, LoadedTrack, PlaylistInfo, TrackInfo, TrackMetadata
+from andesite.transform import build_from_raw
 
 
 def test_loaded_track_load():
