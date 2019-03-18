@@ -34,19 +34,38 @@
           <div class="body" role="main">
             
   <h1>Source code for andesite.event_target</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Event dispatching and listening.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Event dispatching and listening.</span>
 
+<span class="sd">This module provides a simple `EventTarget` which can be used</span>
+<span class="sd">to dispatch events.</span>
+<span class="sd">The easiest way to use it is to inherit from it.</span>
+
+<span class="sd">Attributes:</span>
+<span class="sd">    EventHandler ((Event) -&gt; `Any`): (Type alias) Callable which takes an event. If the callable is a coroutine it is awaited.</span>
+<span class="sd">    EventFilter ((Event) -&gt; `bool`): (Type alias) Callable which takes an event and returns a `bool`.</span>
+<span class="sd">        This is used to &quot;filter&quot; events.</span>
+<span class="sd">    EventSpecifierType (Union[str, Type[NamedEvent]]): (Type alias) Type of an object which conveys the name of an `Event`.</span>
+<span class="sd">        Usually this is just a string with the name of the event, however you can</span>
+<span class="sd">        also use a `NamedEvent` class.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">asyncio</span> <span class="k">import</span> <span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">CancelledError</span><span class="p">,</span> <span class="n">Future</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">suppress</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> \
+    <span class="n">overload</span>
 
 <span class="kn">import</span> <span class="nn">lettercase</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Event&quot;</span><span class="p">,</span> <span class="s2">&quot;NamedEvent&quot;</span><span class="p">,</span> <span class="s2">&quot;EventHandler&quot;</span><span class="p">,</span> <span class="s2">&quot;EventErrorEvent&quot;</span><span class="p">,</span> <span class="s2">&quot;EventFilter&quot;</span><span class="p">,</span> <span class="s2">&quot;OneTimeEventListener&quot;</span><span class="p">,</span> <span class="s2">&quot;EventListener&quot;</span><span class="p">,</span> <span class="s2">&quot;EventTarget&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Event&quot;</span><span class="p">,</span> <span class="s2">&quot;NamedEvent&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;EventErrorEvent&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;EventHandler&quot;</span><span class="p">,</span> <span class="s2">&quot;EventFilter&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;OneTimeEventListener&quot;</span><span class="p">,</span> <span class="s2">&quot;EventListener&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;EventSpecifierType&quot;</span><span class="p">,</span> <span class="s2">&quot;resolve_event_specifier&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;EventTarget&quot;</span><span class="p">]</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -56,6 +75,9 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: Name of the event</span>
+<span class="sd">        arg: Acts like **kwargs, but doesn&#39;t need to be unpacked, thus being more</span>
+<span class="sd">            efficient. This argument is optional. **kwargs values will override the</span>
+<span class="sd">            values in this mapping.</span>
 <span class="sd">        **kwargs: Attributes to set on the event.</span>
 
 <span class="sd">    Attributes:</span>
@@ -68,16 +90,37 @@
 
     <span class="n">_keys</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="n">keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">type_name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{type_name}</span><span class="s2"> (</span><span class="si">{name}</span><span class="s2">) </span><span class="si">{self._keys}</span><span class="s2">&quot;</span>
+
+        <span class="n">attrs_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{type_name}</span><span class="s2"> (</span><span class="si">{name}</span><span class="s2">) {{</span><span class="si">{attrs_str}</span><span class="s2">}}&quot;</span>
 
 <div class="viewcode-block" id="Event.get"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.Event.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the value of a key.</span>
@@ -95,7 +138,20 @@
         <span class="k">return</span> <span class="n">default</span></div></div>
 
 
-<div class="viewcode-block" id="NamedEvent"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.NamedEvent">[docs]</a><span class="k">class</span> <span class="nc">NamedEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_trim_suffix</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return the string without the given suffix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        s: String to remove suffix from</span>
+<span class="sd">        suffix: Exact suffix to remove</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+
+<div class="viewcode-block" id="NamedEvent"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.NamedEvent">[docs]</a><span class="k">class</span> <span class="nc">NamedEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Event which automatically gets its name from its class.</span>
 
 <span class="sd">    Args:</span>
@@ -104,10 +160,13 @@
 
 <span class="sd">    This is useful for subclasses of `Event` whose name is used for the event name.</span>
 <span class="sd">    You may also manually set the event name by setting `__event_name__` on the class.</span>
+
+<span class="sd">    This is an abstract class, you cannot use it directly. You can either use an `Event`</span>
+<span class="sd">    or subclass this class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">(),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_create_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -119,9 +178,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Generated name</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cls_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
-        <span class="k">if</span> <span class="n">cls_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Event&quot;</span><span class="p">):</span>
-            <span class="n">cls_name</span> <span class="o">=</span> <span class="n">cls_name</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;Event&quot;</span><span class="p">)]</span>
+        <span class="n">cls_name</span> <span class="o">=</span> <span class="n">_trim_suffix</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;Event&quot;</span><span class="p">)</span>
 
         <span class="n">name</span> <span class="o">=</span> <span class="n">lettercase</span><span class="o">.</span><span class="n">convert_to</span><span class="p">(</span><span class="n">cls_name</span><span class="p">,</span> <span class="n">lettercase</span><span class="o">.</span><span class="n">LetterCase</span><span class="o">.</span><span class="n">SNAKE</span><span class="p">)</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">__event_name__</span> <span class="o">=</span> <span class="n">name</span>
@@ -159,7 +216,6 @@
 <span class="n">EventFilter</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Event</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
 
-<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="OneTimeEventListener"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.OneTimeEventListener">[docs]</a><span class="nd">@dataclass</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">OneTimeEventListener</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;One-time event listener.</span>
@@ -172,7 +228,7 @@
 <span class="sd">            When an event occurs which meets the conditions it is set</span>
 <span class="sd">            as the result of this future. If an error occurs, it is</span>
 <span class="sd">            set as the exception.</span>
-<span class="sd">        condition (Optional[EventFilter): Callback which takes an `Event` and returns `True`</span>
+<span class="sd">        condition (Optional[EventFilter]): Callback which takes an `Event` and returns `True`</span>
 <span class="sd">            to accept the event and `False` otherwise.</span>
 <span class="sd">            If not provided, all events are accepted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -180,7 +236,6 @@
     <span class="n">condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventFilter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
-<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="EventListener"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.EventListener">[docs]</a><span class="nd">@dataclass</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">EventListener</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Persistent event listener.</span>
@@ -206,13 +261,18 @@
 <span class="n">EventSpecifierType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">NamedEvent</span><span class="p">]]</span>
 
 
-<span class="k">def</span> <span class="nf">_resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">EventSpecifierType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="resolve_event_specifier"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.resolve_event_specifier">[docs]</a><span class="k">def</span> <span class="nf">resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">EventSpecifierType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Resolve an `EventSpecifierType` to the name of the event.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If something other than an `EventSpecifierType` is passed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">event</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">NamedEvent</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">NamedEvent</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown event specifier type {type(event).__name__}: </span><span class="si">{event}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown event specifier type {type(event).__name__!r}: </span><span class="si">{event}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EventTarget"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.EventTarget">[docs]</a><span class="k">class</span> <span class="nc">EventTarget</span><span class="p">:</span>
@@ -260,7 +320,7 @@
 <span class="sd">            If a timeout was given the result will be `None`</span>
 <span class="sd">            if it timed-out.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">event</span> <span class="o">=</span> <span class="n">_resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
         <span class="c1"># not using self._loop.create_future because loop may be None</span>
         <span class="n">future</span> <span class="o">=</span> <span class="n">Future</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
@@ -283,7 +343,7 @@
 <span class="sd">            If the provided listener already is an `EventListener`,</span>
 <span class="sd">            the return value is the same value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">event</span> <span class="o">=</span> <span class="n">_resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">listener</span><span class="p">,</span> <span class="n">EventListener</span><span class="p">):</span>
             <span class="n">listener</span> <span class="o">=</span> <span class="n">EventListener</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span>
@@ -304,7 +364,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: Whether the listener was successfully removed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">event</span> <span class="o">=</span> <span class="n">_resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">listeners</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">[</span><span class="n">event</span><span class="p">]</span>
@@ -337,7 +397,8 @@
 <div class="viewcode-block" id="EventTarget.has_listener"><a class="viewcode-back" href="../../reference/event_target.html#andesite.event_target.EventTarget.has_listener">[docs]</a>    <span class="k">def</span> <span class="nf">has_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">EventSpecifierType</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">EventHandler</span><span class="p">,</span> <span class="n">EventListener</span><span class="p">,</span> <span class="n">OneTimeEventListener</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check whether an event has a listener.</span>
 
-<span class="sd">        This includes one-time listeners.</span>
+<span class="sd">        This includes one-time listeners, but does not check method</span>
+<span class="sd">        listeners (on_&lt;event&gt; methods defined in the event target class).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            event: Name of the event to check.</span>
@@ -346,7 +407,7 @@
 <span class="sd">                If this is `None` the method checks whether the</span>
 <span class="sd">                event has **any** listeners.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">event</span> <span class="o">=</span> <span class="n">_resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">resolve_event_specifier</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">event</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_one_time_listeners</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
@@ -388,7 +449,10 @@
 <span class="sd">            Optional[Future]: Future aggregating all asynchronous dispatches.</span>
 <span class="sd">                Can be awaited to make sure all handlers have been executed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;dispatching: </span><span class="si">{event}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
+            <span class="c1"># converting event to string may be expensive, so only</span>
+            <span class="c1"># do it if we want it logged</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;dispatching: </span><span class="si">{event}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">futures</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Coroutine</span><span class="p">,</span> <span class="n">Future</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">event_name</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">name</span>

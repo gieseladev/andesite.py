@@ -34,9 +34,15 @@
           <div class="body" role="main">
             
   <h1>Source code for andesite.http_client</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Client for Andesite&#39;s HTTP routes.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Client for Andesite&#39;s HTTP routes.</span>
+
+<span class="sd">Attributes:</span>
+<span class="sd">    USER_AGENT (str): User agent used by the `AndesiteHTTP` client.</span>
+<span class="sd">    AndesiteSearcherType (Union[AndesiteSearcher, str]): (Type alias) Types supported by `get_andesite_searcher`</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">asyncio</span> <span class="k">import</span> <span class="n">AbstractEventLoop</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
@@ -49,6 +55,8 @@
 <span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">seq_build_all_items_from_raw</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USER_AGENT&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteHTTPError&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteSearcher&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteSearcherType&quot;</span><span class="p">,</span> <span class="s2">&quot;get_andesite_searcher&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteHTTP&quot;</span><span class="p">]</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">USER_AGENT</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;andesite.py/</span><span class="si">{__version__}</span><span class="s2"> (https://github.com/gieseladev/andesite.py)&quot;</span>
 
@@ -166,14 +174,21 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_url</span> <span class="o">/</span> <span class="n">path</span>
 
+        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;performing </span><span class="si">{method}</span><span class="s2"> request for endpoint </span><span class="si">{path}</span><span class="s2"> with arguments: </span><span class="si">{kwargs}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;got data: </span><span class="si">{data}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">code</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span>
                     <span class="n">message</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t extract keys </span><span class="se">\&quot;</span><span class="s2">code</span><span class="se">\&quot;</span><span class="s2"> and </span><span class="se">\&quot;</span><span class="s2">message</span><span class="se">\&quot;</span><span class="s2"> from data, letting aiohttp raise!&quot;</span><span class="p">)</span>
                     <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">AndesiteHTTPError</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
@@ -241,7 +256,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;decodetrack&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">))</span>
-        <span class="k">except</span> <span class="n">AndesiteHTTPError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="n">AndesiteHTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t decode track: </span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">TrackInfo</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>

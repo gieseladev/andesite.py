@@ -359,11 +359,11 @@ when calling <a class="reference internal" href="#andesite.AndesiteWebSocket.con
 If this is not set, <a class="reference internal" href="#andesite.AndesiteWebSocket.max_connect_attempts" title="andesite.AndesiteWebSocket.max_connect_attempts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_connect_attempts</span></code></a> is used instead.
 If <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, unlimited attempts will be performed.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – If the client is already connected.
-Check <a class="reference internal" href="#andesite.AndesiteWebSocket.connected" title="andesite.AndesiteWebSocket.connected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connected</span></code></a> first!</td>
-</tr>
 </tbody>
 </table>
+<p>The method uses a lock to make sure only one connection attempt is started
+at a time. If the client is already connected calling this won’t perform any
+action.</p>
 <p>After successfully connecting all messages in the message
 queue are sent in order and a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ws_connected</span></code> event is dispatched.</p>
 <p class="rubric">Notes</p>
@@ -403,7 +403,7 @@ receive events from Andesite.</p>
 <p>This should be set after connecting to the node.
 The connection id can be used to resume connections.</p>
 <p class="rubric">Notes</p>
-<p>The client already does this automatically.</p>
+<p>The client already performs resuming automatically.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -458,9 +458,9 @@ anything if the client isn’t connected.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to configure the filters</li>
-<li><strong>filter_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.FilterUpdate" title="andesite.models.operations.FilterUpdate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FilterUpdate</span></code></a>]) – Instead of specifying the other keyword arguments
-you may provide a <code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterUpdate</span></code> operation which will be used
-instead</li>
+<li><strong>filter_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.FilterMap" title="andesite.models.filters.FilterMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">FilterMap</span></code></a>]) – Instead of specifying the other keyword arguments
+you may provide a <code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterMap</span></code> operation which will be used
+instead.</li>
 <li><strong>equalizer</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Equalizer" title="andesite.models.filters.Equalizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Equalizer</span></code></a>]) – Equalizer filter settings</li>
 <li><strong>karaoke</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Karaoke" title="andesite.models.filters.Karaoke"><code class="xref py py-class docutils literal notranslate"><span class="pre">Karaoke</span></code></a>]) – Karaoke filter settings</li>
 <li><strong>timescale</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.filters.Timescale" title="andesite.models.filters.Timescale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Timescale</span></code></a>]) – Timescale filter settings</li>
@@ -567,7 +567,7 @@ this is a no-op.</p>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Amount of seconds it took for the response to be received.
-Note: This is not accurate.</td>
+Note: This is not necessarily an accurate reflection of the actual latency.</td>
 </tr>
 </tbody>
 </table>
@@ -584,7 +584,7 @@ Note: This is not accurate.</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to play</li>
-<li><strong>track</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="models.html#andesite.models.operations.Play" title="andesite.models.operations.Play"><code class="xref py py-class docutils literal notranslate"><span class="pre">Play</span></code></a>]) – Either a <code class="xref py py-obj docutils literal notranslate"><span class="pre">Play</span></code> operation or a base64 encoded lavaplayer track.
+<li><strong>track</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="models.html#andesite.models.send_operations.Play" title="andesite.models.send_operations.Play"><code class="xref py py-class docutils literal notranslate"><span class="pre">Play</span></code></a>]) – Either a <code class="xref py py-obj docutils literal notranslate"><span class="pre">Play</span></code> operation or a base64 encoded lavaplayer track.
 If you pass a <code class="xref py py-obj docutils literal notranslate"><span class="pre">Play</span></code> operation you must not set any of the
 keyword arguments.</li>
 <li><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – timestamp, in seconds, to start the track</li>
@@ -655,21 +655,21 @@ The payload is mutated by the function.</li>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.send_operation">
 <em class="property">coroutine </em><code class="descname">send_operation</code><span class="sig-paren">(</span><em>self</em>, <em>guild_id</em>, <em>operation</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.send_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.send_operation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Operation</span></code>.</p>
+<dd><p>Send a <code class="xref py py-obj docutils literal notranslate"><span class="pre">SendOperation</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Target guild id</li>
-<li><strong>operation</strong> (<a class="reference internal" href="models.html#andesite.models.operations.Operation" title="andesite.models.operations.Operation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Operation</span></code></a>) – Operation to send</li>
+<li><strong>operation</strong> (<a class="reference internal" href="models.html#andesite.models.send_operations.SendOperation" title="andesite.models.send_operations.SendOperation"><code class="xref py py-class docutils literal notranslate"><span class="pre">SendOperation</span></code></a>) – Operation to send</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Notes</p>
-<p>Using <code class="xref py py-obj docutils literal notranslate"><span class="pre">Operation</span></code> instances to send messages is currently
+<p>Using <code class="xref py py-obj docutils literal notranslate"><span class="pre">SendOperation</span></code> instances to send messages is currently
 less efficient than calling the <a class="reference internal" href="#andesite.AndesiteWebSocket" title="andesite.AndesiteWebSocket"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code></a> methods
 directly. This is mainly due to the overhead of conversion.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -710,12 +710,12 @@ or pass an <code class="xref py py-obj docutils literal notranslate"><span class
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to update.</li>
-<li><strong>update</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.Update" title="andesite.models.operations.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">Update</span></code></a>]) – You can provide an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Update</span></code> operation instead of
+<li><strong>update</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.send_operations.Update" title="andesite.models.send_operations.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">Update</span></code></a>]) – You can provide an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Update</span></code> operation instead of
 the keyword arguments.</li>
 <li><strong>pause</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – whether or not to pause the player</li>
 <li><strong>position</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – timestamp to set the current track to, in seconds</li>
 <li><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – volume to set on the player</li>
-<li><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.FilterUpdate" title="andesite.models.operations.FilterUpdate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FilterUpdate</span></code></a>]) – configuration for the filters</li>
+<li><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.send_operations.FilterUpdate" title="andesite.models.send_operations.FilterUpdate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FilterUpdate</span></code></a>]) – configuration for the filters</li>
 </ul>
 </td>
 </tr>
@@ -786,8 +786,8 @@ use the <a class="reference internal" href="#andesite.AndesiteWebSocket.send_ope
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>op</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.Operation" title="andesite.models.operations.Operation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Operation</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Operation to wait for.
-You can also pass an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Operation</span></code>.</li>
+<li><strong>op</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="models.html#andesite.models.receive_operations.ReceiveOperation" title="andesite.models.receive_operations.ReceiveOperation"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiveOperation</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Operation to wait for.
+You can also pass an <code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiveOperation</span></code>.</li>
 <li><strong>check</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="event_target.html#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]]) – Additional checks to perform before accepting an Event.
 The function is called with the <code class="xref py py-obj docutils literal notranslate"><span class="pre">MsgReceiveEvent</span></code> and should
 return a <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>. If not set, all events with the correct op are
@@ -797,10 +797,10 @@ If you don’t set this, the method will wait forever.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.operations.Operation" title="andesite.models.operations.Operation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Operation</span></code></a>]</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.receive_operations.ReceiveOperation" title="andesite.models.receive_operations.ReceiveOperation"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiveOperation</span></code></a>]</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Operation</span></code> that was accepted.
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReceiveOperation</span></code> that was accepted.
 <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if it timed-out.</p>
 </td>
 </tr>

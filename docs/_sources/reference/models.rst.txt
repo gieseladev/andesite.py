@@ -38,12 +38,21 @@ Filter models are stored in the `andesite.models.filters` module.
     :members:
     :undoc-members:
 
-Operations
-----------
+Send Operations
+---------------
 
-Operations are stored in the `andesite.models.operations` module.
+Send Operations are stored in the `andesite.models.send_operations` module.
 
-.. automodule:: andesite.models.operations
+.. automodule:: andesite.models.send_operations
+    :members:
+    :undoc-members:
+
+Receive Operations
+------------------
+
+Receive Operations are stored in the `andesite.models.send_operations` module.
+
+.. automodule:: andesite.models.receive_operations
     :members:
     :undoc-members:
 

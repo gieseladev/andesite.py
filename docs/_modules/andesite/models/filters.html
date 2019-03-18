@@ -34,12 +34,20 @@
           <div class="body" role="main">
             
   <h1>Source code for andesite.models.filters</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">overload</span>
+<span></span><span class="sd">&quot;&quot;&quot;Andesite audio filters.</span>
 
-<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">seq_build_all_items_from_raw</span>
+<span class="sd">Attributes:</span>
+<span class="sd">    FILTER_MAP (Mapping[str, Type[Filter]]): Mapping from filter name to filter class.</span>
+<span class="sd">        See: `get_filter_model`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">eq</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;EqualizerBand&quot;</span><span class="p">,</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">,</span> <span class="s2">&quot;Karaoke&quot;</span><span class="p">,</span> <span class="s2">&quot;Timescale&quot;</span><span class="p">,</span> <span class="s2">&quot;Tremolo&quot;</span><span class="p">,</span> <span class="s2">&quot;Vibrato&quot;</span><span class="p">,</span> <span class="s2">&quot;VolumeFilter&quot;</span><span class="p">]</span>
+<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">convert_to_raw</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">,</span> <span class="s2">&quot;EqualizerBand&quot;</span><span class="p">,</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">,</span> <span class="s2">&quot;Karaoke&quot;</span><span class="p">,</span> <span class="s2">&quot;Timescale&quot;</span><span class="p">,</span> <span class="s2">&quot;Tremolo&quot;</span><span class="p">,</span> <span class="s2">&quot;Vibrato&quot;</span><span class="p">,</span> <span class="s2">&quot;VolumeFilter&quot;</span><span class="p">,</span> <span class="s2">&quot;get_filter_model&quot;</span><span class="p">,</span> <span class="s2">&quot;FilterMap&quot;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
@@ -73,6 +81,41 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Provided value (</span><span class="si">{value}</span><span class="s2">) not in interval </span><span class="si">{low_symbol}</span><span class="s2">, </span><span class="si">{up_symbol}</span><span class="s2">!&quot;</span><span class="p">)</span>
 
 
+<span class="k">class</span> <span class="nc">_Filter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter with name.&quot;&quot;&quot;</span>
+    <span class="n">__filter_name__</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Filter">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">_Filter</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Audio filter for Andesite.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        enabled (bool): Whether or not the filter is enabled.</span>
+<span class="sd">            This value is mostly useful when receiving the filters from Andesite.</span>
+<span class="sd">            However you can also set it to `False` when sending filters. This</span>
+<span class="sd">            will cause the settings to be ignored and instead the default values</span>
+<span class="sd">            are sent to Andesite which will cause the filter to be disabled.</span>
+
+<span class="sd">    When creating a new `Filter` instance its values are set to the</span>
+<span class="sd">    default value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Filter.reset"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Filter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reset the filter settings back to their default values.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
+        <span class="n">enabled</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">enabled</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># create a new instance (which uses the defaults) and return its data</span>
+            <span class="k">return</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">())</span></div>
+
+
 <div class="viewcode-block" id="EqualizerBand"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">EqualizerBand</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -82,7 +125,7 @@
 <span class="sd">        gain (float): value to set for the band ( [-0.25, 1.0] )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">band</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 
 <div class="viewcode-block" id="EqualizerBand.set_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_band">[docs]</a>    <span class="k">def</span> <span class="nf">set_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`band` which performs a value check.</span>
@@ -109,19 +152,54 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
-<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="Equalizer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Equalizer</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Equalizer</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        bands (List[EqualizerBand]): array of bands to configure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">bands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]</span>
+    <span class="n">__filter_name__</span> <span class="o">=</span> <span class="s2">&quot;equalizer&quot;</span>
+
+    <span class="n">bands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bands</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Equalizer</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">my_gain</span><span class="p">,</span> <span class="n">other_gain</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_band_gains</span><span class="p">(),</span> <span class="n">other</span><span class="o">.</span><span class="n">iter_band_gains</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">my_gain</span> <span class="o">!=</span> <span class="n">other_gain</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_band_gains</span><span class="p">())</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">seq_build_all_items_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;bands&quot;</span><span class="p">],</span> <span class="n">EqualizerBand</span><span class="p">)</span>
+        <span class="c1"># Andesite sends the equalizer filter as an array of floats</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;bands&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gain</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bands</span><span class="p">):</span>
+            <span class="n">bands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">EqualizerBand</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">gain</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Equalizer.from_gains"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.from_gains">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_gains</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gains</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create an `Equalizer` filter from a list of gains.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gains: Iterable of `float` which correspond to the gain for the band,</span>
+<span class="sd">                or `None` if the band doesn&#39;t specify a gain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gain</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gains</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">gain</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EqualizerBand</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">gain</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span></div>
 
     <span class="nd">@overload</span>
     <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EqualizerBand</span><span class="p">:</span>
@@ -178,12 +256,40 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if the provided gain is invalid.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">set_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_band</span><span class="p">(</span><span class="n">band</span><span class="p">)</span><span class="o">.</span><span class="n">set_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">)</span></div>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">iter_band_gains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_default</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="nf">iter_band_gains</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="o">...</span>
+
+<div class="viewcode-block" id="Equalizer.iter_band_gains"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.iter_band_gains">[docs]</a>    <span class="k">def</span> <span class="nf">iter_band_gains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of all the bands&#39; gains in order.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            use_default: Whether or not to replace non-existant values</span>
+<span class="sd">                with the default gain.</span>
+<span class="sd">                If `False` and band doesn&#39;t have a gain set, `None`</span>
+<span class="sd">                is used instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">EqualizerBand</span><span class="o">.</span><span class="n">gain</span> <span class="k">if</span> <span class="n">use_default</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">gains</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="n">default_value</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">gain</span> <span class="o">=</span> <span class="n">band</span><span class="o">.</span><span class="n">gain</span>
+            <span class="k">if</span> <span class="n">use_default</span> <span class="ow">and</span> <span class="n">gain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">gains</span><span class="p">[</span><span class="n">band</span><span class="o">.</span><span class="n">band</span><span class="p">]</span> <span class="o">=</span> <span class="n">gain</span>
+
+        <span class="k">return</span> <span class="n">gains</span></div></div>
 
 
-<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="Karaoke"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Karaoke">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Karaoke</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Karaoke</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
@@ -192,14 +298,16 @@
 <span class="sd">        filter_band (float)</span>
 <span class="sd">        filter_width (float)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">mono_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">filter_band</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">220</span>
-    <span class="n">filter_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span></div>
+    <span class="n">__filter_name__</span> <span class="o">=</span> <span class="s2">&quot;karaoke&quot;</span>
+
+    <span class="n">level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">mono_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">filter_band</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">220.0</span>
+    <span class="n">filter_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">220.0</span></div>
 
 
 <div class="viewcode-block" id="Timescale"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Timescale</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Timescale</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
@@ -207,9 +315,11 @@
 <span class="sd">        pitch (float): pitch to set (&gt; 0)</span>
 <span class="sd">        rate (float): rate to set (&gt; 0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">__filter_name__</span> <span class="o">=</span> <span class="s2">&quot;timescale&quot;</span>
+
+    <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
 
 <div class="viewcode-block" id="Timescale.set_speed"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`speed` which performs a value check.</span>
@@ -249,14 +359,16 @@
 
 
 <div class="viewcode-block" id="Tremolo"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Tremolo</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Tremolo</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        frequency (float): (&gt; 0)</span>
 <span class="sd">        depth (float): ( (0, 1] )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">__filter_name__</span> <span class="o">=</span> <span class="s2">&quot;tremolo&quot;</span>
+
+    <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 <div class="viewcode-block" id="Tremolo.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -285,14 +397,16 @@
 
 
 <div class="viewcode-block" id="Vibrato"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Vibrato</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Vibrato</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        frequency (float): ( (0, 14] )</span>
 <span class="sd">        depth (float): ( (0, 1] )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">__filter_name__</span> <span class="o">=</span> <span class="s2">&quot;vibrato&quot;</span>
+
+    <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 <div class="viewcode-block" id="Vibrato.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -320,15 +434,149 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
-<span class="c1"># noinspection PyUnresolvedReferences</span>
 <div class="viewcode-block" id="VolumeFilter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.VolumeFilter">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">VolumeFilter</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">VolumeFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Volume filter settings.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        volume (float): Volume modifier. This acts as a factor for the actual volume.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span></div>
+    <span class="n">__filter_name__</span> <span class="o">=</span> <span class="s2">&quot;volume&quot;</span>
+
+    <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span></div>
+
+
+<span class="n">_FILTERS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">Equalizer</span><span class="p">,</span> <span class="n">Karaoke</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">,</span> <span class="n">VolumeFilter</span><span class="p">}</span>
+<span class="n">FILTER_MAP</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">andesite_filter</span><span class="o">.</span><span class="n">__filter_name__</span><span class="p">:</span> <span class="n">andesite_filter</span> <span class="k">for</span> <span class="n">andesite_filter</span> <span class="ow">in</span> <span class="n">_FILTERS</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_filter_model"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.get_filter_model">[docs]</a><span class="k">def</span> <span class="nf">get_filter_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Get the corresponding filter model for the given name.</span>
+
+<span class="sd">    If no model for the name exists, `None` is returned.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Name of the filter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">FILTER_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<span class="n">FT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;FT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Filter</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="FilterMap"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">FilterMap</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Custom mapping type for filters.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        filters (Dict[str, Any]): Dictionary containing all filters.</span>
+
+<span class="sd">    Theoretically this is just a wrapper around the `filters` dictionary which</span>
+<span class="sd">    contains the actual filter data. The class exposes the known filters as</span>
+<span class="sd">    properties, but it also supports unknown filters should the library</span>
+<span class="sd">    become outdated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">filters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">FilterMap</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">eq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">filters</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">eq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="FilterMap.get_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap.get_filter">[docs]</a>    <span class="k">def</span> <span class="nf">get_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">FT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">FT</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the filter with the name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the filter to get</span>
+<span class="sd">            cls: `Filter` class to use for the filter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Expected </span><span class="si">{cls}</span><span class="s2">, found {type(value)!r}: </span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">equalizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Equalizer</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Equalizer filter settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;equalizer&quot;</span><span class="p">,</span> <span class="n">Equalizer</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">karaoke</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Karaoke</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Karaoke filter settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;karaoke&quot;</span><span class="p">,</span> <span class="n">Karaoke</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timescale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Timescale</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Timescale filter settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;timescale&quot;</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tremolo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tremolo</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Tremolo filter settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;tremolo&quot;</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vibrato</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vibrato</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Vibrato filter settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;vibrato&quot;</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VolumeFilter</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Volume filter settings&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;equalizer&quot;</span><span class="p">,</span> <span class="n">VolumeFilter</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FilterMap.set_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap.set_filter">[docs]</a>    <span class="k">def</span> <span class="nf">set_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">andesite_filter</span><span class="p">:</span> <span class="n">Filter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set the value for a filter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            andesite_filter: Filter to set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">andesite_filter</span><span class="o">.</span><span class="n">__filter_name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">andesite_filter</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
+        <span class="n">filters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">filter_value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">filter_cls</span> <span class="o">=</span> <span class="n">get_filter_model</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">filter_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">filter_value</span> <span class="o">=</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">filter_cls</span><span class="p">,</span> <span class="n">filter_value</span><span class="p">)</span>
+
+            <span class="n">filters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_value</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;filters&quot;</span><span class="p">]</span></div>
 </pre></div>
 
           </div>

@@ -38,9 +38,57 @@
   <div class="section" id="module-andesite.event_target">
 <span id="event-target"></span><h1>Event Target<a class="headerlink" href="#module-andesite.event_target" title="Permalink to this headline">¶</a></h1>
 <p>Event dispatching and listening.</p>
+<p>This module provides a simple <a class="reference internal" href="#andesite.event_target.EventTarget" title="andesite.event_target.EventTarget"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventTarget</span></code></a> which can be used
+to dispatch events.
+The easiest way to use it is to inherit from it.</p>
+<dl class="attribute">
+<dt id="andesite.event_target.EventHandler">
+<code class="descname">EventHandler</code><a class="headerlink" href="#andesite.event_target.EventHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Type alias) Callable which takes an event. If the callable is a coroutine it is awaited.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(Event) -&gt; <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.event_target.EventFilter">
+<code class="descname">EventFilter</code><a class="headerlink" href="#andesite.event_target.EventFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Type alias) Callable which takes an event and returns a <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>.
+This is used to “filter” events.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(Event) -&gt; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.event_target.EventSpecifierType">
+<code class="descname">EventSpecifierType</code><a class="headerlink" href="#andesite.event_target.EventSpecifierType" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Type alias) Type of an object which conveys the name of an <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a>.
+Usually this is just a string with the name of the event, however you can
+also use a <a class="reference internal" href="#andesite.event_target.NamedEvent" title="andesite.event_target.NamedEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NamedEvent</span></code></a> class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Union[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>, Type[<a class="reference internal" href="#andesite.event_target.NamedEvent" title="andesite.event_target.NamedEvent">NamedEvent</a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="class">
 <dt id="andesite.event_target.Event">
-<em class="property">class </em><code class="descname">Event</code><span class="sig-paren">(</span><em>name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.Event" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">Event</code><span class="sig-paren">(</span><em>name</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.Event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base type of all events.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -48,6 +96,9 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of the event</li>
+<li><strong>arg</strong> – Acts like <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs, but doesn’t need to be unpacked, thus being more
+efficient. This argument is optional. <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs values will override the
+values in this mapping.</li>
 <li><strong>**kwargs</strong> – Attributes to set on the event.</li>
 </ul>
 </td>
@@ -98,7 +149,7 @@ If you need to get any attribute, use <a class="reference external" href="https:
 
 <dl class="class">
 <dt id="andesite.event_target.NamedEvent">
-<em class="property">class </em><code class="descname">NamedEvent</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#NamedEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.NamedEvent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">NamedEvent</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#NamedEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.NamedEvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event which automatically gets its name from its class.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -111,6 +162,8 @@ If you need to get any attribute, use <a class="reference external" href="https:
 </table>
 <p>This is useful for subclasses of <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> whose name is used for the event name.
 You may also manually set the event name by setting <code class="xref py py-obj docutils literal notranslate"><span class="pre">__event_name__</span></code> on the class.</p>
+<p>This is an abstract class, you cannot use it directly. You can either use an <a class="reference internal" href="#andesite.event_target.Event" title="andesite.event_target.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a>
+or subclass this class.</p>
 <dl class="classmethod">
 <dt id="andesite.event_target.NamedEvent.get_event_name">
 <em class="property">classmethod </em><code class="descname">get_event_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#NamedEvent.get_event_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.NamedEvent.get_event_name" title="Permalink to this definition">¶</a></dt>
@@ -208,7 +261,7 @@ If not provided, all events are accepted.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[EventFilter</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Optional[EventFilter]</td>
 </tr>
 </tbody>
 </table>
@@ -239,6 +292,22 @@ If not provided, all events are accepted.</p>
 </table>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.event_target.resolve_event_specifier">
+<code class="descname">resolve_event_specifier</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#resolve_event_specifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.resolve_event_specifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve an <a class="reference internal" href="#andesite.event_target.EventSpecifierType" title="andesite.event_target.EventSpecifierType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventSpecifierType</span></code></a> to the name of the event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> – If something other than an <a class="reference internal" href="#andesite.event_target.EventSpecifierType" title="andesite.event_target.EventSpecifierType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventSpecifierType</span></code></a> is passed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="class">
@@ -311,7 +380,8 @@ the listeners.</p>
 <dt id="andesite.event_target.EventTarget.has_listener">
 <code class="descname">has_listener</code><span class="sig-paren">(</span><em>event</em>, <em>target=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.has_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.has_listener" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether an event has a listener.</p>
-<p>This includes one-time listeners.</p>
+<p>This includes one-time listeners, but does not check method
+listeners (on_&lt;event&gt; methods defined in the event target class).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -353,7 +423,7 @@ next to the original event.</td>
 <dt id="andesite.event_target.EventTarget.remove_listener">
 <code class="descname">remove_listener</code><span class="sig-paren">(</span><em>event</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/event_target.html#EventTarget.remove_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.event_target.EventTarget.remove_listener" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a previously added event listener.</p>
-<p>When a <code class="xref py py-obj docutils literal notranslate"><span class="pre">EventHandler</span></code> is passed, all event listeners with the given handler are removed.</p>
+<p>When a <a class="reference internal" href="#andesite.event_target.EventHandler" title="andesite.event_target.EventHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventHandler</span></code></a> is passed, all event listeners with the given handler are removed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

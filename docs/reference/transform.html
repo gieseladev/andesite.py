@@ -39,6 +39,51 @@
 <p>Transformation utilities.</p>
 <p>These functions are used to transform the data sent by Andesite
 into the Python models.</p>
+<dl class="attribute">
+<dt id="andesite.transform.RawDataType">
+<code class="descname">RawDataType</code><a class="headerlink" href="#andesite.transform.RawDataType" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Type alias) JSON-like object data type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a>, Any]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.transform.CONVERTER_MEMO">
+<code class="descname">CONVERTER_MEMO</code><a class="headerlink" href="#andesite.transform.CONVERTER_MEMO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory used for letter case conversion.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">lettercase.ConversionMemo</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.transform.MapFunction">
+<code class="descname">MapFunction</code><a class="headerlink" href="#andesite.transform.MapFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Type alias) Callable that takes an argument and returns a new one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><ol class="first last upperalpha simple" start="20">
+<li>-&gt; <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
 <dt id="andesite.transform.transform_input">
 <code class="descname">transform_input</code><span class="sig-paren">(</span><em>cls</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#transform_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.transform_input" title="Permalink to this definition">¶</a></dt>

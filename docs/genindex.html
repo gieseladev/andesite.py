@@ -76,15 +76,19 @@
 </li>
       <li><a href="reference/models.html#module-andesite.models.filters">andesite.models.filters (module)</a>
 </li>
-      <li><a href="reference/models.html#module-andesite.models.operations">andesite.models.operations (module)</a>
+      <li><a href="reference/models.html#module-andesite.models.player">andesite.models.player (module)</a>
+</li>
+      <li><a href="reference/models.html#module-andesite.models.receive_operations">andesite.models.receive_operations (module)</a>
+</li>
+      <li><a href="reference/models.html#module-andesite.models.send_operations">andesite.models.send_operations (module)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#module-andesite.models.player">andesite.models.player (module)</a>
-</li>
       <li><a href="reference/models.html#module-andesite.models.track">andesite.models.track (module)</a>
 </li>
       <li><a href="reference/transform.html#module-andesite.transform">andesite.transform (module)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.AndesiteEvent">AndesiteEvent (class in andesite.models.receive_operations)</a>
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteHTTP">AndesiteHTTP (class in andesite)</a>
 </li>
@@ -92,7 +96,11 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.OSStats.arch">arch (OSStats attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.debug.Error.as_python_exception">as_python_exception() (Error method)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.track.TrackMetadata.author">author (TrackMetadata attribute)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.track.TrackMetadata.author_unknown">author_unknown (TrackMetadata attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -104,9 +112,11 @@
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Equalizer.bands">bands (Equalizer attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.player.BasePlayer">BasePlayer (class in andesite.models.player)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#andesite.models.player.BasePlayer">BasePlayer (class in andesite.models.player)</a>
+      <li><a href="reference/models.html#andesite.models.receive_operations.UnknownAndesiteEvent.body">body (UnknownAndesiteEvent attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeVersionStats.build">build (RuntimeVersionStats attribute)</a>
 </li>
@@ -138,6 +148,8 @@
       </ul></li>
       <li><a href="reference/models.html#andesite.models.debug.ClassLoadingStats">ClassLoadingStats (class in andesite.models.debug)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.CLEANUP">CLEANUP (TrackEndReason attribute)</a>, <a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.CLEANUP">[1]</a>
+</li>
       <li><a href="reference/clients.html#andesite.AndesiteHTTP.close">close() (AndesiteHTTP method)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.GCStats.collection_count">collection_count (GCStats attribute)</a>
@@ -166,7 +178,11 @@
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.connection_id">connection_id (AndesiteWebSocket attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.ConnectionUpdate">ConnectionUpdate (class in andesite.models.receive_operations)</a>
+</li>
       <li><a href="reference/transform.html#andesite.transform.convert_to_raw">convert_to_raw() (in module andesite.transform)</a>
+</li>
+      <li><a href="reference/transform.html#andesite.transform.CONVERTER_MEMO">CONVERTER_MEMO (in module andesite.transform)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.Stats.cpu">cpu (Stats attribute)</a>
 </li>
@@ -204,32 +220,48 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#andesite.models.operations.MixerUpdate.enable">enable (MixerUpdate attribute)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.MixerUpdate.enable">enable (MixerUpdate attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Play.end">end (Play attribute)</a>, <a href="reference/models.html#andesite.models.operations.Play.end">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.Filter.enabled">enabled (Filter attribute)</a>, <a href="reference/models.html#andesite.models.filters.Filter.enabled">[1]</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.send_operations.Play.end">end (Play attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Play.end">[1]</a>
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Equalizer">Equalizer (class in andesite.models.filters)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate.equalizer">equalizer (FilterUpdate attribute)</a>, <a href="reference/models.html#andesite.models.operations.FilterUpdate.equalizer">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.equalizer">equalizer (FilterMap attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.filters.EqualizerBand">EqualizerBand (class in andesite.models.filters)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.Error">Error (class in andesite.models.debug)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackExceptionEvent.error">error (TrackExceptionEvent attribute)</a>
+</li>
       <li><a href="reference/event_target.html#andesite.event_target.Event">Event (class in andesite.event_target)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.VoiceServerUpdate.event">event (VoiceServerUpdate attribute)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/models.html#andesite.models.send_operations.VoiceServerUpdate.event">event (VoiceServerUpdate attribute)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.EVENT_MAP">EVENT_MAP (in module andesite.models.receive_operations)</a>
 </li>
       <li><a href="reference/event_target.html#andesite.event_target.EventErrorEvent">EventErrorEvent (class in andesite.event_target)</a>
 </li>
+      <li><a href="reference/event_target.html#andesite.event_target.EventFilter">EventFilter (in module andesite.event_target)</a>
+</li>
+      <li><a href="reference/event_target.html#andesite.event_target.EventHandler">EventHandler (in module andesite.event_target)</a>
+</li>
       <li><a href="reference/event_target.html#andesite.event_target.EventListener">EventListener (class in andesite.event_target)</a>
+</li>
+      <li><a href="reference/event_target.html#andesite.event_target.EventSpecifierType">EventSpecifierType (in module andesite.event_target)</a>
 </li>
       <li><a href="reference/event_target.html#andesite.event_target.EventTarget">EventTarget (class in andesite.event_target)</a>
 </li>
       <li><a href="reference/event_target.html#andesite.event_target.EventErrorEvent.exception">exception (EventErrorEvent attribute)</a>
+
+      <ul>
+        <li><a href="reference/models.html#andesite.models.receive_operations.TrackExceptionEvent.exception">(TrackExceptionEvent attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -240,21 +272,33 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.StackFrame.file_name">file_name (StackFrame attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.filters.Filter">Filter (class in andesite.models.filters)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.filters.Karaoke.filter_band">filter_band (Karaoke attribute)</a>, <a href="reference/models.html#andesite.models.filters.Karaoke.filter_band">[1]</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.filters.FILTER_MAP">FILTER_MAP (in module andesite.models.filters)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.filters.Karaoke.filter_width">filter_width (Karaoke attribute)</a>, <a href="reference/models.html#andesite.models.filters.Karaoke.filter_width">[1]</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap">FilterMap (class in andesite.models.filters)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.player.BasePlayer.filters">filters (BasePlayer attribute)</a>
 
       <ul>
-        <li><a href="reference/models.html#andesite.models.operations.Update.filters">(Update attribute)</a>, <a href="reference/models.html#andesite.models.operations.Update.filters">[1]</a>
+        <li><a href="reference/models.html#andesite.models.filters.FilterMap.filters">(FilterMap attribute)</a>
+</li>
+        <li><a href="reference/models.html#andesite.models.send_operations.Update.filters">(Update attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Update.filters">[1]</a>
 </li>
       </ul></li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.filters">filters() (AndesiteWebSocket method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate">FilterUpdate (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.FilterUpdate">FilterUpdate (class in andesite.models.send_operations)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.FINISHED">FINISHED (TrackEndReason attribute)</a>, <a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.FINISHED">[1]</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.player.BasePlayer.frame">frame (BasePlayer attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.Stats.frame_stats">frame_stats (Stats attribute)</a>
 </li>
@@ -267,6 +311,8 @@
 </li>
       </ul></li>
       <li><a href="reference/transform.html#andesite.transform.from_centi">from_centi() (in module andesite.transform)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.filters.Equalizer.from_gains">from_gains() (andesite.models.filters.Equalizer class method)</a>
 </li>
       <li><a href="reference/transform.html#andesite.transform.from_milli">from_milli() (in module andesite.transform)</a>
 </li>
@@ -288,13 +334,21 @@
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Equalizer.get_band">get_band() (Equalizer method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.filters.Equalizer.get_band_gain">get_band_gain() (Equalizer method)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.get_event_model">get_event_model() (in module andesite.models.receive_operations)</a>
 </li>
       <li><a href="reference/event_target.html#andesite.event_target.NamedEvent.get_event_name">get_event_name() (andesite.event_target.NamedEvent class method)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.get_filter">get_filter() (FilterMap method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/models.html#andesite.models.filters.get_filter_model">get_filter_model() (in module andesite.models.filters)</a>
+</li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.get_player">get_player() (AndesiteWebSocket method)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.track.LoadedTrack.get_selected_track">get_selected_track() (LoadedTrack method)</a>
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteHTTP.get_stats">get_stats() (AndesiteHTTP method)</a>
 
@@ -302,8 +356,16 @@
         <li><a href="reference/clients.html#andesite.AndesiteWebSocket.get_stats">(AndesiteWebSocket method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.get_update_model">get_update_model() (in module andesite.models.receive_operations)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.debug.FrameStats.guild">guild (FrameStats attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.AndesiteEvent.guild_id">guild_id (AndesiteEvent attribute)</a>
+
+      <ul>
+        <li><a href="reference/models.html#andesite.models.receive_operations.PlayerUpdate.guild_id">(PlayerUpdate attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -328,6 +390,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/models.html#andesite.models.receive_operations.ConnectionUpdate.id">id (ConnectionUpdate attribute)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.track.TrackMetadata.identifier">identifier (TrackMetadata attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.track.TrackInfo.info">info (TrackInfo attribute)</a>
@@ -342,6 +406,8 @@
 </li>
       <li><a href="reference/models.html#andesite.models.track.TrackMetadata.is_stream">is_stream (TrackMetadata attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.filters.Equalizer.iter_band_gains">iter_band_gains() (Equalizer method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -352,7 +418,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate.karaoke">karaoke (FilterUpdate attribute)</a>, <a href="reference/models.html#andesite.models.operations.FilterUpdate.karaoke">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.karaoke">karaoke (FilterMap attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -369,7 +435,11 @@
       <li><a href="reference/models.html#andesite.models.player.BasePlayer.live_position">live_position (BasePlayer attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.track.LoadType.LOAD_FAILED">LOAD_FAILED (LoadType attribute)</a>
+
+      <ul>
+        <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.LOAD_FAILED">(TrackEndReason attribute)</a>, <a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.LOAD_FAILED">[1]</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/clients.html#andesite.AndesiteHTTP.load_tracks">load_tracks() (AndesiteHTTP method)</a>
@@ -412,9 +482,13 @@
 </li>
       <li><a href="reference/transform.html#andesite.transform.map_rename_keys">map_rename_keys() (in module andesite.transform)</a>
 </li>
+      <li><a href="reference/transform.html#andesite.transform.MapFunction">MapFunction (in module andesite.transform)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.debug.MemoryCommonUsageStats.max">max (MemoryCommonUsageStats attribute)</a>
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.max_connect_attempts">max_connect_attempts (AndesiteWebSocket attribute)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndEvent.may_start_next">may_start_next (TrackEndEvent attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.Stats.memory">memory (Stats attribute)</a>
 </li>
@@ -442,9 +516,13 @@
 </li>
       <li><a href="reference/models.html#andesite.models.player.Player.mixer_enabled">mixer_enabled (Player attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.player.MixerMap">MixerMap (in module andesite.models.player)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.player.MixerPlayer">MixerPlayer (class in andesite.models.player)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.MixerUpdate">MixerUpdate (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.MixerPlayerUpdateMap">MixerPlayerUpdateMap (in module andesite.models.send_operations)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.send_operations.MixerUpdate">MixerUpdate (class in andesite.models.send_operations)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.StackFrame.module_name">module_name (StackFrame attribute)</a>
 </li>
@@ -486,7 +564,7 @@
 </li>
       <li><a href="reference/models.html#andesite.models.track.LoadType.NO_MATCHES">NO_MATCHES (LoadType attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Play.no_replace">no_replace (Play attribute)</a>, <a href="reference/models.html#andesite.models.operations.Play.no_replace">[1]</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Play.no_replace">no_replace (Play attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Play.no_replace">[1]</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.MemoryStats.non_heap">non_heap (MemoryStats attribute)</a>
 </li>
@@ -500,7 +578,7 @@
 </li>
       <li><a href="reference/event_target.html#andesite.event_target.OneTimeEventListener">OneTimeEventListener (class in andesite.event_target)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Operation">Operation (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.receive_operations.OP_MAP">OP_MAP (in module andesite.models.receive_operations)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -520,14 +598,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeVersionStats.patch">patch (RuntimeVersionStats attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Pause">Pause (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Pause">Pause (class in andesite.models.send_operations)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Pause.pause">pause (Pause attribute)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Pause.pause">pause (Pause attribute)</a>
 
       <ul>
-        <li><a href="reference/models.html#andesite.models.operations.Play.pause">(Play attribute)</a>, <a href="reference/models.html#andesite.models.operations.Play.pause">[1]</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Play.pause">(Play attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Play.pause">[1]</a>
 </li>
-        <li><a href="reference/models.html#andesite.models.operations.Update.pause">(Update attribute)</a>, <a href="reference/models.html#andesite.models.operations.Update.pause">[1]</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Update.pause">(Update attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Update.pause">[1]</a>
 </li>
       </ul></li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.pause">pause() (AndesiteWebSocket method)</a>
@@ -546,21 +624,25 @@
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Timescale.pitch">pitch (Timescale attribute)</a>, <a href="reference/models.html#andesite.models.filters.Timescale.pitch">[1]</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Play">Play (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Play">Play (class in andesite.models.send_operations)</a>
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.play">play() (AndesiteWebSocket method)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.player.Player">Player (class in andesite.models.player)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.player.PlayerFrameStats">PlayerFrameStats (class in andesite.models.player)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#andesite.models.operations.MixerUpdate.players">players (MixerUpdate attribute)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.MixerUpdate.players">players (MixerUpdate attribute)</a>
 
       <ul>
         <li><a href="reference/models.html#andesite.models.debug.Stats.players">(Stats attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/models.html#andesite.models.debug.PlayersStats">PlayersStats (class in andesite.models.debug)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.PlayerUpdate">PlayerUpdate (class in andesite.models.receive_operations)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.PlayersStats.playing">playing (PlayersStats attribute)</a>
 </li>
@@ -579,11 +661,11 @@
       <li><a href="reference/models.html#andesite.models.player.BasePlayer.position">position (BasePlayer attribute)</a>
 
       <ul>
-        <li><a href="reference/models.html#andesite.models.operations.Seek.position">(Seek attribute)</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Seek.position">(Seek attribute)</a>
 </li>
         <li><a href="reference/models.html#andesite.models.track.TrackMetadata.position">(TrackMetadata attribute)</a>
 </li>
-        <li><a href="reference/models.html#andesite.models.operations.Update.position">(Update attribute)</a>, <a href="reference/models.html#andesite.models.operations.Update.position">[1]</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Update.position">(Update attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Update.position">[1]</a>
 </li>
       </ul></li>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeVersionStats.pre">pre (RuntimeVersionStats attribute)</a>
@@ -600,14 +682,26 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.filters.Timescale.rate">rate (Timescale attribute)</a>, <a href="reference/models.html#andesite.models.filters.Timescale.rate">[1]</a>
 </li>
+      <li><a href="reference/transform.html#andesite.transform.RawDataType">RawDataType (in module andesite.transform)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndEvent.reason">reason (TrackEndEvent attribute)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.ReceiveOperation">ReceiveOperation (class in andesite.models.receive_operations)</a>
+</li>
       <li><a href="reference/event_target.html#andesite.event_target.EventTarget.remove_listener">remove_listener() (EventTarget method)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.REPLACED">REPLACED (TrackEndReason attribute)</a>, <a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.REPLACED">[1]</a>
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteHTTP.request">request() (AndesiteHTTP method)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.debug.ThreadStats.running">running (ThreadStats attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/models.html#andesite.models.filters.Filter.reset">reset() (Filter method)</a>
+</li>
+      <li><a href="reference/event_target.html#andesite.event_target.resolve_event_specifier">resolve_event_specifier() (in module andesite.event_target)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.debug.ThreadStats.running">running (ThreadStats attribute)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.debug.Stats.runtime">runtime (Stats attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeSpecStats">RuntimeSpecStats (class in andesite.models.debug)</a>
@@ -628,7 +722,7 @@
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteHTTP.search_tracks">search_tracks() (AndesiteHTTP method)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Seek">Seek (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Seek">Seek (class in andesite.models.send_operations)</a>
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.seek">seek() (AndesiteWebSocket method)</a>
 </li>
@@ -638,9 +732,11 @@
 </li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.send_operation">send_operation() (AndesiteWebSocket method)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.send_operations.SendOperation">SendOperation (class in andesite.models.send_operations)</a>
+</li>
       <li><a href="reference/transform.html#andesite.transform.seq_build_all_items_from_raw">seq_build_all_items_from_raw() (in module andesite.transform)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.VoiceServerUpdate.session_id">session_id (VoiceServerUpdate attribute)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.VoiceServerUpdate.session_id">session_id (VoiceServerUpdate attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.filters.EqualizerBand.set_band">set_band() (EqualizerBand method)</a>
 </li>
@@ -652,16 +748,18 @@
         <li><a href="reference/models.html#andesite.models.filters.Vibrato.set_depth">(Vibrato method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.set_filter">set_filter() (FilterMap method)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.filters.Tremolo.set_frequency">set_frequency() (Tremolo method)</a>
 
       <ul>
         <li><a href="reference/models.html#andesite.models.filters.Vibrato.set_frequency">(Vibrato method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.filters.EqualizerBand.set_gain">set_gain() (EqualizerBand method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.filters.Timescale.set_pitch">set_pitch() (Timescale method)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Timescale.set_rate">set_rate() (Timescale method)</a>
@@ -678,14 +776,26 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.StackFrame">StackFrame (class in andesite.models.debug)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Play.start">start (Play attribute)</a>, <a href="reference/models.html#andesite.models.operations.Play.start">[1]</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Play.start">start (Play attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Play.start">[1]</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.PlayerUpdate.state">state (PlayerUpdate attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.Stats">Stats (class in andesite.models.debug)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.StatsUpdate.stats">stats (StatsUpdate attribute)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.StatsUpdate">StatsUpdate (class in andesite.models.receive_operations)</a>
+</li>
       <li><a href="reference/clients.html#andesite.AndesiteWebSocket.stop">stop() (AndesiteWebSocket method)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.debug.FrameStats.success">success (FrameStats attribute)</a>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.STOPPED">STOPPED (TrackEndReason attribute)</a>, <a href="reference/models.html#andesite.models.receive_operations.TrackEndReason.STOPPED">[1]</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.debug.FrameStats.success">success (FrameStats attribute)</a>
+
+      <ul>
+        <li><a href="reference/models.html#andesite.models.track.LoadType.success">(LoadType attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/models.html#andesite.models.debug.Error.suppressed">suppressed (Error attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.CPUStats.system">system (CPUStats attribute)</a>
@@ -700,11 +810,13 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.ThreadStats">ThreadStats (class in andesite.models.debug)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackStuckEvent.threshold">threshold (TrackStuckEvent attribute)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.player.BasePlayer.time">time (BasePlayer attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Timescale">Timescale (class in andesite.models.filters)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate.timescale">timescale (FilterUpdate attribute)</a>, <a href="reference/models.html#andesite.models.operations.FilterUpdate.timescale">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.timescale">timescale (FilterMap attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.track.TrackMetadata.title">title (TrackMetadata attribute)</a>
 </li>
@@ -718,17 +830,25 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.ThreadStats.total_started">total_started (ThreadStats attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.debug.CompilationStats.total_time">total_time (CompilationStats attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Play.track">track (Play attribute)</a>
+      <li><a href="reference/models.html#andesite.models.receive_operations.AndesiteEvent.track">track (AndesiteEvent attribute)</a>
 
       <ul>
+        <li><a href="reference/models.html#andesite.models.send_operations.Play.track">(Play attribute)</a>
+</li>
         <li><a href="reference/models.html#andesite.models.track.TrackInfo.track">(TrackInfo attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.track.LoadType.TRACK_LOADED">TRACK_LOADED (LoadType attribute)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndEvent">TrackEndEvent (class in andesite.models.receive_operations)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackEndReason">TrackEndReason (class in andesite.models.receive_operations)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackExceptionEvent">TrackExceptionEvent (class in andesite.models.receive_operations)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.track.TrackInfo">TrackInfo (class in andesite.models.track)</a>
 </li>
@@ -736,25 +856,37 @@
 </li>
       <li><a href="reference/models.html#andesite.models.track.LoadedTrack.tracks">tracks (LoadedTrack attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackStartEvent">TrackStartEvent (class in andesite.models.receive_operations)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.TrackStuckEvent">TrackStuckEvent (class in andesite.models.receive_operations)</a>
+</li>
       <li><a href="reference/transform.html#andesite.transform.transform_input">transform_input() (in module andesite.transform)</a>
 </li>
       <li><a href="reference/transform.html#andesite.transform.transform_output">transform_output() (in module andesite.transform)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.filters.Tremolo">Tremolo (class in andesite.models.filters)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate.tremolo">tremolo (FilterUpdate attribute)</a>, <a href="reference/models.html#andesite.models.operations.FilterUpdate.tremolo">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.tremolo">tremolo (FilterMap attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.debug.MemoryPoolStats.type">type (MemoryPoolStats attribute)</a>
+      <li><a href="reference/models.html#andesite.models.receive_operations.AndesiteEvent.type">type (AndesiteEvent attribute)</a>
+
+      <ul>
+        <li><a href="reference/models.html#andesite.models.debug.MemoryPoolStats.type">(MemoryPoolStats attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/models.html#andesite.models.track.UNKNOWN_ARTIST">UNKNOWN_ARTIST (in module andesite.models.track)</a>
+</li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.UnknownAndesiteEvent">UnknownAndesiteEvent (class in andesite.models.receive_operations)</a>
+</li>
       <li><a href="reference/models.html#andesite.models.debug.ClassLoadingStats.unloaded">unloaded (ClassLoadingStats attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Update">Update (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Update">Update (class in andesite.models.send_operations)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeVersionStats.update">update (RuntimeVersionStats attribute)</a>
 </li>
@@ -762,10 +894,10 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeStats.uptime">uptime (RuntimeStats attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.track.TrackMetadata.uri">uri (TrackMetadata attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.debug.MemoryPoolStats.usage">usage (MemoryPoolStats attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.MemoryPoolStats.usage_threshold">usage_threshold (MemoryPoolStats attribute)</a>
@@ -776,6 +908,14 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.FrameStats.user">user (FrameStats attribute)</a>
 </li>
+      <li><a href="reference/models.html#andesite.models.receive_operations.AndesiteEvent.user_id">user_id (AndesiteEvent attribute)</a>
+
+      <ul>
+        <li><a href="reference/models.html#andesite.models.receive_operations.PlayerUpdate.user_id">(PlayerUpdate attribute)</a>
+</li>
+        <li><a href="reference/models.html#andesite.models.receive_operations.StatsUpdate.user_id">(StatsUpdate attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -800,7 +940,7 @@
       </ul></li>
       <li><a href="reference/models.html#andesite.models.filters.Vibrato">Vibrato (class in andesite.models.filters)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate.vibrato">vibrato (FilterUpdate attribute)</a>, <a href="reference/models.html#andesite.models.operations.FilterUpdate.vibrato">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.vibrato">vibrato (FilterMap attribute)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.debug.RuntimeStats.vm">vm (RuntimeStats attribute)</a>
 </li>
@@ -808,20 +948,20 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/models.html#andesite.models.operations.VoiceServerUpdate">VoiceServerUpdate (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.VoiceServerUpdate">VoiceServerUpdate (class in andesite.models.send_operations)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.player.BasePlayer.volume">volume (BasePlayer attribute)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.Volume">Volume (class in andesite.models.operations)</a>
+      <li><a href="reference/models.html#andesite.models.send_operations.Volume">Volume (class in andesite.models.send_operations)</a>
 </li>
-      <li><a href="reference/models.html#andesite.models.operations.FilterUpdate.volume">volume (FilterUpdate attribute)</a>, <a href="reference/models.html#andesite.models.operations.FilterUpdate.volume">[1]</a>
+      <li><a href="reference/models.html#andesite.models.filters.FilterMap.volume">volume (FilterMap attribute)</a>
 
       <ul>
-        <li><a href="reference/models.html#andesite.models.operations.Play.volume">(Play attribute)</a>, <a href="reference/models.html#andesite.models.operations.Play.volume">[1]</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Play.volume">(Play attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Play.volume">[1]</a>
 </li>
-        <li><a href="reference/models.html#andesite.models.operations.Update.volume">(Update attribute)</a>, <a href="reference/models.html#andesite.models.operations.Update.volume">[1]</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Update.volume">(Update attribute)</a>, <a href="reference/models.html#andesite.models.send_operations.Update.volume">[1]</a>
 </li>
-        <li><a href="reference/models.html#andesite.models.operations.Volume.volume">(Volume attribute)</a>
+        <li><a href="reference/models.html#andesite.models.send_operations.Volume.volume">(Volume attribute)</a>
 </li>
         <li><a href="reference/models.html#andesite.models.filters.VolumeFilter.volume">(VolumeFilter attribute)</a>, <a href="reference/models.html#andesite.models.filters.VolumeFilter.volume">[1]</a>
 </li>
