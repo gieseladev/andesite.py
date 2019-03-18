@@ -182,6 +182,9 @@
 <span class="sd">        - **track_exception** (`TrackExceptionEvent`)</span>
 <span class="sd">        - **track_stuck** (`TrackStuckEvent`)</span>
 <span class="sd">        - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown event is received.</span>
+
+<span class="sd">    The client automatically keeps track of the current connection id and resumes the previous connection</span>
+<span class="sd">    when calling `connect`, if there is any.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">max_connect_attempts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">web_socket_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WebSocketClientProtocol</span><span class="p">]</span>
@@ -234,9 +237,6 @@
 <div class="viewcode-block" id="AndesiteWebSocket.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.AndesiteWebSocket.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Connect to the web socket server.</span>
 
-<span class="sd">        After successfully connecting all messages in the message</span>
-<span class="sd">        queue are sent in order and a `ws_connected` event is dispatched.</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            max_attempts: Amount of connection attempts to perform before aborting.</span>
 <span class="sd">                If this is not set, `max_connect_attempts` is used instead.</span>
@@ -245,6 +245,9 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If the client is already connected.</span>
 <span class="sd">                Check `connected` first!</span>
+
+<span class="sd">        After successfully connecting all messages in the message</span>
+<span class="sd">        queue are sent in order and a `ws_connected` event is dispatched.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            This method doesn&#39;t have to be called manually,</span>

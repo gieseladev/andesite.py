@@ -68,7 +68,8 @@ underlying <a class="reference external" href="https://aiohttp.readthedocs.io/en
 </tr>
 </tbody>
 </table>
-<p>This does not include the player routes, as they are already covered by the <a class="reference internal" href="#andesite.AndesiteWebSocket" title="andesite.AndesiteWebSocket"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code></a>.</p>
+<p>This does not include the player routes, as they are already covered by the <a class="reference internal" href="#andesite.AndesiteWebSocket" title="andesite.AndesiteWebSocket"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocket</span></code></a>.
+The client uses the user agent <code class="xref py py-obj docutils literal notranslate"><span class="pre">USER_AGENT</span></code> for every request.</p>
 <dl class="attribute">
 <dt id="andesite.AndesiteHTTP.aiohttp_session">
 <code class="descname">aiohttp_session</code><a class="headerlink" href="#andesite.AndesiteHTTP.aiohttp_session" title="Permalink to this definition">¶</a></dt>
@@ -87,6 +88,7 @@ underlying <a class="reference external" href="https://aiohttp.readthedocs.io/en
 <dt id="andesite.AndesiteHTTP.close">
 <em class="property">coroutine </em><code class="descname">close</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the underlying <a class="reference external" href="https://aiohttp.readthedocs.io/en/stable/client_reference.html#aiohttp.ClientSession" title="(in aiohttp v3.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aiohttp.ClientSession</span></code></a>.</p>
+<p>This should be called when you no longer need the client.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -101,11 +103,6 @@ underlying <a class="reference external" href="https://aiohttp.readthedocs.io/en
 <dt id="andesite.AndesiteHTTP.decode_track">
 <em class="property">coroutine </em><code class="descname">decode_track</code><span class="sig-paren">(</span><em>self</em>, <em>track</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.decode_track"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.decode_track" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the <code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackInfo</span></code> from the encoded track data.</p>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last">Please use <a class="reference internal" href="#andesite.AndesiteHTTP.decode_tracks" title="andesite.AndesiteHTTP.decode_tracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode_tracks</span></code></a> if you need to decode multiple
-encoded strings at once!</p>
-</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -114,10 +111,17 @@ encoded strings at once!</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="models.html#andesite.models.track.TrackInfo" title="andesite.models.track.TrackInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrackInfo</span></code></a>]</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackInfo</span></code> of the provided data, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if the data is invalid.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackInfo</span></code> of the provided data, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if the data is invalid.
+Note that this method doesn’t raise <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code>!
+If you need the <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> to be raised, use <a class="reference internal" href="#andesite.AndesiteHTTP.decode_tracks" title="andesite.AndesiteHTTP.decode_tracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode_tracks</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">Please use <a class="reference internal" href="#andesite.AndesiteHTTP.decode_tracks" title="andesite.AndesiteHTTP.decode_tracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode_tracks</span></code></a> if you need to decode multiple
+encoded strings at once!</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -134,6 +138,8 @@ encoded strings at once!</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of <code class="xref py py-obj docutils literal notranslate"><span class="pre">TrackInfo</span></code> in order of the provided tracks.</td>
 </tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – If Andesite returns an error.</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -146,7 +152,9 @@ encoded strings at once!</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stats</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – If Andesite returns an error.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stats</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -160,9 +168,22 @@ encoded strings at once!</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Identifier to load</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Identifier to load. The identifier isn’t handled in any way
+so it supports the search syntax for example.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – If Andesite returns an error.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#andesite.AndesiteHTTP.search_tracks" title="andesite.AndesiteHTTP.search_tracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search_tracks</span></code></a> to search for a track using a query.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -176,18 +197,24 @@ encoded strings at once!</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – HTTP method to use</li>
 <li><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Path relative to the base url. Must not start with a slash!</li>
 <li><strong>**kwargs</strong> – Keyword arguments passed to the request</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – When Andesite returns an error.</p>
-</td>
+</tbody>
+</table>
+<p>This method is used by all other methods to perform their respective
+task. You should use the provided methods whenever possible.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – If Andesite returns an error.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
-</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -195,7 +222,7 @@ encoded strings at once!</p>
 
 <dl class="method">
 <dt id="andesite.AndesiteHTTP.search_tracks">
-<em class="property">coroutine </em><code class="descname">search_tracks</code><span class="sig-paren">(</span><em>self</em>, <em>query</em>, <em>*</em>, <em>searcher='ytsearch'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.search_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.search_tracks" title="Permalink to this definition">¶</a></dt>
+<em class="property">coroutine </em><code class="descname">search_tracks</code><span class="sig-paren">(</span><em>self</em>, <em>query</em>, <em>*</em>, <em>searcher=&lt;AndesiteSearcher.YOUTUBE: 'ytsearch'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/http_client.html#AndesiteHTTP.search_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteHTTP.search_tracks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search tracks.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -203,12 +230,25 @@ encoded strings at once!</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Search query to search for</li>
-<li><strong>searcher</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Specify the searcher to use. Defaults to YouTube.</li>
+<li><strong>searcher</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AndesiteSearcher</span></code>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Specify the searcher to use. Defaults to YouTube.
+See <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteSearcher</span></code> for the supported searchers.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AndesiteHTTPError</span></code> – If Andesite returns an error.</p>
 </td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This is a utility method for the <a class="reference internal" href="#andesite.AndesiteHTTP.load_tracks" title="andesite.AndesiteHTTP.load_tracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_tracks</span></code></a> method.
+A search query is just an identifier with the format
+“&lt;searcher&gt;:&lt;query&gt;”.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></td>
 </tr>
 </tbody>
 </table>
@@ -305,12 +345,12 @@ was actually sent.</dd>
 </tr>
 </tbody>
 </table>
+<p>The client automatically keeps track of the current connection id and resumes the previous connection
+when calling <a class="reference internal" href="#andesite.AndesiteWebSocket.connect" title="andesite.AndesiteWebSocket.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect</span></code></a>, if there is any.</p>
 <dl class="method">
 <dt id="andesite.AndesiteWebSocket.connect">
 <em class="property">coroutine </em><code class="descname">connect</code><span class="sig-paren">(</span><em>self</em>, <em>max_attempts=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AndesiteWebSocket.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.AndesiteWebSocket.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connect to the web socket server.</p>
-<p>After successfully connecting all messages in the message
-queue are sent in order and a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ws_connected</span></code> event is dispatched.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -324,6 +364,8 @@ Check <a class="reference internal" href="#andesite.AndesiteWebSocket.connected"
 </tr>
 </tbody>
 </table>
+<p>After successfully connecting all messages in the message
+queue are sent in order and a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ws_connected</span></code> event is dispatched.</p>
 <p class="rubric">Notes</p>
 <p>This method doesn’t have to be called manually,
 it is called as soon as the first message needs to be sent.
