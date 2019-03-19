@@ -78,7 +78,6 @@ class PlayerUpdate(ReceiveOperation):
         guild_id (int): guild id
         state (Player): player
     """
-
     __op__ = "player-update"
 
     user_id: int
@@ -100,7 +99,8 @@ class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
     """Event sent by Andesite.
 
     Attributes:
-        type (str): Event type name. This is equal to the name of the class (With the exception of `UnknownAndesiteEvent`)
+        type (str): Event type name.
+            This is equal to the name of the class (With the exception of `UnknownAndesiteEvent`)
         user_id (int): User ID
         guild_id (int): Guild ID
         track (str): Base64 encoded track data

@@ -23,24 +23,27 @@ class AndesiteCog(Cog, name="Andesite"):
     """Play music through the power of Andesite using andesite.py."""
     bot: Bot
     options: "OptionsType"
-    ws_client: Optional[andesite.AndesiteWebSocket]
+    andesite_client: Optional[andesite.AndesiteClient]
 
     _last_session_id: Optional[str]
 
     def __init__(self, bot: Bot, options: "OptionsType") -> None:
         self.bot = bot
         self.options = options
-        self.ws_client = None
-        self.http_client = andesite.AndesiteHTTP(options.andesite_http, options.andesite_password)
+        self.andesite_client = None
 
         self._last_session_id = None
 
     @Cog.listener()
     async def on_ready(self) -> None:
         log.debug("creating andesite client")
-        self.ws_client = andesite.AndesiteWebSocket(self.options.andesite_ws, self.bot.user.id, self.options.andesite_password)
+        self.andesite_client = andesite.AndesiteClient.create(
+            self.options.andesite_http, self.options.andesite_ws,
+            self.options.andesite_password,
+            self.bot.user.id
+        )
         log.info("connecting andesite client")
-        await self.ws_client.connect()
+        await self.andesite_client.connect()
         log.info("andesite ws_client ready")
 
     @Cog.listener()
@@ -67,7 +70,7 @@ class AndesiteCog(Cog, name="Andesite"):
 
             if self._last_session_id:
                 log.info(f"sending voice server update for guild {guild_id}")
-                await self.ws_client.voice_server_update(guild_id, self._last_session_id, body)
+                await self.andesite_client.voice_server_update(guild_id, self._last_session_id, body)
             else:
                 log.debug(f"not sending voice server update for guild {guild_id} because session id missing.")
 
@@ -120,13 +123,13 @@ class AndesiteCog(Cog, name="Andesite"):
         """
         async with ctx.typing():
             if not query:
-                result = await self.http_client.search_tracks("music")
+                result = await self.andesite_client.search_tracks("music")
                 track_info = random.choice(result.tracks)
             else:
                 if query.startswith(("http://", "https://")):
-                    result = await self.http_client.load_tracks(query)
+                    result = await self.andesite_client.load_tracks(query)
                 else:
-                    result = await self.http_client.search_tracks(query)
+                    result = await self.andesite_client.search_tracks(query)
 
                 if result.load_type == andesite.LoadType.LOAD_FAILED:
                     raise CommandError(f"Couldn't load track: {result.cause}")
@@ -137,7 +140,7 @@ class AndesiteCog(Cog, name="Andesite"):
                 track_info = result.tracks[0]
 
         log.info(f"playing {track_info.track} in {ctx.guild}")
-        await self.ws_client.play(ctx.guild.id, track_info.track)
+        await self.andesite_client.play(ctx.guild.id, track_info.track)
 
         await ctx.send("Now playing", embed=get_track_embed(track_info.info))
 
@@ -146,21 +149,21 @@ class AndesiteCog(Cog, name="Andesite"):
     async def pause_cmd(self, ctx: Context) -> None:
         """Pause the player"""
         log.info(f"pausing in {ctx.guild}")
-        await self.ws_client.pause(ctx.guild.id, True)
+        await self.andesite_client.pause(ctx.guild.id, True)
 
     @guild_only()
     @command("unpause")
     async def unpause_cmd(self, ctx: Context) -> None:
         """Unpause the player"""
         log.info(f"unpausing in {ctx.guild}")
-        await self.ws_client.pause(ctx.guild.id, False)
+        await self.andesite_client.pause(ctx.guild.id, False)
 
     @guild_only()
     @command("ping")
     async def ping_cmd(self, ctx: Context) -> None:
         """Ping the Andesite node"""
         async with ctx.typing():
-            delay = await self.ws_client.ping(ctx.guild.id)
+            delay = await self.andesite_client.ping(ctx.guild.id)
             await ctx.send(embed=Embed(title="Pong", description=f"After {round(1000 * delay)} milliseconds", colour=Colour.blue()))
 
 

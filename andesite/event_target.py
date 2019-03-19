@@ -128,6 +128,7 @@ class NamedEvent(Event, abc.ABC):
     This is an abstract class, you cannot use it directly. You can either use an `Event`
     or subclass this class.
     """
+    __event_name__: str
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(self.get_event_name(), *args, **kwargs)
@@ -152,7 +153,6 @@ class NamedEvent(Event, abc.ABC):
     def get_event_name(cls) -> str:
         """Get the event name for the event representing this class."""
         try:
-            # noinspection PyUnresolvedReferences
             return cls.__event_name__
         except AttributeError:
             return cls._create_name()

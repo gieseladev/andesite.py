@@ -262,6 +262,11 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
 
         self.aiohttp_session = ClientSession(headers=headers, loop=self._loop)
 
+    @property
+    def closed(self) -> bool:
+        """Whether the underlying `aiohttp.ClientSession` is closed."""
+        return self.aiohttp_session.closed
+
     async def close(self) -> None:
         """Close the underlying `aiohttp.ClientSession`.
 

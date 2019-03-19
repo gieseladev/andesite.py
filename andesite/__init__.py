@@ -8,10 +8,11 @@ exports all the models from `andesite.models`
 and the various clients.
 """
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 from .combined_client import *
 from .http_client import *
+from .pool import *
 from .web_socket_client import *
 
 # must come after other imports!
