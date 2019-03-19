@@ -3,20 +3,36 @@
 Attributes:
     FILTER_MAP (Mapping[str, Type[Filter]]): Mapping from filter name to filter class.
         See: `get_filter_model`.
+    FilterMapLike (Union[FilterMap, Dict[str, Union[Filter, RawDataType]]]): (Type alias) Type of objects which
+        can be used as filter maps. This includes the `FilterMap`.
 """
 import abc
 from dataclasses import dataclass, field
 from operator import eq
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Type, TypeVar, Union, overload
 
 from andesite.transform import RawDataType, build_from_raw, convert_to_raw
 
-__all__ = ["Filter", "EqualizerBand", "Equalizer", "Karaoke", "Timescale", "Tremolo", "Vibrato", "VolumeFilter", "get_filter_model", "FilterMap"]
+__all__ = ["Filter",
+           "EqualizerBand", "Equalizer",
+           "Karaoke",
+           "Timescale",
+           "Tremolo",
+           "Vibrato",
+           "VolumeFilter",
+           "get_filter_model",
+           "FilterMap", "FilterMapLike"]
 
 
 def _ensure_in_interval(value: float, *,
                         low: float = None, low_inc: float = None,
                         up: float = None, up_inc: float = None) -> None:
+    """Ensure a value is within an interval.
+
+    Raises:
+        ValueError: If the provided value isn't within the given
+            constraints.
+    """
     low_symbol: Optional[str] = None
     up_symbol: Optional[str] = None
     valid: bool = True
@@ -46,7 +62,13 @@ def _ensure_in_interval(value: float, *,
 
 
 class _Filter(abc.ABC):
-    """Filter with name."""
+    """Filter with name.
+
+    Attributes:
+        __filter_name__ (str): Name of the filter.
+            This is a magic attribute used by the library
+            to convert the filter into its Andesite representation.
+    """
     __filter_name__: str
 
 
@@ -429,7 +451,7 @@ FT = TypeVar("FT", bound=Filter)
 
 
 @dataclass
-class FilterMap(Mapping):
+class FilterMap(MutableMapping):
     """Custom mapping type for filters.
 
     Attributes:
@@ -439,6 +461,8 @@ class FilterMap(Mapping):
     contains the actual filter data. The class exposes the known filters as
     properties, but it also supports unknown filters should the library
     become outdated.
+
+    You can also use this as a wrapper for an existing filter dict.
     """
 
     filters: Dict[str, Any] = field(default_factory=dict)
@@ -465,6 +489,9 @@ class FilterMap(Mapping):
 
     def __setitem__(self, key: str, value: Any) -> None:
         self.filters[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.filters[key]
 
     def get_filter(self, name: str, cls: Type[FT]) -> FT:
         """Get the filter with the name.
@@ -526,7 +553,7 @@ class FilterMap(Mapping):
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> RawDataType:
-        filters: Dict[str, Any] = {}
+        filters: RawDataType = {}
 
         for name, filter_value in data.items():
             filter_cls = get_filter_model(name)
@@ -541,3 +568,6 @@ class FilterMap(Mapping):
     @classmethod
     def __transform_output__(cls, data: RawDataType) -> RawDataType:
         return data["filters"]
+
+
+FilterMapLike = Union[FilterMap, Dict[str, Union[Filter, RawDataType]]]

@@ -10,6 +10,7 @@ and the various clients.
 
 __version__ = "0.0.1"
 
+from .combined_client import *
 from .http_client import *
 from .web_socket_client import *
 
