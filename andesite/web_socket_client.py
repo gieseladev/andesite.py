@@ -231,6 +231,17 @@ class AbstractAndesiteWebSocket(abc.ABC):
         """
         self._event_target = value
 
+    @event_target.deleter
+    def event_target(self) -> None:
+        """Reset the event target.
+
+        This will cause the next call to `event_target` to find a new target (or raise an error).
+        """
+        try:
+            del self._event_target
+        except AttributeError:
+            pass
+
     @property
     @abc.abstractmethod
     def closed(self) -> bool:

@@ -9,7 +9,7 @@ is the actual client `AndesiteClient`.
 
 You can use the combined client for everything that implements
 the abstract methods. This means that you can use the combined client
-for `AndesitePool` clients!
+for `ClientPool` clients!
 """
 from asyncio import AbstractEventLoop
 from contextlib import suppress
@@ -35,6 +35,8 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         web_socket_client: Client to use for the web socket communication.
         loop: Event loop to use. This is used for the underlying event target.
 
+    The `event_target` of the web socket client is set to the combined client.
+
     This class implements `AbstractAndesiteWebSocketClient` if the underlying web socket client
     is an instance of it. However, an `isinstance` check will always return `False`.
     If the underlying client is not an instance of `AbstractAndesiteWebSocketClient`, all
@@ -54,7 +56,12 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
 
         self.http = http_client
         self.web_socket = web_socket_client
-        web_socket_client.event_target = self
+
+        # set the web socket client's event target to our event target
+        # self.event_target will most likely resolve to self, but maybe
+        # the user is trying to pull some inception shit with nested
+        # clients and who would I be to deny them their fun?
+        web_socket_client.event_target = self.event_target
 
         # bind the methods directly
         self.send = web_socket_client.send

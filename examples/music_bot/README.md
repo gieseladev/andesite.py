@@ -1,5 +1,6 @@
 # Music Bot example
 A small bot demonstrating the usage of the andesite.py library.
+The bot uses the `AndesiteClient` for a single Andesite node.
 
 ## Running the bot
 ```bash
