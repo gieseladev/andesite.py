@@ -3,6 +3,11 @@
 These functions are used to transform the data sent by Andesite
 into the Python models.
 
+These functions aren't exported to the `andesite` namespace, if you
+want to use them you need to import them from `andesite.transform`.
+However, there shouldn't be a need for you to use them in the first place
+as andesite.py already does this for you.
+
 Attributes:
     RawDataType (Dict[str, Any]): (Type alias) JSON-like object data type.
     CONVERTER_MEMO (lettercase.ConversionMemo): Memory used for letter case conversion.
