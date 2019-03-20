@@ -11,8 +11,9 @@ and the various clients.
 __version__ = "0.1.0"
 
 from .combined_client import *
+from .discord import add_voice_server_update_handler, connect_voice_channel, disconnect_voice_channel, remove_voice_server_update_handler
 from .http_client import *
-from .pool import *
+from .pools import *
 from .web_socket_client import *
 
 # must come after other imports!

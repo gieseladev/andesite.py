@@ -314,6 +314,9 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
             max_attempts: Amount of connection attempts to perform before aborting.
                 If `None`, unlimited attempts will be performed.
 
+        If `max_attempts` is exceeded and the client gives up on connecting it
+        is closed!
+
         After successfully connecting all messages in the message
         queue are sent in the order they were added and a `ws_connected`
         event is dispatched.
@@ -820,6 +823,10 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
         Raises:
             ValueError: If client is already connected
+
+        Notes:
+            If `max_attempts` is exceeded and the client gives up on connecting it
+            is closed!
         """
         if self.connected:
             raise ValueError("Already connected!")
@@ -847,6 +854,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
             attempt += 1
         else:
+            self._closed = True
             raise ConnectionError(f"Couldn't connect to {self._ws_uri} after {attempt} attempts")
 
         self.web_socket_client = client
@@ -862,6 +870,9 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         Args:
             max_attempts: Amount of connection attempts to perform before aborting.
                 If this is not set, `max_connect_attempts` is used instead.
+
+        If `max_attempts` is exceeded and the client gives up on connecting it
+        is closed!
 
         The method uses a lock to make sure only one connection attempt is started
         at a time. If the client is already connected calling this won't perform any
