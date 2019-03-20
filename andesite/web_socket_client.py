@@ -16,6 +16,7 @@ from typing import Any, Deque, Dict, Generic, Optional, Type, TypeVar, Union, ov
 
 import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
+from websockets.http import Headers
 from yarl import URL
 
 from .event_target import EventFilter, EventTarget, NamedEvent
@@ -715,7 +716,9 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
     Args:
         ws_uri: Websocket endpoint to connect to.
-        user_id: Bot's id
+        user_id: Bot's user id. If at the time of creation this is unknown,
+            you may pass `None`, but then it needs to be set before connecting
+            for the first time.
         password: Authorization for the Andesite node.
             Set to `None` if the node doesn't have a password.
         max_connect_attempts: Max amount of connection attempts to start before giving up.
@@ -751,7 +754,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     _closed: bool
 
     _ws_uri: str
-    _headers: Dict[str, str]
+    _headers: Headers[str, str]
     _last_connection_id: Optional[str]
 
     _loop = AbstractEventLoop
@@ -764,7 +767,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     _json_encoder: JSONEncoder
     _json_decoder: JSONDecoder
 
-    def __init__(self, ws_uri: Union[str, URL], user_id: int, password: Optional[str], *,
+    def __init__(self, ws_uri: Union[str, URL], user_id: Optional[int], password: Optional[str], *,
                  max_connect_attempts: int = None,
                  loop: AbstractEventLoop = None) -> None:
         if isinstance(self, EventTarget):
@@ -774,9 +777,11 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
         self._ws_uri = str(ws_uri)
 
-        self._headers = {"User-Id": str(user_id)}
+        self._headers = Headers()
         if password is not None:
             self._headers["Authorization"] = password
+        if user_id is not None:
+            self.user_id = user_id
 
         self._last_connection_id = None
 
@@ -792,6 +797,19 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
         self._json_encoder = JSONEncoder()
         self._json_decoder = JSONDecoder()
+
+    @property
+    def user_id(self) -> Optional[int]:
+        """User id.
+
+        This is only `None` if it wasn't passed to the constructor.
+        """
+        return self._headers.get("User-Id")
+
+    @user_id.setter
+    def user_id(self, user_id: int) -> None:
+        """Set the user id to a new value."""
+        self._headers["User-Id"] = str(user_id)
 
     @property
     def closed(self) -> bool:
@@ -832,6 +850,12 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             raise ValueError("Already connected!")
 
         headers = self._headers
+
+        if "User-Id" not in headers:
+            raise KeyError("Trying to connect but user id unknown.\n"
+                           "This is most likely the case because you didn't\n"
+                           "set the user_id in the constructor and forgot to\n"
+                           "set it before connecting!")
 
         # inject the connection id to resume previous connection
         if self._last_connection_id is not None:

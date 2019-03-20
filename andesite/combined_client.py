@@ -123,8 +123,12 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
 
         return self.web_socket.connection_id
 
-    async def connect(self) -> None:
+    async def connect(self, *, max_attempts: int = None) -> None:
         """Connect the underlying web socket client.
+
+        Args:
+            max_attempts: Amount of connection attempts to perform before aborting.
+                If `None`, unlimited attempts will be performed.
 
         This method doesn't do anything if the web socket client isn't a
         `AbstractAndesiteWebSocketClient`.
@@ -132,7 +136,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         if not isinstance(self.web_socket, AbstractAndesiteWebSocketClient):
             return
 
-        await self.web_socket.connect()
+        await self.web_socket.connect(max_attempts=max_attempts)
 
     async def disconnect(self) -> None:
         """Disconnect the underlying web socket client.
