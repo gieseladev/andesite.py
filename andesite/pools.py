@@ -271,6 +271,9 @@ class AndesiteHTTPPool(AndesiteHTTPInterface, AndesiteHTTPPoolBase):
     ...
 
 
+# WebSocket pool
+
+
 @dataclass
 class ScoringData:
     """Data passed to the web socket scoring scoring function.
@@ -316,8 +319,6 @@ def default_scoring_function(data: ScoringData) -> Tuple[int, int]:
 
     return connected, -len(data.guild_ids)
 
-
-# WebSocket pool
 
 class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractAndesiteWebSocket):
     """Base implementation of a web socket pool.
@@ -417,8 +418,9 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         Raises:
             ValueError: If the client isn't in the pool
         """
-        guild_ids = self.get_guild_ids(client)
         raise NotImplementedError("WIP")
+        guild_ids = self.get_guild_ids(client)
+        self.remove_client(client)
 
     def get_client(self, guild_id: int) -> Optional[AbstractAndesiteWebSocket]:
         """Get the andesite web socket client which is used for the given guild."""

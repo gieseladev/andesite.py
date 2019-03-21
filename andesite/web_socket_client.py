@@ -20,8 +20,9 @@ from websockets.http import Headers
 from yarl import URL
 
 from .event_target import EventFilter, EventTarget, NamedEvent
-from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterMap, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, \
-    SendOperation, Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
+from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, \
+    ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
+from .state import AbstractPlayerState
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 
 __all__ = ["WebSocketConnectEvent", "WebSocketDisconnectEvent",
@@ -539,14 +540,14 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
                      pause: bool = None,
                      position: float = None,
                      volume: float = None,
-                     filters: FilterUpdate = None) -> None:
+                     filters: FilterMapLike = None) -> None:
         ...
 
     async def update(self, guild_id: int, update: Update = None, *,
                      pause: bool = None,
                      position: float = None,
                      volume: float = None,
-                     filters: FilterMap = None) -> None:
+                     filters: FilterMapLike = None) -> None:
         """Send an update.
 
         You may either provide the given keyword arguments,
@@ -754,7 +755,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     _closed: bool
 
     _ws_uri: str
-    _headers: Headers[str, str]
+    _headers: Headers
     _last_connection_id: Optional[str]
 
     _loop = AbstractEventLoop

@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_rename_keys, seq_build_all_items_from_raw
 
-__all__ = ["StackFrame", "Error",
+__all__ = ["StackFrame", "Error", "AndesiteException",
            "PlayersStats", "RuntimeVMStats", "RuntimeSpecStats", "RuntimeVersionStats", "RuntimeStats", "OSStats", "CPUStats", "ClassLoadingStats",
            "ThreadStats", "CompilationStats", "MemoryCommonUsageStats", "MemoryStats", "GCStats", "MemoryPoolStats", "MemoryManagerStats",
            "FrameStats",
@@ -92,17 +92,17 @@ class AndesiteException(Exception):
 
     Attributes:
         class_name (str): Class name of the error
-        message (str): message of the error
+        message (Optional[str]): message of the error
         stack (List[StackFrame]): cause of the error
         suppressed (List[Error]): suppressed errors
     """
 
     class_name: str
-    message: str
+    message: Optional[str]
     stack: List[StackFrame]
     suppressed: List[Error]
 
-    def __init__(self, class_name: str, message: str, stack: List[StackFrame], suppressed: List[Error]) -> None:
+    def __init__(self, class_name: str, message: Optional[str], stack: List[StackFrame], suppressed: List[Error]) -> None:
         super().__init__(class_name, message)
         self.class_name = class_name
         self.message = message
