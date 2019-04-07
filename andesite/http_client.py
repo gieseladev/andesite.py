@@ -54,7 +54,7 @@ class AndesiteHTTPError(Exception):
 
     def __init__(self, code: int, message: str) -> None:
         super().__init__(message, code)
-        self.code = code,
+        self.code = code
         self.message = message
 
     def __str__(self) -> str:
@@ -168,6 +168,25 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
         """
         data = await self.request("GET", "loadtracks", params=dict(identifier=identifier))
         return build_from_raw(LoadedTrack, data)
+
+    async def load_tracks_safe(self, uri: str) -> LoadedTrack:
+        """Load tracks from url.
+
+        This is different from `load_tracks` insofar that it ignores
+        special markers such as "ytsearch:" treats the given uri
+        as nothing but that.
+
+        Args:
+            uri: URI to load
+
+        Raises:
+            AndesiteHTTPError: If Andesite returns an error.
+
+        See Also:
+            `load_tracks` to load a track using an identifier.
+            `search_tracks` to search for a track using a query.
+        """
+        return await self.load_tracks(f"raw:{uri}")
 
     async def search_tracks(self, query: str, *, searcher: AndesiteSearcherType = AndesiteSearcher.YOUTUBE) -> LoadedTrack:
         """Search tracks.
