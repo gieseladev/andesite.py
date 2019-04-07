@@ -2,6 +2,11 @@
 A small bot demonstrating the usage of the andesite.py library.
 The bot uses the `AndesiteClient` for a single Andesite node.
 
+
+## Dependencies
+- [discord.py](https://github.com/Rapptz/discord.py/tree/rewrite)
+- [colorlog](https://github.com/borntyping/python-colorlog) (OPTIONAL)
+
 ## Running the bot
 ```bash
 python music_bot <discord bot token> [options]

@@ -186,7 +186,11 @@ class SocketResponseHandler:
         self.andesite_client = andesite_client
 
     def add_listener(self) -> None:
-        """Add the on_socket_response listener."""
+        """Add the on_socket_response listener.
+
+        If the handler is attached to a `Bot`, it uses the listener framework,
+        otherwise it safely wraps the client handler.
+        """
         client = self.discord_client
 
         try:

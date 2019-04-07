@@ -11,6 +11,7 @@ from discord import Colour, Embed, VoiceState
 from discord.ext.commands import Bot, Cog, CommandError, Context, command, guild_only
 
 import andesite
+# since we're using the discord.py library we can use these functions
 from andesite.discord import add_voice_server_update_handler, connect_voice_channel, disconnect_voice_channel, remove_voice_server_update_handler
 
 if TYPE_CHECKING:
@@ -48,6 +49,7 @@ class AndesiteCog(Cog, name="Andesite"):
             self.bot.user.id
         )
 
+        # automatically handle voice server updates
         add_voice_server_update_handler(self.bot, self.andesite_client)
 
         log.info("connecting andesite client")
