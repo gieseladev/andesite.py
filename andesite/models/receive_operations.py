@@ -13,13 +13,16 @@ import abc
 import copy
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Optional, Set, Type, cast
+from typing import Mapping, Optional, Set, TYPE_CHECKING, Type, cast
 
 from andesite.event_target import NamedEvent
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_convert_values_from_milli, \
     map_convert_values_to_milli, transform_input, transform_output
 from .debug import Error, Stats
 from .player import Player
+
+if TYPE_CHECKING:
+    from andesite import AbstractAndesiteWebSocketClient
 
 __all__ = ["ReceiveOperation",
            "ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
@@ -30,8 +33,21 @@ __all__ = ["ReceiveOperation",
 
 
 class ReceiveOperation(abc.ABC):
-    """Message sent by Andesite."""
+    """Message sent by Andesite.
+
+    Attributes:
+        client (Optional[AbstractAndesiteWebSocketClient]): Client that received the message.
+            This is set by the client that received the message.
+    """
     __op__: str
+
+    client: Optional["AbstractAndesiteWebSocketClient"] = None
+
+
+@dataclass
+class PongResponse(ReceiveOperation):
+    """Simple pong response sent as a response to ping requests."""
+    __op__ = "pong"
 
 
 @dataclass
@@ -70,7 +86,7 @@ class StatsUpdate(ReceiveOperation):
 
 
 @dataclass
-class PlayerUpdate(ReceiveOperation):
+class PlayerUpdate(NamedEvent, ReceiveOperation):
     """Player update sent by Andesite for active players.
 
     Attributes:
@@ -266,7 +282,7 @@ def get_event_model(event_type: str) -> Type[AndesiteEvent]:
         return UnknownAndesiteEvent
 
 
-_OPS: Set[Type[ReceiveOperation]] = {ConnectionUpdate, StatsUpdate, PlayerUpdate}
+_OPS: Set[Type[ReceiveOperation]] = {PongResponse, ConnectionUpdate, StatsUpdate, PlayerUpdate}
 OP_MAP: Mapping[str, Type[ReceiveOperation]] = {op.__op__: op for op in _OPS}
 
 

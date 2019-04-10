@@ -6,14 +6,14 @@ connects to a single Andesite node.
 import abc
 import asyncio
 import logging
-import math
 import time
 from asyncio import AbstractEventLoop, CancelledError, Future, Lock
 from collections import deque
 from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
-from typing import Any, Deque, Dict, Generic, Optional, Type, TypeVar, Union, overload
+from typing import Any, Deque, Dict, Optional, Type, TypeVar, Union, overload
 
+import math
 import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 from websockets.http import Headers
@@ -22,14 +22,10 @@ from yarl import URL
 from .event_target import EventFilter, EventTarget, NamedEvent
 from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, \
     ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
-from .state import AbstractPlayerState
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
+from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, WebSocketDisconnectEvent
 
-__all__ = ["WebSocketConnectEvent", "WebSocketDisconnectEvent",
-           "RawMsgReceiveEvent", "MsgReceiveEvent",
-           "PlayerUpdateEvent",
-           "RawMsgSendEvent",
-           "try_connect",
+__all__ = ["try_connect",
            "AbstractAndesiteWebSocket", "AbstractAndesiteWebSocketClient",
            "AndesiteWebSocketInterface",
            "AndesiteWebSocketBase",
@@ -39,109 +35,6 @@ ROPT = TypeVar("ROPT", bound=ReceiveOperation)
 ET = TypeVar("ET", bound=AndesiteEvent)
 
 log = logging.getLogger(__name__)
-
-
-class WebSocketConnectEvent(NamedEvent):
-    """Event dispatched when a connection has been established.
-
-    Attributes:
-        client (AbstractAndesiteWebSocket): Web socket client which connected.
-    """
-    __event_name__ = "ws_connect"
-
-    client: "AbstractAndesiteWebSocket"
-
-    def __init__(self, client: "AbstractAndesiteWebSocket") -> None:
-        super().__init__(client=client)
-
-
-class WebSocketDisconnectEvent(NamedEvent):
-    """Event dispatched when a client was disconnected.
-
-    Attributes:
-        client (AbstractAndesiteWebSocket): Web socket client which connected.
-        deliberate (bool): Whether the disconnect was deliberate.
-    """
-    __event_name__ = "ws_disconnect"
-
-    client: "AbstractAndesiteWebSocket"
-    deliberate: bool
-
-    def __init__(self, client: "AbstractAndesiteWebSocket", deliberate: bool) -> None:
-        super().__init__(client=client, deliberate=deliberate)
-
-
-class RawMsgReceiveEvent(NamedEvent):
-    """Event emitted when a web socket message is received.
-
-    Attributes:
-        client (AbstractAndesiteWebSocket): Web socket client that
-            received the message.
-        body (Dict[str, Any]): Raw body of the received message.
-            Note: The body isn't manipulated in any way other
-                than being loaded from the raw JSON string.
-                For example, the names are still in dromedaryCase.
-    """
-    client: "AbstractAndesiteWebSocket"
-    body: Dict[str, Any]
-
-    def __init__(self, client: "AbstractAndesiteWebSocket", body: Dict[str, Any]) -> None:
-        super().__init__(client=client, body=body)
-
-
-class MsgReceiveEvent(NamedEvent, Generic[ROPT]):
-    """Event emitted when a web socket message is received.
-
-    Attributes:
-        client (AbstractAndesiteWebSocket): Web socket client that
-            received the message.
-        op (str): Operation.
-            This will be one of the following:
-            - connection-id
-            - player-update
-            - stats
-            - event
-        data (ReceiveOperation): Loaded message model.
-            The type of this depends on the op.
-    """
-    client: "AbstractAndesiteWebSocket"
-    op: str
-    data: ROPT
-
-    def __init__(self, client: "AbstractAndesiteWebSocket", op: str, data: ROPT) -> None:
-        super().__init__(client=client, op=op, data=data)
-
-
-class PlayerUpdateEvent(NamedEvent, PlayerUpdate):
-    """Event emitted when a player update is received.
-
-    Attributes:
-        client (AbstractAndesiteWebSocket): Web socket client that
-            received the message.
-    """
-    client: "AbstractAndesiteWebSocket"
-
-    def __init__(self, client: "AbstractAndesiteWebSocket", player_update: PlayerUpdate) -> None:
-        super().__init__(player_update.__dict__, client=client)
-
-
-class RawMsgSendEvent(NamedEvent):
-    """Event dispatched before a web socket message is sent.
-
-    Attributes:
-        client (AbstractAndesiteWebSocket): Web socket client that
-            received the message.
-        guild_id (int): guild id
-        op (str): Op-code to be executed
-        body (Dict[str, Any]): Raw body of the message
-    """
-    client: "AbstractAndesiteWebSocket"
-    guild_id: int
-    op: str
-    body: Dict[str, Any]
-
-    def __init__(self, client: "AbstractAndesiteWebSocket", guild_id: int, op: str, body: Dict[str, Any]) -> None:
-        super().__init__(client=client, guild_id=guild_id, op=op, body=body)
 
 
 async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
@@ -191,7 +84,7 @@ class AbstractAndesiteWebSocket(abc.ABC):
             This event is dispatched regardless of whether the message
             was actually sent.
 
-        - **player_update** (`PlayerUpdateEvent`): When a `PlayerUpdate` is received.
+        - **player_update** (`PlayerUpdate`): When a `PlayerUpdate` is received.
 
         - **track_start** (`TrackStartEvent`)
         - **track_end** (`TrackEndEvent`)
@@ -305,6 +198,24 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
 
         Notes:
             The client already performs resuming automatically.
+        """
+        ...
+
+    @property
+    @abc.abstractmethod
+    def node_region(self) -> Optional[str]:
+        """Node region sent by the Andesite node.
+
+        This will be set after the connection is established.
+        """
+        ...
+
+    @property
+    @abc.abstractmethod
+    def node_id(self) -> Optional[str]:
+        """Node id sent by the Andesite node.
+
+        This will be set after the connection is established.
         """
         ...
 
@@ -833,6 +744,28 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         """
         return self._last_connection_id
 
+    @property
+    def node_region(self) -> Optional[str]:
+        """Node region sent by the Andesite node.
+
+        This will be set after the connection is established.
+        """
+        if self.web_socket_client:
+            return self.web_socket_client.response_headers.get("Andesite-Node-Region")
+
+        return None
+
+    @property
+    def node_id(self) -> Optional[str]:
+        """Node id sent by the Andesite node.
+
+        This will be set after the connection is established.
+        """
+        if self.web_socket_client:
+            return self.web_socket_client.response_headers.get("Andesite-Node-Id")
+
+        return None
+
     async def _connect(self, max_attempts: int = None) -> None:
         """Internal connect method.
 
@@ -1010,12 +943,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             event_type = data.get("type")
             cls = get_update_model(op, event_type)
             if cls is None:
-                # we use op=pong for the ping method.
-                # there might be a more elegant solution
-                # than this but it works for now.
-                if op not in {"pong"}:
-                    log.warning(f"Ignoring message with unknown op \"{op}\": {data}")
-
+                log.warning(f"Ignoring message with unknown op \"{op}\": {data}")
                 continue
 
             try:
@@ -1024,15 +952,14 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
                 log.error(f"Couldn't parse message from Andesite node ({e}): {data}")
                 continue
 
+            message.client = self
+
             _ = self.event_target.dispatch(MsgReceiveEvent(self, op, message))
 
             if isinstance(message, ConnectionUpdate):
                 log.info("received connection update, setting last connection id.")
                 self._last_connection_id = message.id
-            elif isinstance(message, PlayerUpdate):
-                _ = self.event_target.dispatch(PlayerUpdateEvent(self, message))
-            elif isinstance(message, AndesiteEvent):
-                # TODO AndesiteEvent doesn't have a reference to the client yet
+            elif isinstance(message, NamedEvent):
                 _ = self.event_target.dispatch(message)
 
     def _start_read_loop(self) -> None:
@@ -1124,7 +1051,7 @@ class AndesiteWebSocket(AndesiteWebSocketBase, EventTarget, AndesiteWebSocketInt
             This event is dispatched regardless of whether the message
             was actually sent.
 
-        - **player_update** (`PlayerUpdateEvent`): When a `PlayerUpdate` is received.
+        - **player_update** (`PlayerUpdate`): When a `PlayerUpdate` is received.
 
         - **track_start** (`TrackStartEvent`)
         - **track_end** (`TrackEndEvent`)

@@ -14,6 +14,7 @@ from .combined_client import *
 from .http_client import *
 from .pools import *
 from .web_socket_client import *
+from .web_socket_client_events import *
 
 # must come after other imports!
 from .models import *

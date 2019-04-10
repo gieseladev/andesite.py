@@ -46,6 +46,8 @@ class AndesiteCog(Cog, name="Andesite"):
         self.andesite_client = andesite.AndesiteClient.create(
             self.options.andesite_http, self.options.andesite_ws,
             self.options.andesite_password,
+            # we're only creating the client in the on_ready
+            # method because of the user id.
             self.bot.user.id
         )
 

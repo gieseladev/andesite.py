@@ -5,6 +5,9 @@ but internally they use more than one client
 (preferably to multiple Andesite nodes).
 
 Attributes:
+    RegionGuildComparator (Callable[[int, Optional[str]], int]: (Type alias)
+        Function which takes a guild id and the node region of an Andesite node and
+        returns an integer to indicate how well the guild is suited for the region.
     PoolScoringFunction (Callable[[ScoringData], Union[Any, Awaitable[Any]]]): (Type alias)
         Function which takes `ScoringData` as its only argument and returns a comparable object.
         The function may also be a coroutine. The return value is only compared to return values
@@ -34,7 +37,7 @@ __all__ = ["PoolException", "PoolEmptyError",
            "PoolClientAddEvent", "PoolClientRemoveEvent",
            "ClientPool",
            "AndesiteHTTPPoolBase", "AndesiteHTTPPool",
-           "ScoringData", "PoolScoringFunction", "default_scoring_function",
+           "RegionGuildComparator", "ScoringData", "PoolScoringFunction", "default_scoring_function",
            "AndesiteWebSocketPoolBase", "AndesiteWebSocketPool"]
 
 log = logging.getLogger(__name__)
@@ -268,10 +271,20 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
 
 
 class AndesiteHTTPPool(AndesiteHTTPInterface, AndesiteHTTPPoolBase):
+    """Andesite HTTP client pool.
+
+    Args:
+        clients: HTTP clients to initialise the pool with
+        loop: Event loop to use for the event target.
+
+    The pool uses a circular buffer which is rotated after every request.
+    """
     ...
 
 
 # WebSocket pool
+
+RegionGuildComparator = Callable[[int, Optional[str]], int]
 
 
 @dataclass
@@ -281,11 +294,15 @@ class ScoringData:
     Attributes:
         pool (AndesiteWebSocketPoolBase):
         client (AbstractAndesiteWebSocket): Client to be evaluated
+        node_region (Optional[str]): Node region reported by the Andesite client.
+        region_comparator (Optional[RegionGuildComparator]): Function to compare node region with guild id.
         guild_ids (Set[int]): Guild ids which are already assigned to the client
         guild_id (int): Guild id which the client should be evaluated for
     """
     pool: "AndesiteWebSocketPoolBase"
     client: AbstractAndesiteWebSocket
+    node_region: Optional[str]
+    region_comparator: Optional[RegionGuildComparator]
     guild_ids: Set[int]
     guild_id: int
 
@@ -293,21 +310,24 @@ class ScoringData:
 PoolScoringFunction = Callable[[ScoringData], Union[Any, Awaitable[Any]]]
 
 
-def default_scoring_function(data: ScoringData) -> Tuple[int, int]:
+def default_scoring_function(data: ScoringData) -> Tuple[int, int, int]:
     """Calculate the default score.
 
     Returns:
-        2-tuple with the first element representing the connection status
+        3-tuple with the first element representing the connection status
         -1 for closed, 0 for disconnected, and 1 for connected.
         If the client doesn't have a `connected` attribute it is still
         set to 1.
 
-        The second element is the amount of guilds negative.
+        The second element is the result of the region comparator or
+        0 if no region comparator was passed.
+
+        The third element is the amount of guilds negative.
         So it will favour clients with less guilds.
     """
     client = data.client
     if client.closed:
-        return -1, 0
+        return -1, 0, 0
 
     try:
         # noinspection PyUnresolvedReferences
@@ -317,7 +337,12 @@ def default_scoring_function(data: ScoringData) -> Tuple[int, int]:
     else:
         connected = int(connected)
 
-    return connected, -len(data.guild_ids)
+    if data.region_comparator:
+        region_score = data.region_comparator(data.guild_id, data.node_region)
+    else:
+        region_score = 0
+
+    return connected, region_score, -len(data.guild_ids)
 
 
 class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractAndesiteWebSocket):
@@ -340,9 +365,11 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
 
     _scoring_function: PoolScoringFunction
     _scoring_func_is_coro: bool
+    _region_comparator: RegionGuildComparator
 
     def __init__(self, clients: Iterable[AbstractAndesiteWebSocket], *,
                  scoring_function: PoolScoringFunction = None,
+                 region_comparator: RegionGuildComparator = None,
                  loop: AbstractEventLoop = None) -> None:
         super().__init__(loop=loop)
 
@@ -355,6 +382,7 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
             client.event_target = self.event_target
 
         self.scoring_function = scoring_function or default_scoring_function
+        self.region_comparator = region_comparator
 
     @property
     def scoring_function(self) -> PoolScoringFunction:
@@ -370,6 +398,20 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         """
         self._scoring_function = func
         self._scoring_func_is_coro = inspect.iscoroutine(func)
+
+    @property
+    def region_comparator(self) -> Optional[RegionGuildComparator]:
+        """Region comparator used to compare guild region with Andesite node region."""
+        return self._region_comparator
+
+    @region_comparator.setter
+    def region_comparator(self, value: Optional[RegionGuildComparator]) -> None:
+        """Set the comparator used to compare guild region with Andesite node region.
+
+        Args:
+            value: New comparator to use.
+        """
+        self._region_comparator = value
 
     def add_client(self, client: AbstractAndesiteWebSocket) -> None:
         """Add a new client to the pool.
@@ -455,7 +497,13 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         best_score: Any = None
 
         for client, guild_ids in self.iter_client_guild_ids():
-            score_data = ScoringData(self, client, guild_ids, guild_id)
+            try:
+                # noinspection PyUnresolvedReferences
+                node_region: Optional[str] = client.node_region
+            except AttributeError:
+                node_region = None
+
+            score_data = ScoringData(self, client, node_region, self.region_comparator, guild_ids, guild_id)
             score = await self.calculate_score(score_data)
 
             if best_score is not None:

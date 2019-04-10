@@ -7,8 +7,9 @@ Attributes:
 import asyncio
 import logging
 from asyncio import Future
-from typing import Any, Callable, Dict, Iterable, Optional, Set, TYPE_CHECKING, Union, cast, overload
+from typing import Any, Callable, Dict, Iterable, Optional, Set, TYPE_CHECKING, Tuple, Union, cast, overload
 
+from .pools import RegionGuildComparator
 from .web_socket_client import AndesiteWebSocketInterface
 
 if TYPE_CHECKING:
@@ -22,7 +23,8 @@ __all__ = ["get_discord_websocket",
            "update_voice_state", "connect_voice_channel", "disconnect_voice_channel",
            "AsyncMethodGroup", "get_async_method_group", "wrap_client_listener", "unwrap_client_listener",
            "SocketResponseHandler", "get_andesite_socket_response_handlers",
-           "add_voice_server_update_handler", "remove_voice_server_update_handler"]
+           "add_voice_server_update_handler", "remove_voice_server_update_handler",
+           "create_region_comparator"]
 
 log = logging.getLogger(__name__)
 
@@ -288,3 +290,76 @@ def remove_voice_server_update_handler(discord_client: "Client", andesite_client
         return
 
     handler.remove_listener()
+
+
+def _split_region(region: str) -> Tuple[bool, str, Optional[str]]:
+    """Parse a region string into its parts.
+
+    Args:
+        region: Region string to parse
+
+    Returns:
+        3-tuple:
+            - Whether the region is VIP or not
+            - Country name
+            - Part of country
+    """
+    parts = region.lower().split("-")
+
+    if parts[0] == "vip":
+        del parts[0]
+        vip = True
+    else:
+        vip = False
+
+    country = parts.pop(0)
+
+    try:
+        country_part = parts.pop(0)
+    except IndexError:
+        country_part = None
+
+    return vip, country, country_part
+
+
+def create_region_comparator(discord_client: "Client") -> RegionGuildComparator:
+    """Create a region comparator which compares the guild region with the node region.
+
+    You can use the created comparator for the `AndesiteWebSocketPool`.
+
+    Args:
+        discord_client: Client to use to determine the guild region.
+
+    Returns:
+        Region comparator which returns 0 if the regions can't be properly compared
+        (ex: Node region unknown or guild id unknown). If the regions can be compared
+        the result is the sum of the following points:
+            - 2 points if both regions are in the same country
+            - 1 point if both regions are in the same part of a country (ex: us_west)
+                (This point is also awarded if both regions don't specify a country part)
+    """
+
+    def comparator(guild_id: int, node_region: Optional[str]) -> int:
+        if node_region is None or node_region == "unknown":
+            return 0
+
+        guild: Optional[Guild] = discord_client.get_guild(guild_id)
+        if guild is None:
+            return 0
+
+        score: int = 0
+
+        _, node_country, node_country_part = _split_region(node_region)
+
+        guild_region = str(guild.region)
+        _, guild_country, guild_country_part = _split_region(guild_region)
+
+        if node_country == guild_country:
+            score += 2
+
+            if node_country_part == guild_country_part:
+                score += 1
+
+        return score
+
+    return comparator

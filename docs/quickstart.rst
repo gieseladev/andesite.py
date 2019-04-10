@@ -15,7 +15,8 @@ and the http client, but it aims to hide this complexity.
 
     import andesite
 
-    # create the client
+    # We use the create classmethod because it creates
+    # the underlying clients for us.
     client = andesite.AndesiteClient.create(
         "http://localhost:5000",                # url for the http endpoints
         "ws://localhost:5000/websocket",        # url for the web socket endpoints
