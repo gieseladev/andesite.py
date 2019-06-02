@@ -24,7 +24,7 @@ __all__ = ["get_discord_websocket",
            "AsyncMethodGroup", "get_async_method_group", "wrap_client_listener", "unwrap_client_listener",
            "SocketResponseHandler", "get_andesite_socket_response_handlers",
            "add_voice_server_update_handler", "remove_voice_server_update_handler",
-           "create_region_comparator"]
+           "compare_regions", "create_region_comparator"]
 
 log = logging.getLogger(__name__)
 
@@ -322,22 +322,56 @@ def _split_region(region: str) -> Tuple[bool, str, Optional[str]]:
     return vip, country, country_part
 
 
-def create_region_comparator(discord_client: "Client") -> RegionGuildComparator:
+def compare_regions(a_region: str, b_region: str) -> int:
+    """Compare two region names.
+
+    The order of the provided regions is irrelevant.
+
+    Args:
+        a_region: First region name
+        b_region: Second region name
+
+    Returns:
+        0 if the regions can't be properly compared
+        (ex: Node region unknown or guild id unknown).
+        If the regions can be compared
+        the result is the sum of the following points:
+            - 2 points if both regions are in the same country
+            - 1 point if both regions are in
+                the same part of a country (ex: us_west)
+                (This point is also awarded if both regions
+                don't specify a country part)
+    """
+    score: int = 0
+
+    _, a_country, a_country_part = _split_region(a_region)
+    _, b_country, b_country_part = _split_region(b_region)
+
+    if a_country == b_country:
+        score += 2
+
+        if a_country_part == b_country_part:
+            score += 1
+
+    return score
+
+
+def create_region_comparator(discord_client: "Client", *,
+                             region_comp: Callable[[str, str], int] = None) -> RegionGuildComparator:
     """Create a region comparator which compares the guild region with the node region.
 
     You can use the created comparator for the `AndesiteWebSocketPool`.
 
     Args:
         discord_client: Client to use to determine the guild region.
+        region_comp: Specify the actual function which compares the guild region
+            and the Andesite node region. Defaults to `compare_regions`.
 
     Returns:
-        Region comparator which returns 0 if the regions can't be properly compared
-        (ex: Node region unknown or guild id unknown). If the regions can be compared
-        the result is the sum of the following points:
-            - 2 points if both regions are in the same country
-            - 1 point if both regions are in the same part of a country (ex: us_west)
-                (This point is also awarded if both regions don't specify a country part)
+        Region comparator which uses region_comp to compare guild region with node region.
     """
+    if region_comp is None:
+        region_comp = compare_regions
 
     def comparator(guild_id: int, node_region: Optional[str]) -> int:
         if node_region is None or node_region == "unknown":
@@ -347,19 +381,6 @@ def create_region_comparator(discord_client: "Client") -> RegionGuildComparator:
         if guild is None:
             return 0
 
-        score: int = 0
-
-        _, node_country, node_country_part = _split_region(node_region)
-
-        guild_region = str(guild.region)
-        _, guild_country, guild_country_part = _split_region(guild_region)
-
-        if node_country == guild_country:
-            score += 2
-
-            if node_country_part == guild_country_part:
-                score += 1
-
-        return score
+        return region_comp(node_region, guild.region)
 
     return comparator
