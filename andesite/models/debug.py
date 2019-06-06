@@ -1,9 +1,10 @@
 """Debug models for Andesite."""
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, NoReturn, Optional
 
-from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_rename_keys, seq_build_all_items_from_raw
+from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_rename_keys, \
+    seq_build_all_items_from_raw
 
 __all__ = ["StackFrame", "Error", "AndesiteException",
            "PlayersStats", "RuntimeVMStats", "RuntimeSpecStats", "RuntimeVersionStats", "RuntimeStats", "OSStats", "CPUStats", "ClassLoadingStats",
@@ -14,7 +15,7 @@ __all__ = ["StackFrame", "Error", "AndesiteException",
 
 @dataclass
 class StackFrame:
-    """
+    """Andesite stack frame.
 
     Can be found in `Error.stack`.
 
@@ -85,6 +86,14 @@ class Error:
             exc.__cause__ = self.cause.as_python_exception()
 
         return exc
+
+    def raise_error(self) -> NoReturn:
+        """Raise the Andesite error as an `AndesiteException`.
+
+        Raises:
+            AndesiteException: Generated using the `as_python_exception` method.
+        """
+        raise self.as_python_exception()
 
 
 class AndesiteException(Exception):

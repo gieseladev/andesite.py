@@ -21,7 +21,6 @@ Attributes:
 import abc
 import asyncio
 import logging
-from asyncio import AbstractEventLoop
 from enum import Enum
 from typing import Any, Iterable, List, Optional, Union
 
@@ -267,10 +266,11 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
     """
     aiohttp_session: ClientSession
 
-    _loop: AbstractEventLoop
+    _loop: asyncio.AbstractEventLoop
     _base_url: URL
 
-    def __init__(self, uri: Union[str, URL], password: Optional[str], *, loop: AbstractEventLoop = None) -> None:
+    def __init__(self, uri: Union[str, URL], password: Optional[str], *,
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._base_url = URL(uri)
 
