@@ -16,7 +16,8 @@ from enum import Enum
 from typing import Mapping, Optional, Set, TYPE_CHECKING, Type, cast
 
 from andesite.event_target import NamedEvent
-from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_convert_values_from_milli, \
+from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, \
+    map_convert_values_from_milli, \
     map_convert_values_to_milli, transform_input, transform_output
 from .debug import Error, Stats
 from .player import Player
@@ -99,6 +100,9 @@ class PlayerUpdate(NamedEvent, ReceiveOperation):
     user_id: int
     guild_id: int
     state: Player
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:

@@ -12,7 +12,7 @@ from typing import Any, Dict, Optional, Union
 
 from andesite.transform import RawDataType, build_from_raw, from_centi, from_milli, map_build_values_from_raw, map_convert_values, \
     map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli
-from .filters import FilterMap
+from .filters import FilterMap, FilterMapLike
 
 __all__ = ["SendOperation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
 
@@ -131,6 +131,9 @@ class FilterUpdate(FilterMap, SendOperation):
         This class inherits from `FilterMap`.
     """
     __op__ = "filters"
+
+    def __init__(self, filters: FilterMapLike) -> None:
+        super().__init__(filters)
 
 
 @dataclass

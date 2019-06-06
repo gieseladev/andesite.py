@@ -9,7 +9,8 @@ Attributes:
 import abc
 from dataclasses import dataclass, field
 from operator import eq
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Type, TypeVar, Union, \
+    overload
 
 from andesite.transform import RawDataType, build_from_raw, convert_to_raw
 
@@ -433,7 +434,8 @@ class VolumeFilter(Filter):
 
 
 _FILTERS: Set[Type[Filter]] = {Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter}
-FILTER_MAP: Mapping[str, Type[Filter]] = {andesite_filter.__filter_name__: andesite_filter for andesite_filter in _FILTERS}
+FILTER_MAP: Mapping[str, Type[Filter]] = {andesite_filter.__filter_name__: andesite_filter for andesite_filter in
+                                          _FILTERS}
 
 
 def get_filter_model(name: str) -> Optional[Type[Filter]]:
@@ -466,6 +468,12 @@ class FilterMap(MutableMapping):
     """
 
     filters: Dict[str, Any] = field(default_factory=dict)
+
+    def __init__(self, filters: "FilterMapLike") -> None:
+        if isinstance(filters, FilterMap):
+            self.filters = filters.filters.copy()
+        else:
+            self.filters = filters
 
     def __eq__(self, other) -> bool:
         if isinstance(other, FilterMap):

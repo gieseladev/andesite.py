@@ -13,6 +13,7 @@ __version__ = "0.1.0"
 from .combined_client import *
 from .http_client import *
 from .pools import *
+from .state import *
 from .web_socket_client import *
 from .web_socket_client_events import *
 

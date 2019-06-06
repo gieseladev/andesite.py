@@ -11,7 +11,7 @@ You can use the combined client for everything that implements
 the abstract methods. This means that you can use the combined client
 for `ClientPool` clients!
 """
-from asyncio import AbstractEventLoop
+import asyncio
 from contextlib import suppress
 from typing import Any, Dict, Optional, Union
 
@@ -19,7 +19,9 @@ from yarl import URL
 
 from .event_target import EventTarget
 from .http_client import AbstractAndesiteHTTP, AndesiteHTTPBase, AndesiteHTTPInterface
-from .web_socket_client import AbstractAndesiteWebSocket, AbstractAndesiteWebSocketClient, AndesiteWebSocketBase, AndesiteWebSocketInterface
+from .state import AbstractAndesiteState
+from .web_socket_client import AbstractAndesiteWebSocket, AbstractAndesiteWebSocketClient, AndesiteWebSocketBase, \
+    AndesiteWebSocketInterface
 
 __all__ = ["AndesiteClientBase", "AndesiteClient"]
 
@@ -51,7 +53,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
     web_socket: AbstractAndesiteWebSocket
 
     def __init__(self, http_client: AbstractAndesiteHTTP, web_socket_client: AbstractAndesiteWebSocket, *,
-                 loop: AbstractEventLoop = None) -> None:
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         super().__init__(loop=loop)
 
         self.http = http_client
@@ -61,7 +63,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         # self.event_target will most likely resolve to self, but maybe
         # the user is trying to pull some inception shit with nested
         # clients and who would I be to deny them their fun?
-        web_socket_client.event_target = self.event_target
+        web_socket_client.event_target.add_dispatcher(self.event_target)
 
         # bind the methods directly
         self.send = web_socket_client.send
@@ -75,9 +77,17 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         """
         return self.http.closed or self.web_socket.closed
 
+    @property
+    def state(self) -> Optional[AbstractAndesiteState]:
+        return self.web_socket.state
+
+    @state.setter
+    def state(self, value: Optional[AbstractAndesiteState]) -> None:
+        self.web_socket.state = value
+
     @classmethod
     def create(cls, http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: str, user_id: int, *,
-               loop: AbstractEventLoop = None):
+               loop: asyncio.AbstractEventLoop = None):
         """Create a new client using the base implementations.
 
         Args:
@@ -170,6 +180,15 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
 
         with suppress(Exception):
             await self.web_socket.close()
+
+    async def reset(self) -> None:
+        """Reset the client so it may be used again.
+
+        This has the opposite effect of the `close` method making the client
+        usable again.
+        """
+        # TODO reset http client!
+        await self.web_socket.reset()
 
     async def request(self, method: str, path: str, **kwargs) -> Any:
         """Perform a request on the http client.

@@ -7,11 +7,10 @@ import abc
 import asyncio
 import logging
 import time
-from asyncio import AbstractEventLoop, CancelledError, Future, Lock
 from collections import deque
 from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
-from typing import Any, Deque, Dict, Optional, Type, TypeVar, Union, overload
+from typing import Any, Deque, Dict, Optional, Tuple, Type, TypeVar, Union, overload
 
 import math
 import websockets
@@ -20,10 +19,13 @@ from websockets.http import Headers
 from yarl import URL
 
 from .event_target import EventFilter, EventTarget, NamedEvent
-from .models import AndesiteEvent, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, Karaoke, Play, Player, PlayerUpdate, \
-    ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, Update, Vibrato, VolumeFilter, get_update_model
+from .models import AndesiteEvent, BasePlayer, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, \
+    Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, \
+    Update, Vibrato, VolumeFilter, get_update_model
+from .state import AbstractAndesiteState, AbstractPlayerState
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
-from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, WebSocketDisconnectEvent
+from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, \
+    WebSocketDisconnectEvent
 
 __all__ = ["try_connect",
            "AbstractAndesiteWebSocket", "AbstractAndesiteWebSocketClient",
@@ -57,6 +59,23 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
         return None
 
     return client
+
+
+def _get_ops_for_player(track: str, player: BasePlayer) -> Tuple[Play, Update]:
+    play_op = Play(track,
+                   start=player.position,
+                   pause=player.paused,
+                   volume=player.volume,
+                   no_replace=False)
+
+    update_op = Update(
+        pause=player.paused,
+        position=player.position,
+        volume=player.volume,
+        filters=FilterUpdate(player.filters),
+    )
+
+    return play_op, update_op
 
 
 class AbstractAndesiteWebSocket(abc.ABC):
@@ -94,48 +113,57 @@ class AbstractAndesiteWebSocket(abc.ABC):
     """
 
     _event_target: EventTarget
+    _state_handler: Optional[AbstractAndesiteState]
 
     @property
     def event_target(self) -> EventTarget:
         """Event target to send events to.
 
         If no event target is set, but the instance is itself an event target,
-        self is set as the new event target and returned.
-
-        Raises:
-            ValueError: No event target set and instance is not itself an event target.
+        self is set as the new event target and returned, otherwise a new event
+        target is created.
 
         Notes:
             Value is stored in the instance attribute "_event_target".
         """
         try:
             return self._event_target
-        except AttributeError as e:
+        except AttributeError:
             if isinstance(self, EventTarget):
                 self._event_target = self
-                return self
             else:
-                raise ValueError(f"{self} \"event_target\" is not specified and {type(self)!r} isn't of type {EventTarget}") from e
+                self._event_target = EventTarget()
 
-    @event_target.setter
-    def event_target(self, value: EventTarget) -> None:
-        """Change the event target to a new one.
+            return self._event_target
 
-        Args:
-            value: New event target to use
-        """
-        self._event_target = value
+    @property
+    def state(self) -> Optional[AbstractAndesiteState]:
+        """State handler for the client.
 
-    @event_target.deleter
-    def event_target(self) -> None:
-        """Reset the event target.
+        You may manually set this value to a different state handler which
+        implements the `AbstractAndesiteState`. Note that this won't apply the
+        state to the client! You can also set the state back to `None`.
 
-        This will cause the next call to `event_target` to find a new target (or raise an error).
+        If not state is set the getter either returns the current instance, if
+        it happens to implement `AbstractAndesiteState`, otherwise it returns
+        `None`.
         """
         try:
-            del self._event_target
+            return self._state_handler
         except AttributeError:
-            pass
+            if isinstance(self, AbstractAndesiteState):
+                self._state_handler = self
+            else:
+                self._state_handler = None
+
+            return self._state_handler
+
+    @state.setter
+    def state(self, state: Optional[AbstractAndesiteState]) -> None:
+        if not (state is None or isinstance(state, AbstractAndesiteState)):
+            raise TypeError(f"{type(state)} does not inherit from AbstractAndesiteState")
+
+        self._state_handler = state
 
     @property
     @abc.abstractmethod
@@ -151,6 +179,15 @@ class AbstractAndesiteWebSocket(abc.ABC):
         """Close the underlying connections and clean up.
 
         This should be called when you no longer need the client.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def reset(self) -> None:
+        """Reset the client so it may be used again.
+
+        This has the opposite effect of the `close` method making the client
+        usable again.
         """
         ...
 
@@ -173,6 +210,49 @@ class AbstractAndesiteWebSocket(abc.ABC):
                 The payload is mutated by the function.
         """
         ...
+
+    async def send_operation(self, guild_id: int, operation: SendOperation) -> None:
+        """Send a `SendOperation`.
+
+        Args:
+            guild_id: Target guild id
+            operation: Operation to send
+
+        Notes:
+            Using `SendOperation` instances to send messages is slightly
+            less efficient than calling the respective `AndesiteWebSocket` methods
+            directly.
+        """
+        await self.send(guild_id, operation.__op__, convert_to_raw(operation))
+
+    async def load_player_state(self, player_state: AbstractPlayerState, *,
+                                loop: asyncio.AbstractEventLoop = None) -> None:
+        """Load a player state.
+
+        Args:
+            player_state: State to load.
+            loop: Event loop to use.
+        """
+        guild_id = player_state.guild_id
+
+        last_update = await player_state.get_voice_server_update()
+        if last_update:
+            await self.send_operation(guild_id, last_update)
+
+        # TODO can we do mixer players?
+
+        track = await player_state.get_track()
+        if track:
+            player = await player_state.get_player()
+            # of course because Andesite is... great[citation needed] we need
+            # to use two operations to set it up properly...
+            play_op, update_op = _get_ops_for_player(track, player)
+
+            await asyncio.gather(
+                self.send_operation(guild_id, play_op),
+                self.send_operation(guild_id, update_op),
+                loop=loop,
+            )
 
 
 class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
@@ -264,20 +344,6 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
 class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
     """Implementation of the web socket endpoints."""
 
-    async def send_operation(self, guild_id: int, operation: SendOperation) -> None:
-        """Send a `SendOperation`.
-
-        Args:
-            guild_id: Target guild id
-            operation: Operation to send
-
-        Notes:
-            Using `SendOperation` instances to send messages is slightly
-            less efficient than calling the respective `AndesiteWebSocket` methods
-            directly.
-        """
-        await self.send(guild_id, operation.__op__, convert_to_raw(operation))
-
     @overload
     async def wait_for_update(self, op: Type[ROPT], *,
                               check: EventFilter = None,
@@ -308,11 +374,11 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
                               check: EventFilter = None,
                               guild_id: int = None,
                               timeout: float = None) -> Optional[ReceiveOperation]:
-        """Wait for a Andesite update.
+        """Wait for an Andesite update.
 
         Args:
             op: Operation to wait for.
-                You can also pass an `ReceiveOperation`.
+                You can also pass a `ReceiveOperation`.
             check: Additional checks to perform before accepting an Event.
                 The function is called with the `MsgReceiveEvent` and should
                 return a `bool`. If not set, all events with the correct op are
@@ -332,14 +398,6 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
             op = op.__op__
 
         def _check(_event: MsgReceiveEvent) -> bool:
-            try:
-                client = _event.client
-            except AttributeError:
-                pass
-            else:
-                if client is not self:
-                    return False
-
             if _event.op == op:
                 if guild_id is not None and guild_id != _event.get("guild_id"):
                     return False
@@ -351,7 +409,8 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
             else:
                 return False
 
-        event: Optional[MsgReceiveEvent] = await self.event_target.wait_for(MsgReceiveEvent, check=_check, timeout=timeout)
+        event: Optional[MsgReceiveEvent] = await self.event_target.wait_for(MsgReceiveEvent, check=_check,
+                                                                            timeout=timeout)
         if event is not None:
             return event.data
         else:
@@ -397,7 +456,8 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
         if isinstance(track, Play):
             payload = convert_to_raw(track)
         else:
-            payload = dict(track=track, start=to_milli(start), end=to_milli(end), pause=pause, volume=to_centi(volume), noReplace=no_replace)
+            payload = dict(track=track, start=to_milli(start), end=to_milli(end), pause=pause, volume=to_centi(volume),
+                           noReplace=no_replace)
             map_filter_none(payload)
 
         await self.send(guild_id, "play", payload)
@@ -633,6 +693,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             for the first time.
         password: Authorization for the Andesite node.
             Set to `None` if the node doesn't have a password.
+        state: State handler to use. If `None` state handling is disabled.
         max_connect_attempts: Max amount of connection attempts to start before giving up.
             If `None`, there is no upper limit.
             This value can be overwritten when calling `connect`.
@@ -642,12 +703,6 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
     The client automatically keeps track of the current connection id and resumes the previous connection
     when calling `connect`, if there is any.
-
-    Notes:
-        You cannot use this as a standalone client unless you manually set the `event_target`.
-        If you want to use a client for a single connection use `AndesiteWebSocket`.
-        If you're only creating the instance to pass it to another client (`AndesiteClient` or
-        `AndesiteWebSocketPool`) you can ignore this as they will set the `event_target` for you.
 
     Attributes:
         max_connect_attempts (Optional[int]):
@@ -669,19 +724,20 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     _headers: Headers
     _last_connection_id: Optional[str]
 
-    _loop = AbstractEventLoop
+    _loop = asyncio.AbstractEventLoop
 
-    _connect_lock: Lock
+    _connect_lock: asyncio.Lock
     _message_queue: Deque[str]
 
-    _read_loop: Optional[Future]
+    _read_loop: Optional[asyncio.Future]
 
     _json_encoder: JSONEncoder
     _json_decoder: JSONDecoder
 
     def __init__(self, ws_uri: Union[str, URL], user_id: Optional[int], password: Optional[str], *,
+                 state: AbstractAndesiteState = None,
                  max_connect_attempts: int = None,
-                 loop: AbstractEventLoop = None) -> None:
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         if isinstance(self, EventTarget):
             super().__init__(loop=loop)
         else:
@@ -701,7 +757,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
         self.web_socket_client = None
 
-        self._connect_lock = Lock(loop=loop)
+        self._connect_lock = asyncio.Lock(loop=loop)
         self._message_queue = deque()
 
         self._closed = False
@@ -709,6 +765,8 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
         self._json_encoder = JSONEncoder()
         self._json_decoder = JSONDecoder()
+
+        self.state = state
 
     @property
     def user_id(self) -> Optional[int]:
@@ -736,13 +794,20 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     def connection_id(self) -> Optional[str]:
         """Andesite connection id.
 
-        This should be set after connecting to the node.
+        This will be set after connecting to the node.
         The connection id can be used to resume connections.
+
+        This property is deletable. The consequence of which is that it won't
+        be sent the next time the client connects to a node.
 
         Notes:
             The client already performs resuming automatically.
         """
         return self._last_connection_id
+
+    @connection_id.deleter
+    def connection_id(self) -> None:
+        self._last_connection_id = None
 
     @property
     def node_region(self) -> Optional[str]:
@@ -870,6 +935,20 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             await self.web_socket_client.close(reason="disconnect")
             _ = self.event_target.dispatch(WebSocketDisconnectEvent(self, True))
 
+    async def reset(self) -> None:
+        """Reset the client so it may be used again.
+
+        If the client is connected, it is disconnected. The message queue is
+        cleared and the connection id is reset.
+        This has the opposite of the `close` method making the client
+        usable again.
+        """
+        await self.disconnect()
+        self._message_queue.clear()
+        del self.connection_id
+
+        self._closed = False
+
     async def close(self) -> None:
         """Disconnect the client and close all connections.
 
@@ -911,7 +990,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         while True:
             try:
                 raw_msg = await self.web_socket_client.recv()
-            except CancelledError:
+            except asyncio.CancelledError:
                 break
             except ConnectionClosed:
                 log.error("Disconnected from websocket, trying to reconnect!")
@@ -929,7 +1008,8 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
                 continue
 
             if not isinstance(data, dict):
-                log.warning(f"Received invalid message type. Expecting object, received type {type(data).__name__}: {data}")
+                log.warning(
+                    f"Received invalid message type. Expecting object, received type {type(data).__name__}: {data}")
                 continue
 
             _ = self.event_target.dispatch(RawMsgReceiveEvent(self, data))
@@ -962,6 +1042,9 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             elif isinstance(message, NamedEvent):
                 _ = self.event_target.dispatch(message)
 
+                if self.state is not None:
+                    _ = self.state.handle_andesite_message(message, loop=self._loop)
+
     def _start_read_loop(self) -> None:
         """Start the web socket reader.
 
@@ -981,6 +1064,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             return
 
         self._read_loop.cancel()
+
 
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
         """Send a payload.
@@ -1012,8 +1096,13 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             try:
                 await self.web_socket_client.send(data)
             except ConnectionClosed:
+                # let the websocket reader handle this
                 pass
             else:
+                state = self.state
+                if state:
+                    _ = state.handle_sent_message(guild_id, op, payload)
+
                 return
 
         log.info("Not connected, adding message to queue.")
