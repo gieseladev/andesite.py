@@ -19,10 +19,13 @@ you can swap it out however you want.
 - Future-proof design so that if the library becomes outdated it still remains
 usable.
 
-## Usage
+## Look & Feel
 
 The following is a small example of how to use andesite.py. For more
 in-depth examples and information, please refer to the documentation.
+
+Please keep in mind that the following example is incomplete, it only
+serves to demonstrate some andesite.py code.
 
 ```python
 import asyncio
