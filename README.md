@@ -19,6 +19,13 @@ you can swap it out however you want.
 - Future-proof design so that if the library becomes outdated it still remains
 usable.
 
+## Installation
+
+You can install the library from PyPI using pip:
+```shell
+pip install andesite.py
+```
+
 ## Look & Feel
 
 The following is a small example of how to use andesite.py. For more
@@ -45,7 +52,7 @@ async def main() -> None:
     track_info = result.get_selected_track()
     
     # notice that we haven't called any sort of connect method. You can
-    # of course manually connect the client, but if you don't that's no
+    # of course manually connect the client, but if you don't, that's no
     # biggie because andesite.py will do it for you.
     await client.play(track_info.track)
 
