@@ -31,10 +31,10 @@ import andesite
 
 
 client = andesite.create_andesite_client(
-    "http://localhost:5000",
-    "ws://localhost:5000/websocket",
-    None,
-    549905730099216384,
+    "http://localhost:5000",            # REST endpoint
+    "ws://localhost:5000/websocket",    # WebSocket endpoint
+    None,                               # Andesite password
+    549905730099216384,                 # Bot's user id
 )
 
 async def main() -> None:

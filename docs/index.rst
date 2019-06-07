@@ -1,7 +1,7 @@
 Welcome to andesite.py's documentation!
 =======================================
 
-andesite.py is a client library for Andesite.
+andesite.py is a client library for `Andesite <https://github.com/natanbc/andesite-node>`_.
 
 .. toctree::
     :maxdepth: 2

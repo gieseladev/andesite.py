@@ -20,7 +20,6 @@ using pip: ::
 
     pip install andesite.py
 
-
 andesite.py doesn't have many dependencies, the following is a list of all
 required packages:
 
