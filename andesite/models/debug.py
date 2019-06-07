@@ -1,4 +1,9 @@
-"""Debug models for Andesite."""
+"""Debug models for Andesite.
+
+These models are used in either `Stats` which represents the Andesite
+stats returned by `AndesiteWebSocketInterface.get_stats` or `Error` which is
+used to represent an Andesite error.
+"""
 
 from dataclasses import dataclass
 from typing import List, NoReturn, Optional
@@ -54,6 +59,10 @@ class StackFrame:
 @dataclass
 class Error:
     """Andesite error.
+
+    You can convert the Andesite error data into a Python exception
+    using the `as_python_exception` method and the `raise_python_exception` to
+    raise it.
 
     Attributes:
         class_name (str): class of the error

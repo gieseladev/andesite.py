@@ -1,4 +1,5 @@
 """Event models for the web socket client."""
+
 import logging
 from typing import Any, Dict, Generic, TYPE_CHECKING, TypeVar
 
@@ -22,7 +23,8 @@ class WebSocketConnectEvent(NamedEvent):
     """Event dispatched when a connection has been established.
 
     Attributes:
-        client (AbstractAndesiteWebSocketClient): Web socket client which connected.
+        client (AbstractAndesiteWebSocketClient): Web socket client which
+            connected.
     """
     __event_name__ = "ws_connect"
 
@@ -56,8 +58,8 @@ class RawMsgReceiveEvent(NamedEvent):
             received the message.
         body (Dict[str, Any]): Raw body of the received message.
             Note: The body isn't manipulated in any way other
-                than being loaded from the raw JSON string.
-                For example, the names are still in dromedaryCase.
+            than being loaded from the raw JSON string.
+            For example, the names are still in dromedaryCase.
     """
     client: "AbstractAndesiteWebSocketClient"
     body: Dict[str, Any]
@@ -74,6 +76,7 @@ class MsgReceiveEvent(NamedEvent, Generic[ROPT]):
             received the message.
         op (str): Operation.
             This will be one of the following:
+
             - connection-id
             - player-update
             - stats
@@ -91,6 +94,9 @@ class MsgReceiveEvent(NamedEvent, Generic[ROPT]):
 
 class RawMsgSendEvent(NamedEvent):
     """Event dispatched before a web socket message is sent.
+
+    It's important to note that this is not a receipt of a message being sent,
+    this event is dispatched even if the message fails to send.
 
     Attributes:
         client (AbstractAndesiteWebSocketClient): Web socket client that

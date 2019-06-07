@@ -1,8 +1,18 @@
 """Utilities for the discord.py library.
 
+If you're using the discord.py library, you can use the functions provided by
+this module to your advantage. Instead of having to manually send the voice
+server updates, you can call `add_voice_server_update_handler` once and be done
+with it. All events received by discord.py will then automatically be forwarded
+to the Andesite client.
+Even further, you can use `connect_voice_channel` and `disconnect_voice_channel`
+to easily connect to and disconnect from voice channels.
+This works for both `discord.ext.commands.Bot` and normal `discord.Client`
+instances without interfering.
+
 Attributes:
-    SOCKET_RESPONSE_HANDLERS_ATTR (str): Name of the attribute used to store the `SocketResponseHandler`
-        instances in discord clients.
+    SOCKET_RESPONSE_HANDLERS_ATTR (str): Name of the attribute used to store the
+        `SocketResponseHandler` instances in discord clients.
 """
 import asyncio
 import logging
@@ -139,7 +149,7 @@ def wrap_client_listener(client: "Client", func: Callable, *, name: str = None) 
         client: Client to add the listener to
         func: Listener function to add
         name: Custom name to use. Defaults to the name of the function.
-            Be sure to include "on_" if you set this.
+            Be sure to include "on\_" if you set this.
 
     This makes it possible to add a listener if the client isn't a `discord.ext.commands.Bot`.
     This is achieved by adding the listener as a method to the client.
@@ -161,7 +171,7 @@ def unwrap_client_listener(client: "Client", func: Callable, *, name: str = None
         client: Client to remove listener from
         func: Listener function to remove
         name: Custom name to use. Defaults to the name of the function.
-            Be sure to include "on_" if you set this.
+            Be sure to include "on\_" if you set this.
     """
     name = name or func.__name__
 
@@ -300,6 +310,7 @@ def _split_region(region: str) -> Tuple[bool, str, Optional[str]]:
 
     Returns:
         3-tuple:
+
             - Whether the region is VIP or not
             - Country name
             - Part of country
@@ -336,11 +347,12 @@ def compare_regions(a_region: str, b_region: str) -> int:
         (ex: Node region unknown or guild id unknown).
         If the regions can be compared
         the result is the sum of the following points:
-            - 2 points if both regions are in the same country
-            - 1 point if both regions are in
-                the same part of a country (ex: us_west)
-                (This point is also awarded if both regions
-                don't specify a country part)
+
+        - 2 points if both regions are in the same country
+        - 1 point if both regions are in
+          the same part of a country (ex: us_west)
+          (This point is also awarded if both regions
+          don't specify a country part)
     """
     score: int = 0
 

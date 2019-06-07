@@ -6,11 +6,11 @@ There is the `AndesiteClientBase` which is simply the implementation
 of `AbstractAndesiteWebSocket` and `AbstractAndesiteHTTP` and then there
 is the actual client `AndesiteClient`.
 
-
 You can use the combined client for everything that implements
 the abstract methods. This means that you can use the combined client
 for `ClientPool` clients!
 """
+
 import asyncio
 from contextlib import suppress
 from typing import Any, Dict, Optional, Union
@@ -87,6 +87,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
 
     @classmethod
     def create(cls, http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: str, user_id: int, *,
+               state: AbstractAndesiteState = None,
                loop: asyncio.AbstractEventLoop = None):
         """Create a new client using the base implementations.
 
@@ -95,6 +96,8 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
             web_socket_uri: URI for the web socket endpoint
             password: Andesite password for authorization
             user_id: User ID
+            state: State handler to use. Defaults to `None` meaning that no
+                state is being kept.
             loop: Specify the event loop to use. The
                 meaning of this value depends on the client,
                 but you can safely omit it.
@@ -107,7 +110,9 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         http_client = AndesiteHTTPBase(http_uri, password, loop=loop)
         web_socket_client = AndesiteWebSocketBase(web_socket_uri, user_id, password, loop=loop)
 
-        return cls(http_client, web_socket_client, loop=loop)
+        inst = cls(http_client, web_socket_client, loop=loop)
+        inst.state = state
+        return inst
 
     @property
     def connected(self) -> Optional[bool]:
@@ -182,13 +187,12 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
             await self.web_socket.close()
 
     async def reset(self) -> None:
-        """Reset the client so it may be used again.
+        """Reset the underlying clients so they may be used again.
 
-        This has the opposite effect of the `close` method making the client
+        This has the opposite effect of the `close` method making the clients
         usable again.
         """
-        # TODO reset http client!
-        await self.web_socket.reset()
+        await asyncio.gather(self.http.reset(), self.web_socket.reset())
 
     async def request(self, method: str, path: str, **kwargs) -> Any:
         """Perform a request on the http client.

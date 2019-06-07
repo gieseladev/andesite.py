@@ -186,7 +186,7 @@ class Equalizer(Filter):
             if gain is not None:
                 bands.append(EqualizerBand(i, gain))
 
-        return cls(bands)
+        return cls(True, bands)
 
     @overload
     def get_band(self, band: int) -> EqualizerBand:
@@ -257,7 +257,7 @@ class Equalizer(Filter):
         """Get a list of all the bands' gains in order.
 
         Args:
-            use_default: Whether or not to replace non-existant values
+            use_default: Whether or not to replace non-existent values
                 with the default gain.
                 If `False` and band doesn't have a gain set, `None`
                 is used instead.

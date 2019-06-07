@@ -15,6 +15,8 @@ Attributes:
         is implied if something is neither bigger nor smaller than the other value.
         A bigger return value (by comparison) implies that the `ScoringData` is better
         (ex: more suitable for the given guild).
+    NodeDetails (Tuple[Union[str, yarl.URL], Optional[str]]): (Type alias) Tuple
+        containing the uri and the password of an Andesite node.
 """
 
 import abc
@@ -26,11 +28,13 @@ import time
 from collections import defaultdict, deque
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Collection, Deque, Dict, Generic, Iterable, Iterator, List, MutableMapping, \
-    Optional, Set, Tuple, \
-    TypeVar, Union
+from typing import Any, Awaitable, Callable, Collection, Deque, Dict, Generic, Iterable, Iterator, List, Mapping, \
+    MutableMapping, Optional, Set, Tuple, TypeVar, Union
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
+import yarl
+
+from andesite import AndesiteClient
 from .event_target import EventTarget, NamedEvent
 from .http_client import AbstractAndesiteHTTP, AndesiteHTTPError, AndesiteHTTPInterface
 from .state import AbstractAndesiteState, AndesiteState
@@ -41,7 +45,8 @@ __all__ = ["PoolException", "PoolEmptyError",
            "ClientPool",
            "AndesiteHTTPPoolBase", "AndesiteHTTPPool",
            "RegionGuildComparator", "ScoringData", "PoolScoringFunction", "default_scoring_function",
-           "AndesiteWebSocketPoolBase", "AndesiteWebSocketPool"]
+           "AndesiteWebSocketPoolBase", "AndesiteWebSocketPool",
+           "create_andesite_pool"]
 
 log = logging.getLogger(__name__)
 
@@ -183,6 +188,14 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
 
     Args:
         clients: HTTP clients to initialise the pool with
+        timeout: Sets the `timeout` attribute.
+        max_penalties: Sets the `max_penalties` attribute.
+        penalty_time_frame: Sets the `penalty_time_frame` attribute.
+        loop: Event loop to use for the event target.
+
+    The pool uses a circular buffer which is rotated after every request.
+
+    Attributes:
         timeout: Time in seconds to wait before starting the request on the
             next client. Note that the previous request isn't cancelled, if it
             succeeds after the next attempt has been started it is still
@@ -192,9 +205,6 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
             is added to a client each time it raises an unexpected error.
         penalty_time_frame: Number of seconds before a penalty expires and no
             long counts toward a client's total number of penalties.
-        loop: Event loop to use for the event target.
-
-    The pool uses a circular buffer which is rotated after every request.
     """
     _clients: Deque[AbstractAndesiteHTTP]
     _penalties: Dict[AbstractAndesiteHTTP, List[float]]
@@ -286,6 +296,7 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
         new_ts = time.monotonic()
         min_ts = new_ts - self.penalty_time_frame
 
+        # find and remove all expired penalties
         i = 0
         for i, ts in enumerate(penalties):
             if ts >= min_ts:
@@ -417,10 +428,6 @@ def default_scoring_function(data: ScoringData) -> Tuple[int, int, int]:
 class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractAndesiteWebSocket):
     """Base implementation of a web socket pool.
 
-    If the pool uses a state, all clients within the pool are forced to use the
-    same state as well. Trying to add a client with a state to a pool with a
-    state will result in an error.
-
     Args:
         clients: Web socket clients to initialise the pool with.
         state: State handler to use for this pool. The state is used
@@ -434,6 +441,10 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         loop: Event loop to use for the event target.
 
     The pool uses different clients on a guild to guild level.
+
+    If the pool uses a state, all clients within the pool are forced to use the
+    same state as well. Trying to add a client with a state to a pool with a
+    state will result in an error.
     """
 
     _clients: Set[AbstractAndesiteWebSocket]
@@ -578,6 +589,8 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         guild_ids = self.get_guild_ids(client)
         self.remove_client(client)
 
+        # TODO destroy all players
+
         # TODO transfer message queue
 
         fs: List[asyncio.Future] = []
@@ -588,7 +601,8 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
 
         async def load_player_state(_guild_id: int, _client: AbstractAndesiteWebSocket) -> None:
             player_state = await self.state.get_player_state(_guild_id)
-            await _client.load_player_state(player_state)
+            if player_state:
+                await _client.load_player_state(player_state, loop=self._loop)
 
         fs.clear()
 
@@ -723,3 +737,55 @@ class AndesiteWebSocketPool(AndesiteWebSocketInterface, AndesiteWebSocketPoolBas
     Please refer to `AndesiteWebSocketPoolBase` for the documentation.
     """
     ...
+
+
+NodeDetails = Tuple[Union[str, yarl.URL], Optional[str]]
+
+
+def create_andesite_pool(http_nodes: Iterable[NodeDetails],
+                         web_socket_nodes: Iterable[NodeDetails], *,
+                         user_id: int,
+                         http_pool_kwargs: Mapping[str, Any] = None,
+                         web_socket_pool_kwargs: Mapping[str, Any] = None,
+                         loop: asyncio.AbstractEventLoop = None) -> AndesiteClient:
+    """Create an `AndesiteClient` with client pools.
+
+    Uses `AndesiteHTTPBase` and `AndesiteWebSocketBase` which are contained in
+    `AndesiteHTTPPoolBase` and `AndesiteWebSocketPoolBase` pools respectively.
+
+    Args:
+        http_nodes: Tuples of [uri, password] for each REST node to connect to.
+        web_socket_nodes: Tuples of [uri, password] for each WebSocket node to
+            connect to.
+        user_id: Bot's user id.
+        http_pool_kwargs: Additional keyword arguments to pass to the http pool
+            constructor.
+        web_socket_pool_kwargs: Additional keyword arguments to pass to the web
+            socket pool constructor.
+        loop: Event loop to use.
+
+    Returns:
+        A combined Andesite client operation on an http pool and a web socket
+        pool.
+    """
+    from andesite import AndesiteHTTPBase, AndesiteWebSocketBase
+
+    http_clients = []
+    for uri, password in http_nodes:
+        http_clients.append(AndesiteHTTPBase(uri, password, loop=loop))
+
+    web_socket_clients = []
+    for uri, password in web_socket_nodes:
+        web_socket_clients.append(AndesiteWebSocketBase(uri, user_id, password, loop=loop))
+
+    http_pool_kwargs = http_pool_kwargs or {}
+    http_pool_kwargs["loop"] = loop
+
+    http_pool = AndesiteHTTPPoolBase(http_clients, **http_pool_kwargs)
+
+    web_socket_pool_kwargs = web_socket_pool_kwargs or {}
+    web_socket_pool_kwargs["loop"] = loop
+
+    web_socket_pool = AndesiteWebSocketPoolBase(web_socket_clients, **web_socket_pool_kwargs)
+
+    return AndesiteClient(http_pool, web_socket_pool, loop=loop)

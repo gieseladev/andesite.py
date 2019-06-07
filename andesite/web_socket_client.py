@@ -3,6 +3,7 @@
 Use `AndesiteWebSocket` if you just want a client which
 connects to a single Andesite node.
 """
+
 import abc
 import asyncio
 import logging
@@ -62,6 +63,18 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
 
 
 def _get_ops_for_player(track: str, player: BasePlayer) -> Tuple[Play, Update]:
+    """Get operations which apply the state from the given player.
+
+    Two operations are required to both play the track and set the filters.
+
+    Args:
+        track: Track to play
+        player: Player to get state from.
+
+    Returns:
+        Two operations which when sent to Andesite will apply the given player's
+        state.
+    """
     play_op = Play(track,
                    start=player.position,
                    pause=player.paused,
@@ -81,8 +94,7 @@ def _get_ops_for_player(track: str, player: BasePlayer) -> Tuple[Play, Update]:
 class AbstractAndesiteWebSocket(abc.ABC):
     """Abstract base class for an Andesite web socket client.
 
-    The base class provides nothing but a send method.
-    It is separate from `AbstractAndesiteWebSocketClient` to
+    This class is separate from `AbstractAndesiteWebSocketClient` to
     support more complex clients which use more than one web socket
     connection (ex: Pools).
 
@@ -93,15 +105,17 @@ class AbstractAndesiteWebSocket(abc.ABC):
 
     :Events:
         - **ws_connect** (`WebSocketConnectEvent`): When the client connects
-        - **ws_disconnect** (`WebSocketDisconnectEvent`): When the client disconnects
+        - **ws_disconnect** (`WebSocketDisconnectEvent`): When the client
+          disconnects
 
-        - **raw_msg_receive** (`RawMsgReceiveEvent`): Whenever a message body is received.
-            For this event to be dispatched, the received message needs to be valid JSON
-            and an object.
-        - **msg_receive** (`MsgReceiveEvent`): After a message has been parsed into its python representation
+        - **raw_msg_receive** (`RawMsgReceiveEvent`): Whenever a message body is
+          received. For this event to be dispatched, the received message needs
+          to be valid JSON and an object.
+        - **msg_receive** (`MsgReceiveEvent`): After a message has been parsed
+          into its python representation
         - **raw_msg_send** (`RawMsgSendEvent`): When sending a message.
-            This event is dispatched regardless of whether the message
-            was actually sent.
+          This event is dispatched regardless of whether the message
+          was actually sent.
 
         - **player_update** (`PlayerUpdate`): When a `PlayerUpdate` is received.
 
@@ -109,7 +123,8 @@ class AbstractAndesiteWebSocket(abc.ABC):
         - **track_end** (`TrackEndEvent`)
         - **track_exception** (`TrackExceptionEvent`)
         - **track_stuck** (`TrackStuckEvent`)
-        - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown event is received.
+        - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown
+          event is received.
     """
 
     _event_target: EventTarget
@@ -141,8 +156,10 @@ class AbstractAndesiteWebSocket(abc.ABC):
         """State handler for the client.
 
         You may manually set this value to a different state handler which
-        implements the `AbstractAndesiteState`. Note that this won't apply the
-        state to the client! You can also set the state back to `None`.
+        implements the `AbstractAndesiteState`. You can also set the state back
+        to `None`.
+        Note that this won't apply the state to the client! You can use the
+        `load_player_state` method do load individual player states.
 
         If not state is set the getter either returns the current instance, if
         it happens to implement `AbstractAndesiteState`, otherwise it returns
@@ -260,6 +277,9 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
 
     If you're creating a new client and it doesn't use only one Andesite node,
     you should implement `AbstractAndesiteWebSocket` instead.
+
+    See Also:
+        `AbstractAndesiteWebSocket` for more details.
     """
 
     @property
@@ -275,6 +295,9 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
 
         This should be set after connecting to the node.
         The connection id can be used to resume connections.
+
+        This property is deletable. The consequence of which is that it won't
+        be sent the next time the client connects to a node.
 
         Notes:
             The client already performs resuming automatically.
@@ -374,11 +397,12 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
                               check: EventFilter = None,
                               guild_id: int = None,
                               timeout: float = None) -> Optional[ReceiveOperation]:
-        """Wait for an Andesite update.
+        """Wait for an Andesite update which meets the requirements.
 
         Args:
             op: Operation to wait for.
-                You can also pass a `ReceiveOperation`.
+                You can also pass a `ReceiveOperation` which provides better
+                type constraints.
             check: Additional checks to perform before accepting an Event.
                 The function is called with the `MsgReceiveEvent` and should
                 return a `bool`. If not set, all events with the correct op are
@@ -694,20 +718,23 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         password: Authorization for the Andesite node.
             Set to `None` if the node doesn't have a password.
         state: State handler to use. If `None` state handling is disabled.
-        max_connect_attempts: Max amount of connection attempts to start before giving up.
-            If `None`, there is no upper limit.
-            This value can be overwritten when calling `connect`.
+        max_connect_attempts: See the `max_connect_attempts` attribue.
         loop: Event loop to use for asynchronous operations.
             If no loop is provided it is dynamically retrieved when
             needed.
 
-    The client automatically keeps track of the current connection id and resumes the previous connection
-    when calling `connect`, if there is any.
+    The client automatically keeps track of the current connection id and
+    resumes the previous connection when calling `connect`, if there is any.
+    You can delete the `connection_id` property to disable this.
+
+    See Also:
+        `AbstractAndesiteWebSocketClient` for more details including a list
+        of events that are dispatched.
 
     Attributes:
-        max_connect_attempts (Optional[int]):
-            Max amount of connection attempts before giving up.
-            If this is `None` there is no upper limit to how many attempts will be made.
+        max_connect_attempts (Optional[int]): Max amount of connection attempts
+            to start before giving up. If `None`, there is no upper limit.
+            This value can be overwritten when calling `connect` manually.
         web_socket_client (Optional[WebSocketClientProtocol]):
             Web socket client which is used.
             This attribute will be set once `connect` is called.
@@ -773,12 +800,13 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         """User id.
 
         This is only `None` if it wasn't passed to the constructor.
+
+        You can set this property to a new user id.
         """
         return self._headers.get("User-Id")
 
     @user_id.setter
     def user_id(self, user_id: int) -> None:
-        """Set the user id to a new value."""
         self._headers["User-Id"] = str(user_id)
 
     @property
@@ -787,22 +815,10 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
     @property
     def connected(self) -> bool:
-        """Whether the client is connected and usable."""
         return self.web_socket_client and self.web_socket_client.open
 
     @property
     def connection_id(self) -> Optional[str]:
-        """Andesite connection id.
-
-        This will be set after connecting to the node.
-        The connection id can be used to resume connections.
-
-        This property is deletable. The consequence of which is that it won't
-        be sent the next time the client connects to a node.
-
-        Notes:
-            The client already performs resuming automatically.
-        """
         return self._last_connection_id
 
     @connection_id.deleter
@@ -811,23 +827,17 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
     @property
     def node_region(self) -> Optional[str]:
-        """Node region sent by the Andesite node.
-
-        This will be set after the connection is established.
-        """
-        if self.web_socket_client:
-            return self.web_socket_client.response_headers.get("Andesite-Node-Region")
+        client = self.web_socket_client
+        if client:
+            return client.response_headers.get("Andesite-Node-Region")
 
         return None
 
     @property
     def node_id(self) -> Optional[str]:
-        """Node id sent by the Andesite node.
-
-        This will be set after the connection is established.
-        """
-        if self.web_socket_client:
-            return self.web_socket_client.response_headers.get("Andesite-Node-Id")
+        client = self.web_socket_client
+        if client:
+            return client.response_headers.get("Andesite-Node-Id")
 
         return None
 
@@ -888,29 +898,6 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         await self._replay_message_queue()
 
     async def connect(self, *, max_attempts: int = None) -> None:
-        """Connect to the web socket server.
-
-        Args:
-            max_attempts: Amount of connection attempts to perform before aborting.
-                If this is not set, `max_connect_attempts` is used instead.
-
-        If `max_attempts` is exceeded and the client gives up on connecting it
-        is closed!
-
-        The method uses a lock to make sure only one connection attempt is started
-        at a time. If the client is already connected calling this won't perform any
-        action.
-
-        After successfully connecting all messages in the message
-        queue are sent in order and a `WebSocketConnectEvent` event is dispatched.
-
-        Notes:
-            This method doesn't have to be called manually,
-            it is called as soon as the first message needs to be sent.
-            However, there are good reasons to call it anyway, such
-            as the ability to check the validity of the URI, or to
-            receive events from Andesite.
-        """
         if self.closed:
             raise ValueError("Client is closed and cannot be reused.")
 
@@ -919,16 +906,6 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
                 await self._connect(max_attempts)
 
     async def disconnect(self) -> None:
-        """Disconnect the web socket.
-
-        This will also stop the client from
-        receiving events from Andesite.
-
-        This method is idempotent, it doesn't do
-        anything if the client isn't connected.
-
-        After disconnecting a `WebSocketDisconnectEvent` is emitted.
-        """
         self._stop_read_loop()
 
         if self.connected:
@@ -936,13 +913,6 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             _ = self.event_target.dispatch(WebSocketDisconnectEvent(self, True))
 
     async def reset(self) -> None:
-        """Reset the client so it may be used again.
-
-        If the client is connected, it is disconnected. The message queue is
-        cleared and the connection id is reset.
-        This has the opposite of the `close` method making the client
-        usable again.
-        """
         await self.disconnect()
         self._message_queue.clear()
         del self.connection_id
@@ -950,13 +920,6 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         self._closed = False
 
     async def close(self) -> None:
-        """Disconnect the client and close all connections.
-
-        This makes the client unusable, it can't reconnect again.
-
-        If you want to disconnect but keep the client usable, use
-        `disconnect`.
-        """
         await self.disconnect()
         self._closed = True
 
@@ -1065,24 +1028,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 
         self._read_loop.cancel()
 
-
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
-        """Send a payload.
-
-        The guild_id and op are written to the payload before it is converted to JSON.
-
-        If sending the message fails because the connection is closed,
-        it is added to the message queue and a connection attempt is started.
-
-        Regardless of whether the payload was actually sent or
-        not a `RawMsgSendEvent` (`raw_msg_send`) event is dispatched.
-
-        Args:
-            guild_id: Target guild id
-            op: Name of operation to perform
-            payload: Additional data to be sent along with the data.
-                The payload is mutated by the function.
-        """
         payload.update(guildId=str(guild_id), op=op)
 
         _ = self.event_target.dispatch(RawMsgSendEvent(self, guild_id, op, payload))
@@ -1113,48 +1059,6 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
 class AndesiteWebSocket(AndesiteWebSocketBase, EventTarget, AndesiteWebSocketInterface):
     """Client for the Andesite WebSocket endpoints.
 
-    Args:
-        ws_uri: Websocket endpoint to connect to.
-        user_id: Bot's id
-        password: Authorization for the Andesite node.
-            Set to `None` if the node doesn't have a password.
-        max_connect_attempts: Max amount of connection attempts to start before giving up.
-            If `None`, there is no upper limit.
-            This value can be overwritten when calling `connect`.
-        loop: Event loop to use for asynchronous operations.
-            If no loop is provided it is dynamically retrieved when
-            needed.
-
-    The client automatically keeps track of the current connection id and resumes the previous connection
-    when calling `connect`, if there is any.
-
-    :Events:
-        - **ws_connect** (`WebSocketConnectEvent`): When the client connects
-        - **ws_disconnect** (`WebSocketDisconnectEvent`): When the client disconnects
-
-        - **raw_msg_receive** (`RawMsgReceiveEvent`): Whenever a message body is received.
-            For this event to be dispatched, the received message needs to be valid JSON
-            and an object.
-        - **msg_receive** (`MsgReceiveEvent`): After a message has been parsed into its python representation
-        - **raw_msg_send** (`RawMsgSendEvent`): When sending a message.
-            This event is dispatched regardless of whether the message
-            was actually sent.
-
-        - **player_update** (`PlayerUpdate`): When a `PlayerUpdate` is received.
-
-        - **track_start** (`TrackStartEvent`)
-        - **track_end** (`TrackEndEvent`)
-        - **track_exception** (`TrackExceptionEvent`)
-        - **track_stuck** (`TrackStuckEvent`)
-        - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown event is received.
-
-    Attributes:
-        max_connect_attempts (Optional[int]):
-            Max amount of connection attempts before giving up.
-            If this is `None` there is no upper limit to how many attempts will be made.
-        web_socket_client (Optional[WebSocketClientProtocol]):
-            Web socket client which is used.
-            This attribute will be set once `connect` is called.
-            Don't use the presence of this attribute to check whether
-            the client is connected, use the `connected` property.
+    See Also:
+        `AndesiteWebSocketBase` for details on the constructor and implementation.
     """

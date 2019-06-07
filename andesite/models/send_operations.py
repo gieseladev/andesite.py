@@ -1,4 +1,6 @@
-"""Operations sent from the client to Andesite.
+"""Sendable operations to Andesite.
+
+These operations can be sent using `AbstractAndesiteWebSocket.send_operation`.
 
 See Also:
     `andesite.models.receive_operations` for operations sent by Andesite.
@@ -6,19 +8,21 @@ See Also:
 Attributes:
     MixerPlayerUpdateMap (Dict[str, Union[Play, Update]]): (Type alias) str -> `Play`/`Update` map used by the `MixerUpdate`.
 """
+
 import abc
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from andesite.transform import RawDataType, build_from_raw, from_centi, from_milli, map_build_values_from_raw, map_convert_values, \
-    map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli
+from andesite.transform import RawDataType, build_from_raw, from_centi, from_milli, map_build_values_from_raw, \
+    map_convert_values, map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli
 from .filters import FilterMap, FilterMapLike
 
 __all__ = ["SendOperation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
 
 
 class SendOperation(abc.ABC):
-    """SendOperation is a model that can be passed as a payload to the `AndesiteWebSocket` client.
+    """SendOperation is a model that can be passed as a payload to the
+    `AndesiteWebSocket` client.
 
     See Also:
         `AndesiteWebSocket.send_operation`
@@ -28,7 +32,7 @@ class SendOperation(abc.ABC):
 
 @dataclass
 class VoiceServerUpdate(SendOperation):
-    """
+    """Operation providing a voice server update.
 
     Attributes:
         session_id (str): Session ID for the current user in the event's guild
@@ -42,7 +46,7 @@ class VoiceServerUpdate(SendOperation):
 
 @dataclass
 class Play(SendOperation):
-    """
+    """Operation playing a track.
 
     Attributes:
         track (str): base64 encoded lavaplayer track
@@ -74,7 +78,7 @@ class Play(SendOperation):
 
 @dataclass
 class Pause(SendOperation):
-    """
+    """Operation pausing the player.
 
     Attributes:
         pause (bool): whether or not to pause the player
@@ -86,7 +90,8 @@ class Pause(SendOperation):
 
 @dataclass
 class Seek(SendOperation):
-    """
+    """Operation seeking the current track.
+
     Attributes:
         position (float): timestamp to set the current track to, in seconds
     """
@@ -105,7 +110,7 @@ class Seek(SendOperation):
 
 @dataclass
 class Volume(SendOperation):
-    """
+    """Operation adjusting the volume.
 
     Attributes:
         volume (float): volume to set on the player
@@ -125,7 +130,7 @@ class Volume(SendOperation):
 
 @dataclass
 class FilterUpdate(FilterMap, SendOperation):
-    """Adjust the filter settings.
+    """Operation adjusting the filter settings.
 
     See Also:
         This class inherits from `FilterMap`.
@@ -138,7 +143,7 @@ class FilterUpdate(FilterMap, SendOperation):
 
 @dataclass
 class Update(SendOperation):
-    """
+    """Operation providing an update for the current track.
 
     Attributes:
         pause (Optional[bool]): whether or not to pause the player
@@ -168,7 +173,7 @@ MixerPlayerUpdateMap = Dict[str, Union[Play, Update]]
 
 @dataclass
 class MixerUpdate(SendOperation):
-    """
+    """Operation adjusting the mixer players.
 
     Attributes:
         enable (Optional[bool]): if present, controls whether or not the mixer should be used

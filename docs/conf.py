@@ -48,8 +48,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_autodoc_typehints',
-    'sphinxcontrib.asyncio',
 ]
+
+set_type_checking_flag = True
 
 add_module_names = False
 default_role = "py:obj"
@@ -187,7 +188,8 @@ epub_exclude_files = ['search.html']
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'aiohttp': ('https://aiohttp.readthedocs.io/en/stable/', None)
+    'aiohttp': ('https://aiohttp.readthedocs.io/en/stable/', None),
+    'discord': ('https://discordpy.readthedocs.io/en/latest/', None),
 }
 
 # -- Options for todo extension ----------------------------------------------

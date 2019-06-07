@@ -39,9 +39,9 @@ class Event:
 
     Args:
         name: Name of the event
-        arg: Acts like **kwargs, but doesn't need to be unpacked, thus being more
-            efficient. This argument is optional. **kwargs values will override the
-            values in this mapping.
+        arg: Acts like kwargs, but doesn't need to be unpacked, thus being more
+            efficient. This argument is optional. kwargs values will override
+            the values in this mapping.
         **kwargs: Attributes to set on the event.
 
     Attributes:
@@ -266,8 +266,9 @@ class EventTarget:
     def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float) -> Awaitable[Optional[Event]]:
         ...
 
-    def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float = None) -> Awaitable[
-        Optional[Event]]:
+    def wait_for(self, event: EventSpecifierType, *,
+                 check: EventFilter,
+                 timeout: float = None) -> Awaitable[Optional[Event]]:
         """Wait for an event to be dispatched.
 
         This is similar to adding a listener, but it only listens once and
@@ -425,6 +426,8 @@ class EventTarget:
         Events are first propagated to the "one-time listeners" (i.e. those added by `wait_for`),
         then the instances "on_<event>" methods are called and finally
         the listeners.
+
+        Events are also propagated to child event targets.
 
         If an error occurs while dispatching an event, `on_event_error` is called.
 

@@ -1,4 +1,14 @@
-# TODO top-level docs
+"""State handler for Andesite clients.
+
+If you want to store your state externally for example in a database, there
+are two approaches you can use. You can either implement the
+`AbstractAndesiteState` and use the default `AndesitePlayerState` (which can be
+easily converted to and from JSON), or you can use the default `AndesiteState`
+with a custom `AbstractPlayerState` implementation.
+Both approaches have their advantages, but you should always consider that while
+the get operations are often performed together (especially during state
+migration), the set operations are not.
+"""
 
 import abc
 import asyncio
@@ -78,7 +88,16 @@ def voice_server_update_from_raw(data: Dict[str, Any]) -> VoiceServerUpdate:
 
 
 class AbstractPlayerState(abc.ABC):
-    """State of a single Andesite player."""
+    """State of a single Andesite player.
+
+    Notes:
+        Unless you're doing something weird you don't need to call the setter
+        functions. If the player state is managed by an `AbstractAndesiteState`
+        which is connected to a client then everything is done for you.
+
+    See Also:
+        `AndesitePlayerState` for an in-memory implementation.
+    """
 
     @property
     @abc.abstractmethod
@@ -108,12 +127,20 @@ class AbstractPlayerState(abc.ABC):
 
     @abc.abstractmethod
     async def get_voice_server_update(self) -> Optional[VoiceServerUpdate]:
-        # TODO docs
+        """Get the last voice server update that was sent to the player.
+
+        Returns:
+            The last voice server update or `None` if none exists.
+        """
         ...
 
     @abc.abstractmethod
     async def set_voice_server_update(self, update: Optional[VoiceServerUpdate]) -> None:
-        # TODO docs
+        """Set the last voice server update.
+
+        Args:
+            update: Voice server update to set.
+        """
         ...
 
     @abc.abstractmethod
@@ -127,10 +154,15 @@ class AbstractPlayerState(abc.ABC):
         ...
 
 
-# TODO docs
-
-
 class PlayerState(AbstractPlayerState):
+    """Default player state storing the state in memory.
+
+    The player state can be converted to a JSON-serialisable dict using
+    `to_raw`. A state can also be created from said dict using the classmethod
+    `from_raw`. These methods exist to make it easy to implement a custom
+    `AbstractAndesiteState` which loads and stores serialised player states.
+    """
+
     def __init__(self, guild_id: int):
         self._guild_id = guild_id
 
@@ -162,6 +194,15 @@ class PlayerState(AbstractPlayerState):
 
     @classmethod
     def from_raw(cls, data: Dict[str, Any]) -> AbstractPlayerState:
+        """Create an `AbstractPlayerState` from the raw data.
+
+        Args:
+            data: Raw player state data as returned by `to_raw`
+
+        Returns:
+            A new instance of `PlayerState` describing the same state
+            as the data.
+        """
         inst = cls(data["guild_id"])
 
         inst._track = data.get("track")
@@ -185,6 +226,11 @@ class PlayerState(AbstractPlayerState):
         return inst
 
     def to_raw(self) -> Dict[str, Any]:
+        """Convert the player state into a JSON-serialisable dict.
+
+        Use the classmethod `from_raw` to re-create a `PlayerState` using the
+        returned data.
+        """
         if self._player:
             raw_player = player_to_raw(self._player)
         else:
@@ -324,10 +370,19 @@ class AbstractAndesiteState(abc.ABC):
 PST = TypeVar("PST", bound=AbstractPlayerState)
 
 
-# TODO docs
-
-
 class AndesiteState(AbstractAndesiteState, Generic[PST]):
+    """Default implementation of `AbstractAndesiteState`.
+
+    Stores the player states in memory.
+
+    Args:
+        state_factory: Callable which when called with a guild id, creates an
+            `AbstractPlayerState`. The default is `PlayerState`.
+
+    Attributes:
+        player_states (Dict[int, AbstractPlayerState]): Mapping from guild id
+            to the corresponding player state.
+    """
     player_states: Dict[int, PST]
     _state_factory: Callable[[int], PST]
 
