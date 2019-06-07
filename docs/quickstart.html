@@ -42,6 +42,9 @@ You have one Andesite server which you would like to connect to.
 For this case there’s the <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteClient</span></code> which does this for you.
 In reality the andesite client is a combination of both the web socket client
 and the http client, but it aims to hide this complexity.</p>
+<p>Unless you’re using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.py</span></code> library, you have to manually pass voice
+server updates to Andesite using <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteClient.voice_server_update</span></code>.
+If you are using <code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.py</span></code>, please refer to <a class="reference internal" href="#discord-py"><span class="std std-ref">Using the discord.py integration</span></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">andesite</span>
 
 <span class="c1"># We use the create function because it creates</span>
@@ -87,6 +90,42 @@ migrates the state to another client if a node goes down.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="using-the-discord-py-integration">
+<span id="discord-py"></span><h2>Using the discord.py integration<a class="headerlink" href="#using-the-discord-py-integration" title="Permalink to this headline">¶</a></h2>
+<p>If you’re using discord.py there are a number of utilities in place which
+you ought to use.
+Instead of having to manually intercept voice server updates you can use
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">add_voice_server_update_handler</span></code> which adds a listener to automatically pass
+these events on.
+There’s also the analogue function <code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_voice_server_update_handler</span></code> to
+remove it again.</p>
+<p>There’s also <code class="xref py py-obj docutils literal notranslate"><span class="pre">connect_voice_channel</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect_voice_channel</span></code> which help
+you connect to a voice channel and also disconnect.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">discord</span>
+<span class="kn">from</span> <span class="nn">discord.ext.commands</span> <span class="kn">import</span> <span class="n">Bot</span><span class="p">,</span> <span class="n">Context</span>
+
+<span class="kn">from</span> <span class="nn">andesite.discord</span> <span class="kn">import</span> <span class="n">add_voice_server_update_handler</span><span class="p">,</span> <span class="n">connect_voice_channel</span><span class="p">,</span> <span class="n">disconnect_voice_channel</span>
+
+<span class="n">bot</span> <span class="o">=</span> <span class="n">Bot</span><span class="p">()</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># create our Andesite client somehow</span>
+
+<span class="c1"># that&#39;s all we need. Now all voice server updates are automatically</span>
+<span class="c1"># forwarded to Andesite. This also works with normal client discord</span>
+<span class="c1"># clients, not just commands.Bot</span>
+<span class="n">add_voice_server_update_handler</span><span class="p">(</span><span class="n">bot</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+
+<span class="nd">@bot.command</span><span class="p">()</span>
+<span class="n">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">discord</span><span class="o">.</span><span class="n">VoiceChannel</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">channel</span><span class="p">:</span>
+        <span class="n">await</span> <span class="n">connect_voice_channel</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">bot</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">await</span> <span class="n">disconnect_voice_channel</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">bot</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">guild</span><span class="p">)</span>
+
+<span class="n">bot</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;token&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -112,6 +151,7 @@ migrates the state to another client if a node goes down.</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick-start</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#connecting-to-an-andesite-node">Connecting to an Andesite node</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-pools">Using pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-discord-py-integration">Using the discord.py integration</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
