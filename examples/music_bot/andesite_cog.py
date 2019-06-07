@@ -5,13 +5,14 @@ With some small modifications you could use this cog for yourself.
 import logging
 import random
 from datetime import timedelta
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from discord import Colour, Embed, VoiceState
 from discord.ext.commands import Bot, Cog, CommandError, Context, command, guild_only
-from discord.gateway import DiscordWebSocket
 
 import andesite
+# since we're using the discord.py library we can use these functions
+from andesite.discord import add_voice_server_update_handler, connect_voice_channel, disconnect_voice_channel, remove_voice_server_update_handler
 
 if TYPE_CHECKING:
     from .bot import OptionsType
@@ -34,67 +35,30 @@ class AndesiteCog(Cog, name="Andesite"):
 
         self._last_session_id = None
 
+    async def cog_unload(self) -> None:
+        if self.andesite_client is not None:
+            remove_voice_server_update_handler(self.bot, self.andesite_client)
+            await self.andesite_client.close()
+
     @Cog.listener()
     async def on_ready(self) -> None:
         log.debug("creating andesite client")
-        self.andesite_client = andesite.AndesiteClient.create(
+        self.andesite_client = andesite.create_andesite_client(
             self.options.andesite_http, self.options.andesite_ws,
             self.options.andesite_password,
+            # we're only creating the client in the on_ready
+            # method because of the user id. You don't have to
+            # do it this way, you can also pass `None` initially
+            # and set the client.user_id later on.
             self.bot.user.id
         )
+
+        # automatically handle voice server updates
+        add_voice_server_update_handler(self.bot, self.andesite_client)
+
         log.info("connecting andesite client")
         await self.andesite_client.connect()
         log.info("andesite ws_client ready")
-
-    @Cog.listener()
-    async def on_socket_response(self, data: Dict[str, Any]) -> None:
-        """Intercept voice server updates and send them to Andesite.
-
-        This handler also intercepts voice state updates to get the
-        session id.
-        """
-        try:
-            key = data["t"]
-            body = data["d"]
-        except KeyError:
-            return
-
-        if key == "VOICE_STATE_UPDATE":
-            user_id = int(body["user_id"])
-            if user_id == self.bot.user.id:
-                self._last_session_id = body["session_id"]
-
-            return
-        elif key == "VOICE_SERVER_UPDATE":
-            guild_id = body["guild_id"]
-
-            if self._last_session_id:
-                log.info(f"sending voice server update for guild {guild_id}")
-                await self.andesite_client.voice_server_update(guild_id, self._last_session_id, body)
-            else:
-                log.debug(f"not sending voice server update for guild {guild_id} because session id missing.")
-
-    def get_discord_websocket(self, guild_id: int) -> DiscordWebSocket:
-        """Utility method to get access to discord.py's gateway websocket."""
-        # noinspection PyProtectedMember
-        return self.bot._connection._get_websocket(guild_id)
-
-    async def send_voice_state(self, guild_id: int, channel_id: Optional[int]):
-        """Send a voice state.
-
-        Args:
-            guild_id: Guild id to target
-            channel_id: Channel id to connect to.
-                If `None`, disconnect from the current channel.
-        """
-        ws = self.get_discord_websocket(guild_id)
-
-        if channel_id:
-            log.info(f"connecting in guild {guild_id} to {channel_id}")
-        else:
-            log.info(f"disconnecting from guild {guild_id}")
-
-        await ws.voice_state(guild_id, channel_id)
 
     @guild_only()
     @command("join")
@@ -104,14 +68,13 @@ class AndesiteCog(Cog, name="Andesite"):
         if not author_voice:
             raise CommandError("Not in a voice channel")
 
-        channel_id = author_voice.channel.id
-        await self.send_voice_state(ctx.guild.id, channel_id)
+        await connect_voice_channel(self.bot, author_voice.channel)
 
     @guild_only()
     @command("leave")
     async def leave_cmd(self, ctx: Context) -> None:
         """Leave the current voice channel"""
-        await self.send_voice_state(ctx.guild.id, None)
+        await disconnect_voice_channel(self.bot, ctx.guild.id)
 
     @guild_only()
     @command("play")

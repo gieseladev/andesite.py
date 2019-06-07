@@ -9,7 +9,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Optional, cast
 
-from andesite.transform import RawDataType, from_centi, from_milli, map_build_all_values_from_raw, map_build_values_from_raw, map_convert_values, \
+from andesite.transform import RawDataType, from_centi, from_milli, map_build_all_values_from_raw, \
+    map_build_values_from_raw, map_convert_values, \
     map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli, transform_input
 from .filters import FilterMap
 
@@ -29,6 +30,7 @@ class BasePlayer(abc.ABC):
     """Abstract class for Andesite players.
 
     See Also:
+
         - `Player`
         - `MixerPlayer`
 
@@ -82,6 +84,11 @@ class BasePlayer(abc.ABC):
 
 @dataclass
 class MixerPlayer(BasePlayer):
+    """Player used by `Player` as a mixer player.
+
+    See Also:
+        `BasePlayer`
+    """
     ...
 
 

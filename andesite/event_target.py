@@ -16,10 +16,10 @@ import abc
 import asyncio
 import inspect
 import logging
-from asyncio import AbstractEventLoop, CancelledError, Future
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Type, TypeVar, Union, \
+from typing import Any, Awaitable, Callable, Coroutine, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, \
+    Tuple, Type, TypeVar, Union, \
     overload
 
 import lettercase
@@ -39,9 +39,9 @@ class Event:
 
     Args:
         name: Name of the event
-        arg: Acts like **kwargs, but doesn't need to be unpacked, thus being more
-            efficient. This argument is optional. **kwargs values will override the
-            values in this mapping.
+        arg: Acts like kwargs, but doesn't need to be unpacked, thus being more
+            efficient. This argument is optional. kwargs values will override
+            the values in this mapping.
         **kwargs: Attributes to set on the event.
 
     Attributes:
@@ -196,7 +196,7 @@ class OneTimeEventListener:
             to accept the event and `False` otherwise.
             If not provided, all events are accepted.
     """
-    future: Future
+    future: asyncio.Future
     condition: Optional[EventFilter] = None
 
 
@@ -248,13 +248,15 @@ class EventTarget:
     """
     _one_time_listeners: Dict[str, List[OneTimeEventListener]]
     _listeners: Dict[str, List[EventListener]]
+    _children: Set["EventTarget"]
 
-    _loop: Optional[AbstractEventLoop]
+    _loop: Optional[asyncio.AbstractEventLoop]
 
-    def __init__(self, *, loop: AbstractEventLoop = None) -> None:
+    def __init__(self, *, loop: asyncio.AbstractEventLoop = None) -> None:
         self._loop = loop
         self._one_time_listeners = {}
         self._listeners = {}
+        self._children = set()
 
     @overload
     def wait_for(self, event: EventSpecifierType, *, check: EventFilter) -> Awaitable[Event]:
@@ -264,7 +266,9 @@ class EventTarget:
     def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float) -> Awaitable[Optional[Event]]:
         ...
 
-    def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float = None) -> Awaitable[Optional[Event]]:
+    def wait_for(self, event: EventSpecifierType, *,
+                 check: EventFilter,
+                 timeout: float = None) -> Awaitable[Optional[Event]]:
         """Wait for an event to be dispatched.
 
         This is similar to adding a listener, but it only listens once and
@@ -287,12 +291,29 @@ class EventTarget:
         event = resolve_event_specifier(event)
 
         # not using self._loop.create_future because loop may be None
-        future = Future(loop=self._loop)
+        future = asyncio.Future(loop=self._loop)
         listener = OneTimeEventListener(future, check)
 
         _push_map_list(self._one_time_listeners, event, listener)
 
         return asyncio.wait_for(future, timeout=timeout, loop=self._loop)
+
+    def add_dispatcher(self, target: "EventTarget") -> None:
+        """Add a child event target which will dispatch the same events.
+
+        Args:
+            target: Event target to add as a child.
+        """
+        self._children.add(target)
+
+    def remove_dispatcher(self, target: "EventTarget") -> None:
+        """Remove a child event target.
+
+        Args:
+            target: Event target to remove.
+        """
+
+        self._children.discard(target)
 
     def add_listener(self, event: EventSpecifierType, listener: Union[EventHandler, EventListener]) -> EventListener:
         """Add a listener for an `Event` which is called whenever said event is dispatched.
@@ -355,10 +376,12 @@ class EventTarget:
         ...
 
     @overload
-    def has_listener(self, event: EventSpecifierType, target: Union[EventHandler, EventListener, OneTimeEventListener]) -> bool:
+    def has_listener(self, event: EventSpecifierType,
+                     target: Union[EventHandler, EventListener, OneTimeEventListener]) -> bool:
         ...
 
-    def has_listener(self, event: EventSpecifierType, target: Union[EventHandler, EventListener, OneTimeEventListener] = None) -> bool:
+    def has_listener(self, event: EventSpecifierType,
+                     target: Union[EventHandler, EventListener, OneTimeEventListener] = None) -> bool:
         """Check whether an event has a listener.
 
         This includes one-time listeners, but does not check method
@@ -397,12 +420,14 @@ class EventTarget:
 
                 return False
 
-    def dispatch(self, event: Event) -> Optional[Future]:
+    def dispatch(self, event: Event) -> Optional[asyncio.Future]:
         """Dispatch an event.
 
         Events are first propagated to the "one-time listeners" (i.e. those added by `wait_for`),
         then the instances "on_<event>" methods are called and finally
         the listeners.
+
+        Events are also propagated to child event targets.
 
         If an error occurs while dispatching an event, `on_event_error` is called.
 
@@ -418,7 +443,7 @@ class EventTarget:
             # do it if we want it logged
             log.debug(f"dispatching: {event}")
 
-        futures: List[Union[Coroutine, Future]] = []
+        futures: List[Union[Coroutine, asyncio.Future]] = []
         event_name = event.name
 
         one_time_listeners = self._one_time_listeners.get(event_name)
@@ -464,6 +489,9 @@ class EventTarget:
             for listener in listeners:
                 futures.append(self._run_event(listener.handler, event))
 
+        for child_target in self._children:
+            futures.append(asyncio.ensure_future(child_target.dispatch(event), loop=self._loop))
+
         if futures:
             return asyncio.gather(*futures, loop=self._loop)
         else:
@@ -475,12 +503,12 @@ class EventTarget:
                 await method(event)
             else:
                 method(event)
-        except CancelledError:
+        except asyncio.CancelledError:
             pass
         except Exception as e:
             error_event = EventErrorEvent(method, e, event)
 
-            with suppress(CancelledError):
+            with suppress(asyncio.CancelledError):
                 await self.on_event_error(error_event)
 
     # noinspection PyMethodMayBeStatic

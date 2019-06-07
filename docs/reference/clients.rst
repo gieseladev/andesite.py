@@ -1,42 +1,30 @@
-Clients
-=======
-
-Clients for interacting with Andesite.
-
-All clients are exported to the `andesite` namespace.
+Andesite clients
+================
 
 .. contents::
     :local:
 
-Andesite client
+Combined client
 ---------------
-Defined in `andesite.combined_client`.
 
-This client encompasses both the http and the
-web sockets endpoints.
-
-.. autoclass:: andesite.AndesiteClient
+.. automodule:: andesite.combined_client
     :members:
     :inherited-members:
-    :undoc-members:
 
 HTTP client
 -----------
 
-Defined in `andesite.http_client`.
-
-.. autoclass:: andesite.AndesiteHTTP
+.. automodule:: andesite.http_client
     :members:
     :inherited-members:
-    :undoc-members:
 
+WebSocket client
+----------------
 
-Web socket client
------------------
-
-Defined in `andesite.web_socket_client`.
-
-.. autoclass:: andesite.AndesiteWebSocket
+.. automodule:: andesite.web_socket_client
     :members:
     :inherited-members:
-    :undoc-members:
+
+.. automodule:: andesite.web_socket_client_events
+    :members:
+    :inherited-members:

@@ -19,8 +19,7 @@ def build_argument_parser() -> ArgumentParser:
     andesite_group.add_argument("--andesite-http", required=True, help="HTTP endpoint of Andesite")
     andesite_group.add_argument("--andesite-password", default=None, help="Password for the Andesite node")
 
-    misc_group \
-        = parser.add_argument_group("misc")
+    misc_group = parser.add_argument_group("misc")
     misc_group.add_argument("--command-prefix", default="a.", help="Command prefix to respond to")
 
     return parser

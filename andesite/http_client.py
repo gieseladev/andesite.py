@@ -21,7 +21,6 @@ Attributes:
 import abc
 import asyncio
 import logging
-from asyncio import AbstractEventLoop
 from enum import Enum
 from typing import Any, Iterable, List, Optional, Union
 
@@ -54,7 +53,7 @@ class AndesiteHTTPError(Exception):
 
     def __init__(self, code: int, message: str) -> None:
         super().__init__(message, code)
-        self.code = code,
+        self.code = code
         self.message = message
 
     def __str__(self) -> str:
@@ -78,14 +77,16 @@ def get_andesite_searcher(searcher: AndesiteSearcherType) -> AndesiteSearcher:
             of type `AndesiteSearcher` already, it is simply returned.
 
     This function can resolve the following `AndesiteSearcher` specifications:
+
     - `AndesiteSearcher` instance
     - Searcher id (i.e. "ytsearch", "scsearch")
-    - Service name (i.e. "youtube", "soundcloud"). Note that the casing doesn't matter,
-        as the provided names are converted to uppercase.
+    - Service name (i.e. "youtube", "soundcloud"). Note that the casing doesn't
+      matter, as the provided names are converted to uppercase.
 
     Raises:
         TypeError: Invalid searcher type passed.
-        ValueError: If searcher is a string but doesn't resolve to a valid searcher.
+        ValueError: If searcher is a string but doesn't resolve to a valid
+            searcher.
     """
     if isinstance(searcher, AndesiteSearcher):
         return searcher
@@ -116,6 +117,15 @@ class AbstractAndesiteHTTP(abc.ABC):
         """Close the underlying connections and clean up.
 
         This should be called when you no longer need the client.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def reset(self) -> None:
+        """Reset the client so it may be used again.
+
+        This has the opposite effect of the `close` method making the client
+        usable again.
         """
         ...
 
@@ -168,6 +178,25 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
         """
         data = await self.request("GET", "loadtracks", params=dict(identifier=identifier))
         return build_from_raw(LoadedTrack, data)
+
+    async def load_tracks_safe(self, uri: str) -> LoadedTrack:
+        """Load tracks from url.
+
+        This is different from `load_tracks` insofar that it ignores
+        special markers such as "ytsearch:" and treats the given uri
+        as nothing but that.
+
+        Args:
+            uri: URI to load
+
+        Raises:
+            AndesiteHTTPError: If Andesite returns an error.
+
+        See Also:
+            `load_tracks` to load a track using an identifier.
+            `search_tracks` to search for a track using a query.
+        """
+        return await self.load_tracks(f"raw:{uri}")
 
     async def search_tracks(self, query: str, *, searcher: AndesiteSearcherType = AndesiteSearcher.YOUTUBE) -> LoadedTrack:
         """Search tracks.
@@ -237,21 +266,24 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
             the Andesite node does not have a password set.
         loop: Event loop to use for the `aiohttp.ClientSession`.
             If you don't pass this parameter (i.e. it's `None`), the event loop
-            is retrieved using `asyncio.get_event_loop` because it is required for the
-            underlying `aiohttp.ClientSession`.
+            is retrieved using `asyncio.get_event_loop` because it is required
+            for the underlying `aiohttp.ClientSession`.
 
     See Also:
-        `AndesiteHTTP` for the client which includes the `AndesiteHTTPInterface` methods.
+        `AndesiteHTTP` for the client which includes the
+            `AndesiteHTTPInterface` methods.
 
     Attributes:
-        aiohttp_session (aiohttp.ClientSession): Client session used to make requests.
+        aiohttp_session (aiohttp.ClientSession): Client session used to make
+            requests.
     """
     aiohttp_session: ClientSession
 
-    _loop: AbstractEventLoop
+    _loop: asyncio.AbstractEventLoop
     _base_url: URL
 
-    def __init__(self, uri: Union[str, URL], password: Optional[str], *, loop: AbstractEventLoop = None) -> None:
+    def __init__(self, uri: Union[str, URL], password: Optional[str], *,
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._base_url = URL(uri)
 
@@ -264,30 +296,16 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
 
     @property
     def closed(self) -> bool:
-        """Whether the underlying `aiohttp.ClientSession` is closed."""
         return self.aiohttp_session.closed
 
     async def close(self) -> None:
-        """Close the underlying `aiohttp.ClientSession`.
-
-        This should be called when you no longer need the client.
-        """
         await self.aiohttp_session.close()
 
+    async def reset(self) -> None:
+        self.aiohttp_session = ClientSession(headers=self.aiohttp_session._default_headers,
+                                             loop=self._loop)
+
     async def request(self, method: str, path: str, **kwargs) -> Any:
-        """Perform a request and return the JSON response.
-
-        Args:
-            method: HTTP method to use
-            path: Path relative to the base url. Must not start with a slash!
-            **kwargs: Keyword arguments passed to the request
-
-        This method is used by all other methods to perform their respective
-        task. You should use the provided methods whenever possible.
-
-        Raises:
-            AndesiteHTTPError: If Andesite returns an error.
-        """
         url = self._base_url / path
 
         if log.isEnabledFor(logging.DEBUG):
@@ -315,19 +333,7 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
 class AndesiteHTTP(AndesiteHTTPInterface, AndesiteHTTPBase):
     """Client for Andesite's HTTP endpoints.
 
-    Args:
-        password: Password to use for authorization. Use `None` if
-            the Andesite node does not have a password set.
-        loop: Event loop to use for the `aiohttp.ClientSession`.
-            If you don't pass this parameter (i.e. it's `None`), the event loop
-            is retrieved using `asyncio.get_event_loop` because it is required for the
-            underlying `aiohttp.ClientSession`.
-
-    Notes:
-        The HTTP client does not include the player routes.
-        You should use the `AndesiteWebSocket` client instead!
-
-    Attributes:
-        aiohttp_session (aiohttp.ClientSession): Client session used to make requests.
+    See Also:
+        `AndesiteHTTPBase` for more details.
     """
     ...

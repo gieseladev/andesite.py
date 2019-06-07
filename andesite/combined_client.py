@@ -6,12 +6,12 @@ There is the `AndesiteClientBase` which is simply the implementation
 of `AbstractAndesiteWebSocket` and `AbstractAndesiteHTTP` and then there
 is the actual client `AndesiteClient`.
 
-
 You can use the combined client for everything that implements
 the abstract methods. This means that you can use the combined client
 for `ClientPool` clients!
 """
-from asyncio import AbstractEventLoop
+
+import asyncio
 from contextlib import suppress
 from typing import Any, Dict, Optional, Union
 
@@ -19,9 +19,11 @@ from yarl import URL
 
 from .event_target import EventTarget
 from .http_client import AbstractAndesiteHTTP, AndesiteHTTPBase, AndesiteHTTPInterface
-from .web_socket_client import AbstractAndesiteWebSocket, AbstractAndesiteWebSocketClient, AndesiteWebSocketBase, AndesiteWebSocketInterface
+from .state import AbstractAndesiteState
+from .web_socket_client import AbstractAndesiteWebSocket, AbstractAndesiteWebSocketClient, AndesiteWebSocketBase, \
+    AndesiteWebSocketInterface
 
-__all__ = ["AndesiteClientBase", "AndesiteClient"]
+__all__ = ["AndesiteClientBase", "AndesiteClient", "create_andesite_client"]
 
 
 class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventTarget):
@@ -51,7 +53,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
     web_socket: AbstractAndesiteWebSocket
 
     def __init__(self, http_client: AbstractAndesiteHTTP, web_socket_client: AbstractAndesiteWebSocket, *,
-                 loop: AbstractEventLoop = None) -> None:
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         super().__init__(loop=loop)
 
         self.http = http_client
@@ -61,7 +63,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         # self.event_target will most likely resolve to self, but maybe
         # the user is trying to pull some inception shit with nested
         # clients and who would I be to deny them their fun?
-        web_socket_client.event_target = self.event_target
+        web_socket_client.event_target.add_dispatcher(self.event_target)
 
         # bind the methods directly
         self.send = web_socket_client.send
@@ -75,29 +77,13 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         """
         return self.http.closed or self.web_socket.closed
 
-    @classmethod
-    def create(cls, http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: str, user_id: int, *,
-               loop: AbstractEventLoop = None):
-        """Create a new client using the base implementations.
+    @property
+    def state(self) -> Optional[AbstractAndesiteState]:
+        return self.web_socket.state
 
-        Args:
-            http_uri: URI for the http endpoint
-            web_socket_uri: URI for the web socket endpoint
-            password: Andesite password for authorization
-            user_id: User ID
-            loop: Specify the event loop to use. The
-                meaning of this value depends on the client,
-                but you can safely omit it.
-
-        Returns:
-            A new combined client with `AndesiteHTTPBase` and `AndesiteWebSocketBase` as
-            its clients.
-        """
-
-        http_client = AndesiteHTTPBase(http_uri, password, loop=loop)
-        web_socket_client = AndesiteWebSocketBase(web_socket_uri, user_id, password, loop=loop)
-
-        return cls(http_client, web_socket_client, loop=loop)
+    @state.setter
+    def state(self, value: Optional[AbstractAndesiteState]) -> None:
+        self.web_socket.state = value
 
     @property
     def connected(self) -> Optional[bool]:
@@ -123,8 +109,12 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
 
         return self.web_socket.connection_id
 
-    async def connect(self) -> None:
+    async def connect(self, *, max_attempts: int = None) -> None:
         """Connect the underlying web socket client.
+
+        Args:
+            max_attempts: Amount of connection attempts to perform before aborting.
+                If `None`, unlimited attempts will be performed.
 
         This method doesn't do anything if the web socket client isn't a
         `AbstractAndesiteWebSocketClient`.
@@ -132,7 +122,7 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         if not isinstance(self.web_socket, AbstractAndesiteWebSocketClient):
             return
 
-        await self.web_socket.connect()
+        await self.web_socket.connect(max_attempts=max_attempts)
 
     async def disconnect(self) -> None:
         """Disconnect the underlying web socket client.
@@ -167,6 +157,14 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         with suppress(Exception):
             await self.web_socket.close()
 
+    async def reset(self) -> None:
+        """Reset the underlying clients so they may be used again.
+
+        This has the opposite effect of the `close` method making the clients
+        usable again.
+        """
+        await asyncio.gather(self.http.reset(), self.web_socket.reset())
+
     async def request(self, method: str, path: str, **kwargs) -> Any:
         """Perform a request on the http client.
 
@@ -196,3 +194,33 @@ class AndesiteClient(AndesiteWebSocketInterface, AndesiteHTTPInterface, Andesite
         web_socket (AbstractAndesiteWebSocket): WebSocket client which is used for the `AbstractAndesiteWebSocket` methods.
     """
     ...
+
+
+def create_andesite_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
+                           user_id: int, *,
+                           state: AbstractAndesiteState = None,
+                           loop: asyncio.AbstractEventLoop = None):
+    """Create a new combined Andesite client.
+
+    Args:
+        http_uri: URI for the http endpoint
+        web_socket_uri: URI for the web socket endpoint
+        password: Andesite password for authorization
+        user_id: User ID
+        state: State handler to use. Defaults to `None` meaning that no
+            state is being kept.
+        loop: Specify the event loop to use. The
+            meaning of this value depends on the client,
+            but you can safely omit it.
+
+    Returns:
+        A new combined client with `AndesiteHTTPBase` and `AndesiteWebSocketBase` as
+        its clients.
+    """
+
+    http_client = AndesiteHTTPBase(http_uri, password, loop=loop)
+    web_socket_client = AndesiteWebSocketBase(web_socket_uri, user_id, password, loop=loop)
+
+    inst = AndesiteClient(http_client, web_socket_client, loop=loop)
+    inst.state = state
+    return inst

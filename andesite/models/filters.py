@@ -9,7 +9,8 @@ Attributes:
 import abc
 from dataclasses import dataclass, field
 from operator import eq
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Type, TypeVar, Union, overload
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Type, TypeVar, Union, \
+    overload
 
 from andesite.transform import RawDataType, build_from_raw, convert_to_raw
 
@@ -185,7 +186,7 @@ class Equalizer(Filter):
             if gain is not None:
                 bands.append(EqualizerBand(i, gain))
 
-        return cls(bands)
+        return cls(True, bands)
 
     @overload
     def get_band(self, band: int) -> EqualizerBand:
@@ -256,7 +257,7 @@ class Equalizer(Filter):
         """Get a list of all the bands' gains in order.
 
         Args:
-            use_default: Whether or not to replace non-existant values
+            use_default: Whether or not to replace non-existent values
                 with the default gain.
                 If `False` and band doesn't have a gain set, `None`
                 is used instead.
@@ -433,7 +434,8 @@ class VolumeFilter(Filter):
 
 
 _FILTERS: Set[Type[Filter]] = {Equalizer, Karaoke, Timescale, Tremolo, Vibrato, VolumeFilter}
-FILTER_MAP: Mapping[str, Type[Filter]] = {andesite_filter.__filter_name__: andesite_filter for andesite_filter in _FILTERS}
+FILTER_MAP: Mapping[str, Type[Filter]] = {andesite_filter.__filter_name__: andesite_filter for andesite_filter in
+                                          _FILTERS}
 
 
 def get_filter_model(name: str) -> Optional[Type[Filter]]:
@@ -466,6 +468,12 @@ class FilterMap(MutableMapping):
     """
 
     filters: Dict[str, Any] = field(default_factory=dict)
+
+    def __init__(self, filters: "FilterMapLike") -> None:
+        if isinstance(filters, FilterMap):
+            self.filters = filters.filters.copy()
+        else:
+            self.filters = filters
 
     def __eq__(self, other) -> bool:
         if isinstance(other, FilterMap):

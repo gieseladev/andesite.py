@@ -1,25 +1,29 @@
 """Operations sent by Andesite.
 
 Attributes:
-    EVENT_MAP (Mapping[str, Type[AndesiteEvent]]): Mapping from the event name to the corresponding `AndesiteEvent` type.
-        See: `get_event_model`
-    OP_MAP (Mapping[str, Type[ReceiveOperation]]): Mapping from the op code to the corresponding `ReceiveOperation` type.
-        See: `get_update_model`
+    EVENT_MAP (Mapping[str, Type[AndesiteEvent]]): Mapping from the event name
+        to the corresponding `AndesiteEvent` type. See: `get_event_model`
+    OP_MAP (Mapping[str, Type[ReceiveOperation]]): Mapping from the op code to
+    the corresponding `ReceiveOperation` type. See: `get_update_model`
 
 See Also:
     `andesite.models.send_operations` for operations sent to Andesite.
 """
+
 import abc
 import copy
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Optional, Set, Type, cast
+from typing import Mapping, Optional, Set, TYPE_CHECKING, Type, cast
 
 from andesite.event_target import NamedEvent
-from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, map_convert_values_from_milli, \
-    map_convert_values_to_milli, transform_input, transform_output
+from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, \
+    map_convert_values_from_milli, map_convert_values_to_milli, transform_input, transform_output
 from .debug import Error, Stats
 from .player import Player
+
+if TYPE_CHECKING:
+    from andesite import AbstractAndesiteWebSocketClient
 
 __all__ = ["ReceiveOperation",
            "ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
@@ -30,8 +34,21 @@ __all__ = ["ReceiveOperation",
 
 
 class ReceiveOperation(abc.ABC):
-    """Message sent by Andesite."""
+    """Message sent by Andesite.
+
+    Attributes:
+        client (Optional[AbstractAndesiteWebSocketClient]): Client that received
+            the message. This is set by the client that received the message.
+    """
     __op__: str
+
+    client: Optional["AbstractAndesiteWebSocketClient"] = None
+
+
+@dataclass
+class PongResponse(ReceiveOperation):
+    """Simple pong response sent as a response to ping requests."""
+    __op__ = "pong"
 
 
 @dataclass
@@ -70,7 +87,7 @@ class StatsUpdate(ReceiveOperation):
 
 
 @dataclass
-class PlayerUpdate(ReceiveOperation):
+class PlayerUpdate(NamedEvent, ReceiveOperation):
     """Player update sent by Andesite for active players.
 
     Attributes:
@@ -83,6 +100,9 @@ class PlayerUpdate(ReceiveOperation):
     user_id: int
     guild_id: int
     state: Player
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
@@ -100,7 +120,8 @@ class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
 
     Attributes:
         type (str): Event type name.
-            This is equal to the name of the class (With the exception of `UnknownAndesiteEvent`)
+            This is equal to the name of the class (With the exception of
+            `UnknownAndesiteEvent`)
         user_id (int): User ID
         guild_id (int): Guild ID
         track (str): Base64 encoded track data
@@ -142,10 +163,12 @@ class TrackEndReason(Enum):
     Attributes:
         FINISHED: Usually caused by the track reaching the end,
             however it will also be used when it ends due to an exception.
-        LOAD_FAILED: Track failed to start, throwing an exception before providing any audio.
+        LOAD_FAILED: Track failed to start, throwing an exception before
+            providing any audio.
         STOPPED: Track was stopped due to the player being stopped.
         REPLACED: Track stopped playing because a new track started playing.
-        CLEANUP: Track was stopped because the cleanup threshold for the audio player was reached.
+        CLEANUP: Track was stopped because the cleanup threshold for the audio
+            player was reached.
     """
     FINISHED = "FINISHED"
     LOAD_FAILED = "LOAD_FAILED"
@@ -160,9 +183,11 @@ class TrackEndEvent(AndesiteEvent):
 
     Attributes:
         reason (TrackEndReason): Reason why a track stopped playing.
-        may_start_next (bool): Indicates whether a new track should be started on receiving this event.
-            If this is `False`, either this event is already triggered because another track started (`TrackEndReason.REPLACED`) or
-            because the player is stopped (`TrackEndReason.STOPPED`, `TrackEndReason.CLEANUP`).
+        may_start_next (bool): Indicates whether a new track should be started
+            on receiving this event. If this is `False`, either this event is
+            already triggered because another track started
+            (`TrackEndReason.REPLACED`) or because the player is stopped
+            (`TrackEndReason.STOPPED`, `TrackEndReason.CLEANUP`).
     """
     reason: TrackEndReason
     may_start_next: bool
@@ -266,7 +291,7 @@ def get_event_model(event_type: str) -> Type[AndesiteEvent]:
         return UnknownAndesiteEvent
 
 
-_OPS: Set[Type[ReceiveOperation]] = {ConnectionUpdate, StatsUpdate, PlayerUpdate}
+_OPS: Set[Type[ReceiveOperation]] = {PongResponse, ConnectionUpdate, StatsUpdate, PlayerUpdate}
 OP_MAP: Mapping[str, Type[ReceiveOperation]] = {op.__op__: op for op in _OPS}
 
 
