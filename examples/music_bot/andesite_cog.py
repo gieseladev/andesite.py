@@ -43,7 +43,7 @@ class AndesiteCog(Cog, name="Andesite"):
     @Cog.listener()
     async def on_ready(self) -> None:
         log.debug("creating andesite client")
-        self.andesite_client = andesite.AndesiteClient.create(
+        self.andesite_client = andesite.create_andesite_client(
             self.options.andesite_http, self.options.andesite_ws,
             self.options.andesite_password,
             # we're only creating the client in the on_ready

@@ -23,7 +23,7 @@ from .state import AbstractAndesiteState
 from .web_socket_client import AbstractAndesiteWebSocket, AbstractAndesiteWebSocketClient, AndesiteWebSocketBase, \
     AndesiteWebSocketInterface
 
-__all__ = ["AndesiteClientBase", "AndesiteClient"]
+__all__ = ["AndesiteClientBase", "AndesiteClient", "create_andesite_client"]
 
 
 class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventTarget):
@@ -84,35 +84,6 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
     @state.setter
     def state(self, value: Optional[AbstractAndesiteState]) -> None:
         self.web_socket.state = value
-
-    @classmethod
-    def create(cls, http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: str, user_id: int, *,
-               state: AbstractAndesiteState = None,
-               loop: asyncio.AbstractEventLoop = None):
-        """Create a new client using the base implementations.
-
-        Args:
-            http_uri: URI for the http endpoint
-            web_socket_uri: URI for the web socket endpoint
-            password: Andesite password for authorization
-            user_id: User ID
-            state: State handler to use. Defaults to `None` meaning that no
-                state is being kept.
-            loop: Specify the event loop to use. The
-                meaning of this value depends on the client,
-                but you can safely omit it.
-
-        Returns:
-            A new combined client with `AndesiteHTTPBase` and `AndesiteWebSocketBase` as
-            its clients.
-        """
-
-        http_client = AndesiteHTTPBase(http_uri, password, loop=loop)
-        web_socket_client = AndesiteWebSocketBase(web_socket_uri, user_id, password, loop=loop)
-
-        inst = cls(http_client, web_socket_client, loop=loop)
-        inst.state = state
-        return inst
 
     @property
     def connected(self) -> Optional[bool]:
@@ -223,3 +194,33 @@ class AndesiteClient(AndesiteWebSocketInterface, AndesiteHTTPInterface, Andesite
         web_socket (AbstractAndesiteWebSocket): WebSocket client which is used for the `AbstractAndesiteWebSocket` methods.
     """
     ...
+
+
+def create_andesite_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
+                           user_id: int, *,
+                           state: AbstractAndesiteState = None,
+                           loop: asyncio.AbstractEventLoop = None):
+    """Create a new combined Andesite client.
+
+    Args:
+        http_uri: URI for the http endpoint
+        web_socket_uri: URI for the web socket endpoint
+        password: Andesite password for authorization
+        user_id: User ID
+        state: State handler to use. Defaults to `None` meaning that no
+            state is being kept.
+        loop: Specify the event loop to use. The
+            meaning of this value depends on the client,
+            but you can safely omit it.
+
+    Returns:
+        A new combined client with `AndesiteHTTPBase` and `AndesiteWebSocketBase` as
+        its clients.
+    """
+
+    http_client = AndesiteHTTPBase(http_uri, password, loop=loop)
+    web_socket_client = AndesiteWebSocketBase(web_socket_uri, user_id, password, loop=loop)
+
+    inst = AndesiteClient(http_client, web_socket_client, loop=loop)
+    inst.state = state
+    return inst

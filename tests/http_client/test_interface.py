@@ -19,6 +19,8 @@ class MockAndesiteHTTP(AndesiteHTTPInterface):
 
     close = AsyncMock()
 
+    reset = AsyncMock()
+
     request = AsyncMock()
 
 

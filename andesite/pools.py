@@ -745,6 +745,7 @@ NodeDetails = Tuple[Union[str, yarl.URL], Optional[str]]
 def create_andesite_pool(http_nodes: Iterable[NodeDetails],
                          web_socket_nodes: Iterable[NodeDetails], *,
                          user_id: int,
+                         state: AbstractAndesiteState = AndesiteState,
                          http_pool_kwargs: Mapping[str, Any] = None,
                          web_socket_pool_kwargs: Mapping[str, Any] = None,
                          loop: asyncio.AbstractEventLoop = None) -> AndesiteClient:
@@ -758,6 +759,8 @@ def create_andesite_pool(http_nodes: Iterable[NodeDetails],
         web_socket_nodes: Tuples of [uri, password] for each WebSocket node to
             connect to.
         user_id: Bot's user id.
+        state: State handler to use for the pools. Defaults to `AndesiteState`,
+            because a state handler is required for node migration to work.
         http_pool_kwargs: Additional keyword arguments to pass to the http pool
             constructor.
         web_socket_pool_kwargs: Additional keyword arguments to pass to the web
@@ -788,4 +791,6 @@ def create_andesite_pool(http_nodes: Iterable[NodeDetails],
 
     web_socket_pool = AndesiteWebSocketPoolBase(web_socket_clients, **web_socket_pool_kwargs)
 
-    return AndesiteClient(http_pool, web_socket_pool, loop=loop)
+    inst = AndesiteClient(http_pool, web_socket_pool, loop=loop)
+    inst.state = state
+    return inst

@@ -15,9 +15,9 @@ and the http client, but it aims to hide this complexity.
 
     import andesite
 
-    # We use the create classmethod because it creates
+    # We use the create function because it creates
     # the underlying clients for us.
-    client = andesite.AndesiteClient.create(
+    client = andesite.create_andesite_client(
         "http://localhost:5000",                # url for the http endpoints
         "ws://localhost:5000/websocket",        # url for the web socket endpoints
         None,                                   # andesite password. None means there's no password
