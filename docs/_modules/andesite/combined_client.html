@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>andesite.combined_client &#8212; andesite.py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="canonical" href="/andesite.py/docs/_modules/andesite/combined_client.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for andesite.combined_client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Combined client for Andesite.</span>
+
+<span class="sd">This client combines the `AndesiteWebSocket` and `AndesiteHTTP` clients.</span>
+
+<span class="sd">There is the `AndesiteClientBase` which is simply the implementation</span>
+<span class="sd">of `AbstractAndesiteWebSocket` and `AbstractAndesiteHTTP` and then there</span>
+<span class="sd">is the actual client `AndesiteClient`.</span>
+
+<span class="sd">You can use the combined client for everything that implements</span>
+<span class="sd">the abstract methods. This means that you can use the combined client</span>
+<span class="sd">for `ClientPool` clients!</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">suppress</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">yarl</span> <span class="k">import</span> <span class="n">URL</span>
+
+<span class="kn">from</span> <span class="nn">.event_target</span> <span class="k">import</span> <span class="n">EventTarget</span>
+<span class="kn">from</span> <span class="nn">.http_client</span> <span class="k">import</span> <span class="n">AbstractAndesiteHTTP</span><span class="p">,</span> <span class="n">AndesiteHTTPBase</span><span class="p">,</span> <span class="n">AndesiteHTTPInterface</span>
+<span class="kn">from</span> <span class="nn">.state</span> <span class="k">import</span> <span class="n">AbstractAndesiteState</span>
+<span class="kn">from</span> <span class="nn">.web_socket_client</span> <span class="k">import</span> <span class="n">AbstractAndesiteWebSocket</span><span class="p">,</span> <span class="n">AbstractAndesiteWebSocketClient</span><span class="p">,</span> <span class="n">AndesiteWebSocketBase</span><span class="p">,</span> \
+    <span class="n">AndesiteWebSocketInterface</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AndesiteClientBase&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteClient&quot;</span><span class="p">,</span> <span class="s2">&quot;create_andesite_client&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AndesiteClientBase"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase">[docs]</a><span class="k">class</span> <span class="nc">AndesiteClientBase</span><span class="p">(</span><span class="n">AbstractAndesiteWebSocket</span><span class="p">,</span> <span class="n">AbstractAndesiteHTTP</span><span class="p">,</span> <span class="n">EventTarget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of `AbstractAndesiteWebSocket` and `AbstractAndesiteHTTP`.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        Use the `create` class method if you want to conveniently create the client.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        http_client: Client to use for the http endpoints.</span>
+<span class="sd">        web_socket_client: Client to use for the web socket communication.</span>
+<span class="sd">        loop: Event loop to use. This is used for the underlying event target.</span>
+
+<span class="sd">    The `event_target` of the web socket client is set to the combined client.</span>
+
+<span class="sd">    This class implements `AbstractAndesiteWebSocketClient` if the underlying web socket client</span>
+<span class="sd">    is an instance of it. However, an `isinstance` check will always return `False`.</span>
+<span class="sd">    If the underlying client is not an instance of `AbstractAndesiteWebSocketClient`, all</span>
+<span class="sd">    related methods will return `None`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        http (AbstractAndesiteHTTP): HTTP client which is used for the `AbstractAndesiteHTTP` methods.</span>
+<span class="sd">        web_socket (AbstractAndesiteWebSocket): WebSocket client which is used for the `AbstractAndesiteWebSocket` methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">http</span><span class="p">:</span> <span class="n">AbstractAndesiteHTTP</span>
+    <span class="n">web_socket</span><span class="p">:</span> <span class="n">AbstractAndesiteWebSocket</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">http_client</span><span class="p">:</span> <span class="n">AbstractAndesiteHTTP</span><span class="p">,</span> <span class="n">web_socket_client</span><span class="p">:</span> <span class="n">AbstractAndesiteWebSocket</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                 <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="n">http_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span> <span class="o">=</span> <span class="n">web_socket_client</span>
+
+        <span class="c1"># set the web socket client&#39;s event target to our event target</span>
+        <span class="c1"># self.event_target will most likely resolve to self, but maybe</span>
+        <span class="c1"># the user is trying to pull some inception shit with nested</span>
+        <span class="c1"># clients and who would I be to deny them their fun?</span>
+        <span class="n">web_socket_client</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">add_dispatcher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="p">)</span>
+
+        <span class="c1"># bind the methods directly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send</span> <span class="o">=</span> <span class="n">web_socket_client</span><span class="o">.</span><span class="n">send</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">http_client</span><span class="o">.</span><span class="n">request</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Whether this client is closed and can no longer be used.</span>
+
+<span class="sd">        This is `True` if either of the underlying clients is closed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">closed</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">closed</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractAndesiteState</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">state</span>
+
+    <span class="nd">@state</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractAndesiteState</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Whether the web socket client is connected and usable.</span>
+
+<span class="sd">        This method returns `None` if the web socket client isn&#39;t a</span>
+<span class="sd">        `AbstractAndesiteWebSocketClient`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="p">,</span> <span class="n">AbstractAndesiteWebSocketClient</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">connected</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">connection_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Connection id of the web socket client.</span>
+
+<span class="sd">        This method returns `None` if the web socket client isn&#39;t a</span>
+<span class="sd">        `AbstractAndesiteWebSocketClient`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="p">,</span> <span class="n">AbstractAndesiteWebSocketClient</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">connection_id</span>
+
+<div class="viewcode-block" id="AndesiteClientBase.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Connect the underlying web socket client.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            max_attempts: Amount of connection attempts to perform before aborting.</span>
+<span class="sd">                If `None`, unlimited attempts will be performed.</span>
+
+<span class="sd">        This method doesn&#39;t do anything if the web socket client isn&#39;t a</span>
+<span class="sd">        `AbstractAndesiteWebSocketClient`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="p">,</span> <span class="n">AbstractAndesiteWebSocketClient</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">max_attempts</span><span class="o">=</span><span class="n">max_attempts</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AndesiteClientBase.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase.disconnect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Disconnect the underlying web socket client.</span>
+
+<span class="sd">        This method doesn&#39;t do anything if the web socket client isn&#39;t a</span>
+<span class="sd">        `AbstractAndesiteWebSocketClient`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="p">,</span> <span class="n">AbstractAndesiteWebSocketClient</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AndesiteClientBase.send"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Send a message using the web socket client.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            Refer to `AbstractAndesiteWebSocket.send` for the documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AndesiteClientBase.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Close the underlying clients.</span>
+
+<span class="sd">        This closes both the http and the web socket client.</span>
+<span class="sd">        Since the `close` method shouldn&#39;t raise an exception anyway,</span>
+<span class="sd">        all exceptions are suppressed. This ensures that both</span>
+<span class="sd">        clients&#39; close methods are called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AndesiteClientBase.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reset the underlying clients so they may be used again.</span>
+
+<span class="sd">        This has the opposite effect of the `close` method making the clients</span>
+<span class="sd">        usable again.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">reset</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket</span><span class="o">.</span><span class="n">reset</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="AndesiteClientBase.request"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClientBase.request">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Perform a request on the http client.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            Refer to `AbstractAndesiteHTTP.request` for the documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AndesiteClient"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteClient">[docs]</a><span class="k">class</span> <span class="nc">AndesiteClient</span><span class="p">(</span><span class="n">AndesiteWebSocketInterface</span><span class="p">,</span> <span class="n">AndesiteHTTPInterface</span><span class="p">,</span> <span class="n">AndesiteClientBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Andesite client which combines the web socket with the http client.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        Use the `create` class method if you want to conveniently create the client.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        http_client: Client to use for the http endpoints.</span>
+<span class="sd">        web_socket_client: Client to use for the web socket communication.</span>
+
+<span class="sd">    This class implements `AbstractAndesiteWebSocketClient` if the underlying web socket client</span>
+<span class="sd">    is an instance of it. However, an `isinstance` check will always return `False`.</span>
+<span class="sd">    If the underlying client is not an instance of `AbstractAndesiteWebSocketClient`, all</span>
+<span class="sd">    related methods will return `None`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        http (AbstractAndesiteHTTP): HTTP client which is used for the `AbstractAndesiteHTTP` methods.</span>
+<span class="sd">        web_socket (AbstractAndesiteWebSocket): WebSocket client which is used for the `AbstractAndesiteWebSocket` methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="o">...</span></div>
+
+
+<div class="viewcode-block" id="create_andesite_client"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.create_andesite_client">[docs]</a><span class="k">def</span> <span class="nf">create_andesite_client</span><span class="p">(</span><span class="n">http_uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URL</span><span class="p">],</span> <span class="n">web_socket_uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URL</span><span class="p">],</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                           <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                           <span class="n">state</span><span class="p">:</span> <span class="n">AbstractAndesiteState</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a new combined Andesite client.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        http_uri: URI for the http endpoint</span>
+<span class="sd">        web_socket_uri: URI for the web socket endpoint</span>
+<span class="sd">        password: Andesite password for authorization</span>
+<span class="sd">        user_id: User ID</span>
+<span class="sd">        state: State handler to use. Defaults to `None` meaning that no</span>
+<span class="sd">            state is being kept.</span>
+<span class="sd">        loop: Specify the event loop to use. The</span>
+<span class="sd">            meaning of this value depends on the client,</span>
+<span class="sd">            but you can safely omit it.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new combined client with `AndesiteHTTPBase` and `AndesiteWebSocketBase` as</span>
+<span class="sd">        its clients.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">http_client</span> <span class="o">=</span> <span class="n">AndesiteHTTPBase</span><span class="p">(</span><span class="n">http_uri</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+    <span class="n">web_socket_client</span> <span class="o">=</span> <span class="n">AndesiteWebSocketBase</span><span class="p">(</span><span class="n">web_socket_uri</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+
+    <span class="n">inst</span> <span class="o">=</span> <span class="n">AndesiteClient</span><span class="p">(</span><span class="n">http_client</span><span class="p">,</span> <span class="n">web_socket_client</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+    <span class="n">inst</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+    <span class="k">return</span> <span class="n">inst</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

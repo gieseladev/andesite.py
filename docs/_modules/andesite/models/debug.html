@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>andesite.models.debug &#8212; andesite.py 0.0.1 documentation</title>
+    <meta charset="utf-8" />
+    <title>andesite.models.debug &#8212; andesite.py 0.1.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -34,14 +32,20 @@
           <div class="body" role="main">
             
   <h1>Source code for andesite.models.debug</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Debug models for Andesite.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Debug models for Andesite.</span>
+
+<span class="sd">These models are used in either `Stats` which represents the Andesite</span>
+<span class="sd">stats returned by `AndesiteWebSocketInterface.get_stats` or `Error` which is</span>
+<span class="sd">used to represent an Andesite error.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">map_build_values_from_raw</span><span class="p">,</span> <span class="n">map_convert_values</span><span class="p">,</span> <span class="n">map_rename_keys</span><span class="p">,</span> <span class="n">seq_build_all_items_from_raw</span>
+<span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">map_build_values_from_raw</span><span class="p">,</span> <span class="n">map_convert_values</span><span class="p">,</span> <span class="n">map_rename_keys</span><span class="p">,</span> \
+    <span class="n">seq_build_all_items_from_raw</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;StackFrame&quot;</span><span class="p">,</span> <span class="s2">&quot;Error&quot;</span><span class="p">,</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;StackFrame&quot;</span><span class="p">,</span> <span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteException&quot;</span><span class="p">,</span>
            <span class="s2">&quot;PlayersStats&quot;</span><span class="p">,</span> <span class="s2">&quot;RuntimeVMStats&quot;</span><span class="p">,</span> <span class="s2">&quot;RuntimeSpecStats&quot;</span><span class="p">,</span> <span class="s2">&quot;RuntimeVersionStats&quot;</span><span class="p">,</span> <span class="s2">&quot;RuntimeStats&quot;</span><span class="p">,</span> <span class="s2">&quot;OSStats&quot;</span><span class="p">,</span> <span class="s2">&quot;CPUStats&quot;</span><span class="p">,</span> <span class="s2">&quot;ClassLoadingStats&quot;</span><span class="p">,</span>
            <span class="s2">&quot;ThreadStats&quot;</span><span class="p">,</span> <span class="s2">&quot;CompilationStats&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryCommonUsageStats&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryStats&quot;</span><span class="p">,</span> <span class="s2">&quot;GCStats&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryPoolStats&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryManagerStats&quot;</span><span class="p">,</span>
            <span class="s2">&quot;FrameStats&quot;</span><span class="p">,</span>
@@ -50,7 +54,7 @@
 
 <div class="viewcode-block" id="StackFrame"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.debug.StackFrame">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">StackFrame</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Andesite stack frame.</span>
 
 <span class="sd">    Can be found in `Error.stack`.</span>
 
@@ -90,6 +94,10 @@
 <span class="k">class</span> <span class="nc">Error</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Andesite error.</span>
 
+<span class="sd">    You can convert the Andesite error data into a Python exception</span>
+<span class="sd">    using the `as_python_exception` method and the `raise_python_exception` to</span>
+<span class="sd">    raise it.</span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        class_name (str): class of the error</span>
 <span class="sd">        message (Optional[str]): message of the error</span>
@@ -120,25 +128,33 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">exc</span><span class="o">.</span><span class="n">__cause__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cause</span><span class="o">.</span><span class="n">as_python_exception</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">exc</span></div></div>
+        <span class="k">return</span> <span class="n">exc</span></div>
+
+<div class="viewcode-block" id="Error.raise_error"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.debug.Error.raise_error">[docs]</a>    <span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Raise the Andesite error as an `AndesiteException`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AndesiteException: Generated using the `as_python_exception` method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_python_exception</span><span class="p">()</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">AndesiteException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="AndesiteException"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.debug.AndesiteException">[docs]</a><span class="k">class</span> <span class="nc">AndesiteException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Andesite&#39;s `Error` represented as python exceptions.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        class_name (str): Class name of the error</span>
-<span class="sd">        message (str): message of the error</span>
+<span class="sd">        message (Optional[str]): message of the error</span>
 <span class="sd">        stack (List[StackFrame]): cause of the error</span>
 <span class="sd">        suppressed (List[Error]): suppressed errors</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">StackFrame</span><span class="p">]</span>
     <span class="n">suppressed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Error</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">StackFrame</span><span class="p">],</span> <span class="n">suppressed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Error</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">StackFrame</span><span class="p">],</span> <span class="n">suppressed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Error</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">class_name</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">class_name</span> <span class="o">=</span> <span class="n">class_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
@@ -146,7 +162,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span> <span class="o">=</span> <span class="n">suppressed</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.class_name}</span><span class="s2">: </span><span class="si">{self.message}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.class_name}</span><span class="s2">: </span><span class="si">{self.message}</span><span class="s2">&quot;</span></div>
 
 
 <span class="c1"># STATISTICS</span>
@@ -565,13 +581,11 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -592,7 +606,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

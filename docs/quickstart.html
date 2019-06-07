@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Quick-start &#8212; andesite.py 0.0.1 documentation</title>
+    <meta charset="utf-8" />
+    <title>Quick-start &#8212; andesite.py 0.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -37,7 +35,58 @@
             
   <div class="section" id="quick-start">
 <h1>Quick-start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
-<p>TODO</p>
+<div class="section" id="connecting-to-an-andesite-node">
+<h2>Connecting to an Andesite node<a class="headerlink" href="#connecting-to-an-andesite-node" title="Permalink to this headline">¶</a></h2>
+<p>Let’s imagine the most basic use case first:
+You have one Andesite server which you would like to connect to.
+For this case there’s the <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteClient</span></code> which does this for you.
+In reality the andesite client is a combination of both the web socket client
+and the http client, but it aims to hide this complexity.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">andesite</span>
+
+<span class="c1"># We use the create function because it creates</span>
+<span class="c1"># the underlying clients for us.</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">create_andesite_client</span><span class="p">(</span>
+    <span class="s2">&quot;http://localhost:5000&quot;</span><span class="p">,</span>                <span class="c1"># url for the http endpoints</span>
+    <span class="s2">&quot;ws://localhost:5000/websocket&quot;</span><span class="p">,</span>        <span class="c1"># url for the web socket endpoints</span>
+    <span class="bp">None</span><span class="p">,</span>                                   <span class="c1"># andesite password. None means there&#39;s no password</span>
+    <span class="mi">549905730099216384</span><span class="p">,</span>                     <span class="c1"># your bot&#39;s user id</span>
+<span class="p">)</span>
+
+<span class="c1"># connect the client</span>
+<span class="n">await</span> <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-pools">
+<h2>Using pools<a class="headerlink" href="#using-pools" title="Permalink to this headline">¶</a></h2>
+<p>To create a pool you can just use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTPPool</span></code> and
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocketPool</span></code> classes which both take an iterable of their respective
+clients. However, if you want to create a combined Andesite client with the
+default implementation you can use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">create_andesite_pool</span></code> function.</p>
+<p>The great thing is that you can use the pools just like any other client.
+The http client pool uses a round-robin to delegate each request to a separate
+client and the WebSocket pool assigns the best client for each guild and
+migrates the state to another client if a node goes down.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">andesite</span>
+
+<span class="n">http_nodes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;http://localhost:5000&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;http://example.com:5000&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">web_socket_nodes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;ws://localhost:5000/websocket&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;ws://example.com:5000/websocket&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;ws://example2.com:5000/websocket&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">create_andesite_pool</span><span class="p">(</span><span class="n">http_nodes</span><span class="p">,</span> <span class="n">web_socket_nodes</span><span class="p">,</span>
+    <span class="n">user_id</span><span class="o">=</span><span class="mi">549905730099216384</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -60,7 +109,11 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick-start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick-start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#connecting-to-an-andesite-node">Connecting to an Andesite node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-pools">Using pools</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
 </ul>
 
@@ -74,13 +127,11 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -101,7 +152,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

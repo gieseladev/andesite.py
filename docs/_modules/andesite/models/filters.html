@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>andesite.models.filters &#8212; andesite.py 0.0.1 documentation</title>
+    <meta charset="utf-8" />
+    <title>andesite.models.filters &#8212; andesite.py 0.1.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -39,20 +37,37 @@
 <span class="sd">Attributes:</span>
 <span class="sd">    FILTER_MAP (Mapping[str, Type[Filter]]): Mapping from filter name to filter class.</span>
 <span class="sd">        See: `get_filter_model`.</span>
+<span class="sd">    FilterMapLike (Union[FilterMap, Dict[str, Union[Filter, RawDataType]]]): (Type alias) Type of objects which</span>
+<span class="sd">        can be used as filter maps. This includes the `FilterMap`.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">eq</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> \
+    <span class="n">overload</span>
 
 <span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">convert_to_raw</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">,</span> <span class="s2">&quot;EqualizerBand&quot;</span><span class="p">,</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">,</span> <span class="s2">&quot;Karaoke&quot;</span><span class="p">,</span> <span class="s2">&quot;Timescale&quot;</span><span class="p">,</span> <span class="s2">&quot;Tremolo&quot;</span><span class="p">,</span> <span class="s2">&quot;Vibrato&quot;</span><span class="p">,</span> <span class="s2">&quot;VolumeFilter&quot;</span><span class="p">,</span> <span class="s2">&quot;get_filter_model&quot;</span><span class="p">,</span> <span class="s2">&quot;FilterMap&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;EqualizerBand&quot;</span><span class="p">,</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Karaoke&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Timescale&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Tremolo&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Vibrato&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;VolumeFilter&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;get_filter_model&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;FilterMap&quot;</span><span class="p">,</span> <span class="s2">&quot;FilterMapLike&quot;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                         <span class="n">low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">low_inc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">up</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">up_inc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Ensure a value is within an interval.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the provided value isn&#39;t within the given</span>
+<span class="sd">            constraints.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">low_symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">up_symbol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">valid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
@@ -82,7 +97,13 @@
 
 
 <span class="k">class</span> <span class="nc">_Filter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Filter with name.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Filter with name.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        __filter_name__ (str): Name of the filter.</span>
+<span class="sd">            This is a magic attribute used by the library</span>
+<span class="sd">            to convert the filter into its Andesite representation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__filter_name__</span><span class="p">:</span> <span class="nb">str</span>
 
 
@@ -199,7 +220,7 @@
             <span class="k">if</span> <span class="n">gain</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">bands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EqualizerBand</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">gain</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">bands</span><span class="p">)</span></div>
 
     <span class="nd">@overload</span>
     <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EqualizerBand</span><span class="p">:</span>
@@ -270,7 +291,7 @@
         <span class="sd">&quot;&quot;&quot;Get a list of all the bands&#39; gains in order.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            use_default: Whether or not to replace non-existant values</span>
+<span class="sd">            use_default: Whether or not to replace non-existent values</span>
 <span class="sd">                with the default gain.</span>
 <span class="sd">                If `False` and band doesn&#39;t have a gain set, `None`</span>
 <span class="sd">                is used instead.</span>
@@ -447,7 +468,8 @@
 
 
 <span class="n">_FILTERS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">Equalizer</span><span class="p">,</span> <span class="n">Karaoke</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">,</span> <span class="n">VolumeFilter</span><span class="p">}</span>
-<span class="n">FILTER_MAP</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">andesite_filter</span><span class="o">.</span><span class="n">__filter_name__</span><span class="p">:</span> <span class="n">andesite_filter</span> <span class="k">for</span> <span class="n">andesite_filter</span> <span class="ow">in</span> <span class="n">_FILTERS</span><span class="p">}</span>
+<span class="n">FILTER_MAP</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">andesite_filter</span><span class="o">.</span><span class="n">__filter_name__</span><span class="p">:</span> <span class="n">andesite_filter</span> <span class="k">for</span> <span class="n">andesite_filter</span> <span class="ow">in</span>
+                                          <span class="n">_FILTERS</span><span class="p">}</span>
 
 
 <div class="viewcode-block" id="get_filter_model"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.get_filter_model">[docs]</a><span class="k">def</span> <span class="nf">get_filter_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]:</span>
@@ -465,7 +487,7 @@
 
 
 <div class="viewcode-block" id="FilterMap"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">FilterMap</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">FilterMap</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Custom mapping type for filters.</span>
 
 <span class="sd">    Attributes:</span>
@@ -475,9 +497,17 @@
 <span class="sd">    contains the actual filter data. The class exposes the known filters as</span>
 <span class="sd">    properties, but it also supports unknown filters should the library</span>
 <span class="sd">    become outdated.</span>
+
+<span class="sd">    You can also use this as a wrapper for an existing filter dict.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">filters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="p">:</span> <span class="s2">&quot;FilterMapLike&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="n">FilterMap</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span>
 
     <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">FilterMap</span><span class="p">):</span>
@@ -501,6 +531,9 @@
 
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 <div class="viewcode-block" id="FilterMap.get_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap.get_filter">[docs]</a>    <span class="k">def</span> <span class="nf">get_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">FT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">FT</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the filter with the name.</span>
@@ -562,7 +595,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
-        <span class="n">filters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">filters</span><span class="p">:</span> <span class="n">RawDataType</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">filter_value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">filter_cls</span> <span class="o">=</span> <span class="n">get_filter_model</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -577,6 +610,9 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;filters&quot;</span><span class="p">]</span></div>
+
+
+<span class="n">FilterMapLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">FilterMap</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Filter</span><span class="p">,</span> <span class="n">RawDataType</span><span class="p">]]]</span>
 </pre></div>
 
           </div>
@@ -612,13 +648,11 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -639,7 +673,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

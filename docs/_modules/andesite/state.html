@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>andesite.state &#8212; andesite.py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="canonical" href="/andesite.py/docs/_modules/andesite/state.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for andesite.state</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;State handler for Andesite clients.</span>
+
+<span class="sd">If you want to store your state externally for example in a database, there</span>
+<span class="sd">are two approaches you can use. You can either implement the</span>
+<span class="sd">`AbstractAndesiteState` and use the default `AndesitePlayerState` (which can be</span>
+<span class="sd">easily converted to and from JSON), or you can use the default `AndesiteState`</span>
+<span class="sd">with a custom `AbstractPlayerState` implementation.</span>
+<span class="sd">Both approaches have their advantages, but you should always consider that while</span>
+<span class="sd">the get operations are often performed together (especially during state</span>
+<span class="sd">migration), the set operations are not.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span> <span class="nn">.event_target</span> <span class="k">import</span> <span class="n">NamedEvent</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">AndesiteEvent</span><span class="p">,</span> <span class="n">Player</span><span class="p">,</span> <span class="n">PlayerUpdate</span><span class="p">,</span> <span class="n">TrackEndEvent</span><span class="p">,</span> <span class="n">TrackExceptionEvent</span><span class="p">,</span> <span class="n">TrackStuckEvent</span><span class="p">,</span> \
+    <span class="n">VoiceServerUpdate</span>
+<span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">convert_to_raw</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AbstractPlayerState&quot;</span><span class="p">,</span> <span class="s2">&quot;PlayerState&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;AbstractAndesiteState&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteState&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;player_to_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;player_from_raw&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;voice_server_update_to_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;voice_server_update_from_raw&quot;</span><span class="p">]</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="player_to_raw"><a class="viewcode-back" href="../../reference/state.html#andesite.state.player_to_raw">[docs]</a><span class="k">def</span> <span class="nf">player_to_raw</span><span class="p">(</span><span class="n">player</span><span class="p">:</span> <span class="n">Player</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Convert the given player to a JSON-serialisable dict.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        player: Player to convert.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A JSON-Serialisable dict containing all the data of the player.</span>
+<span class="sd">        This data can be passed to `player_from_raw` which creates a `Player`</span>
+<span class="sd">        instance again.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">player</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="player_from_raw"><a class="viewcode-back" href="../../reference/state.html#andesite.state.player_from_raw">[docs]</a><span class="k">def</span> <span class="nf">player_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Player</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Recreate a player from the converted dict.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: Data returned by `player_to_raw` to convert to a Player.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">          Exception: If the data can&#39;t be used to create a Player.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Created `Player` instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">Player</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="voice_server_update_to_raw"><a class="viewcode-back" href="../../reference/state.html#andesite.state.voice_server_update_to_raw">[docs]</a><span class="k">def</span> <span class="nf">voice_server_update_to_raw</span><span class="p">(</span><span class="n">update</span><span class="p">:</span> <span class="n">VoiceServerUpdate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Convert the given voice server update to a JSON-serialisable dict.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        update: Voice server update to convert.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A JSON-Serialisable dict containing all the data of the voice server</span>
+<span class="sd">        update. This data can be passed to `voice_server_update_from_raw` which</span>
+<span class="sd">        creates a `VoiceServerUpdate` instance again.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">update</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="voice_server_update_from_raw"><a class="viewcode-back" href="../../reference/state.html#andesite.state.voice_server_update_from_raw">[docs]</a><span class="k">def</span> <span class="nf">voice_server_update_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">VoiceServerUpdate</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Recreate a voice server update from the converted dict.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: Data returned by `voice_server_update_to_raw` to convert.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">          Exception: If the data can&#39;t be used to create a voice server update.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Created `VoiceServerUpdate` instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">VoiceServerUpdate</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractPlayerState"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState">[docs]</a><span class="k">class</span> <span class="nc">AbstractPlayerState</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;State of a single Andesite player.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        Unless you&#39;re doing something weird you don&#39;t need to call the setter</span>
+<span class="sd">        functions. If the player state is managed by an `AbstractAndesiteState`</span>
+<span class="sd">        which is connected to a client then everything is done for you.</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        `AndesitePlayerState` for an in-memory implementation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">guild_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;ID of the guild the player is for.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+<div class="viewcode-block" id="AbstractPlayerState.get_player"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState.get_player">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Player</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the player information.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `Player` information or `None` if no player information</span>
+<span class="sd">            is present.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractPlayerState.set_player"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState.set_player">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Player</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set the current player.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            player: Player data to set. May be `None` to remove the player</span>
+<span class="sd">                information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractPlayerState.get_voice_server_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState.get_voice_server_update">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VoiceServerUpdate</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the last voice server update that was sent to the player.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The last voice server update or `None` if none exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractPlayerState.set_voice_server_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState.set_voice_server_update">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VoiceServerUpdate</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set the last voice server update.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            update: Voice server update to set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractPlayerState.get_track"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState.get_track">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_track</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the currently playing track.&quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractPlayerState.set_track"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractPlayerState.set_track">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Set the currently playing track.&quot;&quot;&quot;</span>
+        <span class="o">...</span></div></div>
+
+
+<div class="viewcode-block" id="PlayerState"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState">[docs]</a><span class="k">class</span> <span class="nc">PlayerState</span><span class="p">(</span><span class="n">AbstractPlayerState</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Default player state storing the state in memory.</span>
+
+<span class="sd">    The player state can be converted to a JSON-serialisable dict using</span>
+<span class="sd">    `to_raw`. A state can also be created from said dict using the classmethod</span>
+<span class="sd">    `from_raw`. These methods exist to make it easy to implement a custom</span>
+<span class="sd">    `AbstractAndesiteState` which loads and stores serialised player states.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_guild_id</span> <span class="o">=</span> <span class="n">guild_id</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_player</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_voice_server_update</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">guild_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guild_id</span>
+
+<div class="viewcode-block" id="PlayerState.get_player"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.get_player">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Player</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_player</span></div>
+
+<div class="viewcode-block" id="PlayerState.set_player"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.set_player">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Player</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_player</span> <span class="o">=</span> <span class="n">player</span></div>
+
+<div class="viewcode-block" id="PlayerState.get_track"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.get_track">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_track</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track</span></div>
+
+<div class="viewcode-block" id="PlayerState.set_track"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.set_track">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track</span> <span class="o">=</span> <span class="n">track</span></div>
+
+<div class="viewcode-block" id="PlayerState.get_voice_server_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.get_voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VoiceServerUpdate</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voice_server_update</span></div>
+
+<div class="viewcode-block" id="PlayerState.set_voice_server_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.set_voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VoiceServerUpdate</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_voice_server_update</span> <span class="o">=</span> <span class="n">update</span></div>
+
+<div class="viewcode-block" id="PlayerState.from_raw"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AbstractPlayerState</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create an `AbstractPlayerState` from the raw data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Raw player state data as returned by `to_raw`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new instance of `PlayerState` describing the same state</span>
+<span class="sd">            as the data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inst</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;guild_id&quot;</span><span class="p">])</span>
+
+        <span class="n">inst</span><span class="o">.</span><span class="n">_track</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;track&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">raw_player</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;player&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raw_player</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">inst</span><span class="o">.</span><span class="n">_player</span> <span class="o">=</span> <span class="n">player_from_raw</span><span class="p">(</span><span class="n">raw_player</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">raw_voice_server_update</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;raw_voice_server_update&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raw_voice_server_update</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">inst</span><span class="o">.</span><span class="n">_voice_server_update</span> <span class="o">=</span> <span class="n">voice_server_update_from_raw</span><span class="p">(</span><span class="n">raw_voice_server_update</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inst</span></div>
+
+<div class="viewcode-block" id="PlayerState.to_raw"><a class="viewcode-back" href="../../reference/state.html#andesite.state.PlayerState.to_raw">[docs]</a>    <span class="k">def</span> <span class="nf">to_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Convert the player state into a JSON-serialisable dict.</span>
+
+<span class="sd">        Use the classmethod `from_raw` to re-create a `PlayerState` using the</span>
+<span class="sd">        returned data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_player</span><span class="p">:</span>
+            <span class="n">raw_player</span> <span class="o">=</span> <span class="n">player_to_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_player</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">raw_player</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_voice_server_update</span><span class="p">:</span>
+            <span class="n">raw_voice_server_update</span> <span class="o">=</span> <span class="n">voice_server_update_to_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_voice_server_update</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">raw_voice_server_update</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;guild_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guild_id</span><span class="p">,</span>
+            <span class="s2">&quot;player&quot;</span><span class="p">:</span> <span class="n">raw_player</span><span class="p">,</span>
+            <span class="s2">&quot;track&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track</span><span class="p">,</span>
+            <span class="s2">&quot;voice_server_update&quot;</span><span class="p">:</span> <span class="n">raw_voice_server_update</span><span class="p">,</span>
+        <span class="p">}</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_run_with_error_callback</span><span class="p">(</span><span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">err_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="ne">Exception</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+                             <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">coro</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">err_cb</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">wrapper</span><span class="p">(),</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AbstractAndesiteState"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState">[docs]</a><span class="k">class</span> <span class="nc">AbstractAndesiteState</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Andesite state handler.</span>
+
+<span class="sd">    Keeps track of the state of an Andesite node.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AbstractAndesiteState.handle_andesite_message"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.handle_andesite_message">[docs]</a>    <span class="k">def</span> <span class="nf">handle_andesite_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">NamedEvent</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                                <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Handles the event of an andesite message being received.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message: Message that was sent.</span>
+<span class="sd">            loop: Event loop to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">PlayerUpdate</span><span class="p">):</span>
+            <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_player_update</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">AndesiteEvent</span><span class="p">):</span>
+            <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_andesite_event</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">err_cb</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_handle_message_error</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_run_with_error_callback</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">err_cb</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.handle_sent_message"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.handle_sent_message">[docs]</a>    <span class="k">def</span> <span class="nf">handle_sent_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+                            <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Handles the event of a message being sent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Guild id the message was sent for.</span>
+<span class="sd">            op: Operation code.</span>
+<span class="sd">            payload: Raw payload of the message.</span>
+<span class="sd">            loop: Event loop to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;voice-server-update&quot;</span><span class="p">:</span>
+            <span class="n">update</span> <span class="o">=</span> <span class="n">VoiceServerUpdate</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;sessionId&quot;</span><span class="p">],</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">])</span>
+            <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_voice_server_update</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">update</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">err_cb</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_handle_sent_message_error</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_run_with_error_callback</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">err_cb</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.handle_player_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.handle_player_update">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_player_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">PlayerUpdate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Handle a player update.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            update: Update that was received.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.handle_andesite_event"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.handle_andesite_event">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_andesite_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">AndesiteEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Handle an Andesite event.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event: Andesite event that was received.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.handle_voice_server_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.handle_voice_server_update">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">VoiceServerUpdate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Handle a voice server update.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Guild the update applies to.</span>
+<span class="sd">            update: Voice server update.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.on_handle_message_error"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.on_handle_message_error">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">on_handle_message_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">NamedEvent</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Called when an error occurs during message handling.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message: Message that caused the error</span>
+<span class="sd">            exc: Exception that was raised.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{self}</span><span class="s2"> uncaught error </span><span class="si">{exc}</span><span class="s2"> when handling message </span><span class="si">{message}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.on_handle_sent_message_error"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.on_handle_sent_message_error">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">on_handle_sent_message_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+                                           <span class="n">exc</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Called when an error occurs during sent message handling.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Guild the message was sent for.</span>
+<span class="sd">            op: Operation code.</span>
+<span class="sd">            payload: Raw payload which was sent.</span>
+<span class="sd">            exc: Exception that was raised.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{self}</span><span class="s2"> uncaught error </span><span class="si">{exc}</span><span class="s2"> when handling sent message </span><span class="si">{op}</span><span class="s2"> for guild </span><span class="si">{guild_id}</span><span class="s2">: </span><span class="si">{exc}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                  <span class="n">f</span><span class="s2">&quot;Payload: </span><span class="si">{payload}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractAndesiteState.get_player_state"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AbstractAndesiteState.get_player_state">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractPlayerState</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the player state of a guild.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            guild_id: Guild to get player state for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Player state for the given guild or `None` if the guild</span>
+<span class="sd">            doesn&#39;t have a player state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div></div>
+
+
+<span class="n">PST</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;PST&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">AbstractPlayerState</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AndesiteState"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AndesiteState">[docs]</a><span class="k">class</span> <span class="nc">AndesiteState</span><span class="p">(</span><span class="n">AbstractAndesiteState</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">PST</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Default implementation of `AbstractAndesiteState`.</span>
+
+<span class="sd">    Stores the player states in memory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state_factory: Callable which when called with a guild id, creates an</span>
+<span class="sd">            `AbstractPlayerState`. The default is `PlayerState`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        player_states (Dict[int, AbstractPlayerState]): Mapping from guild id</span>
+<span class="sd">            to the corresponding player state.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">player_states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PST</span><span class="p">]</span>
+    <span class="n">_state_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PST</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PST</span><span class="p">]</span> <span class="o">=</span> <span class="n">PlayerState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state_factory</span> <span class="o">=</span> <span class="n">state_factory</span>
+
+    <span class="k">def</span> <span class="nf">_get_or_create_player_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PST</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">player_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span><span class="p">[</span><span class="n">guild_id</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">player_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span><span class="p">[</span><span class="n">guild_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_factory</span><span class="p">(</span><span class="n">guild_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">player_state</span>
+
+<div class="viewcode-block" id="AndesiteState.handle_player_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AndesiteState.handle_player_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_player_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">PlayerUpdate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{self}</span><span class="s2"> handling player update: </span><span class="si">{update}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_player_state</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">guild_id</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">state</span><span class="o">.</span><span class="n">set_player</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">state</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AndesiteState.handle_andesite_event"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AndesiteState.handle_andesite_event">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_andesite_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">AndesiteEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{self}</span><span class="s2"> handling andesite event: </span><span class="si">{event}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="p">(</span><span class="n">TrackEndEvent</span><span class="p">,</span> <span class="n">TrackExceptionEvent</span><span class="p">,</span> <span class="n">TrackStuckEvent</span><span class="p">)):</span>
+            <span class="n">track</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">track</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">track</span>
+
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_player_state</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">guild_id</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">state</span><span class="o">.</span><span class="n">set_track</span><span class="p">(</span><span class="n">track</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AndesiteState.handle_voice_server_update"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AndesiteState.handle_voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">VoiceServerUpdate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">player_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_player_state</span><span class="p">(</span><span class="n">guild_id</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">player_state</span><span class="o">.</span><span class="n">set_voice_server_update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AndesiteState.get_player_state"><a class="viewcode-back" href="../../reference/state.html#andesite.state.AndesiteState.get_player_state">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PST</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">guild_id</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,12 +1,10 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Introduction &#8212; andesite.py 0.0.1 documentation</title>
+    <meta charset="utf-8" />
+    <title>Introduction &#8212; andesite.py 0.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -37,13 +35,36 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>andesite.py is a client library for <a class="reference external" href="https://github.com/natanbc/andesite-node">Andesite</a>.</p>
+<p>andesite.py is a client library for <a class="reference external" href="https://github.com/natanbc/andesite-node">Andesite</a>.
+It supports both HTTP and web socket communication.</p>
+<p>There are several clients for different use cases.
+Starting with specific clients for either HTTP or web sockets, to
+a client which merges both into a single one, and even client pools for multiple
+Andesite nodes with node migration and region distribution.
+All of the complexity is hidden and all clients use the same intuitive methods,
+so if you decided to upgrade you won’t even have to modify your code.</p>
+<p>The library doesn’t force you to use its implementation though, you can create
+your own clients and use them the same way.</p>
 <div class="section" id="installing">
 <h2>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h2>
-<p>You can download the library from <a class="reference external" href="https://pypi.org/project/andesite.py">PyPI</a> using pip:</p>
+<p>You can download the library from <a class="reference external" href="https://pypi.org/project/andesite.py">PyPI</a>
+using pip:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">andesite</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
+<p>andesite.py doesn’t have many dependencies, the following is a list of all
+required packages:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://aiohttp.readthedocs.io">aiohttp</a>: HTTP requests to Andesite</p></li>
+<li><p><a class="reference external" href="https://websockets.readthedocs.io">websockets</a>: Web socket communication
+with Andesite</p></li>
+<li><p><a class="reference external" href="https://github.com/gieseladev/lettercase">lettercase</a>: Used for efficiently
+converting the letter casing of message keys.</p></li>
+<li><p><a class="reference external" href="https://yarl.readthedocs.io">yarl</a>: For URL handling. This is already a
+dependency of aiohttp.</p></li>
+</ul>
+<p>You don’t even have to worry about that, they are installed automatically when
+you install andesite.py.</p>
 </div>
 </div>
 
@@ -84,13 +105,11 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -111,7 +130,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
