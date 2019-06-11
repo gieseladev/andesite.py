@@ -37,7 +37,7 @@ import yarl
 from andesite import AndesiteClient
 from .event_target import EventTarget, NamedEvent
 from .http_client import AbstractAndesiteHTTP, AndesiteHTTPError, AndesiteHTTPInterface
-from .state import AbstractAndesiteState, AndesiteState
+from .state import AbstractAndesiteState, StateArgumentType
 from .web_socket_client import AbstractAndesiteWebSocket, AndesiteWebSocketInterface
 
 __all__ = ["PoolException", "PoolEmptyError",
@@ -432,7 +432,7 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         clients: Web socket clients to initialise the pool with.
         state: State handler to use for this pool. The state is used
             to migrate nodes and defaults to the in-memory `AndesiteState`.
-            You can however disable the state by passing `None`.
+            You can however disable the state by passing `False`.
         scoring_function: Scoring function to evaluate clients with.
             This is a function which takes `ScoringData` as its only argument
             and returns a comparable object. The function can be a coroutine.
@@ -457,7 +457,7 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
     _region_comparator: RegionGuildComparator
 
     def __init__(self, clients: Iterable[AbstractAndesiteWebSocket], *,
-                 state: Optional[AbstractAndesiteState] = AndesiteState,
+                 state: StateArgumentType = None,
                  scoring_function: PoolScoringFunction = None,
                  region_comparator: RegionGuildComparator = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
@@ -745,7 +745,7 @@ NodeDetails = Tuple[Union[str, yarl.URL], Optional[str]]
 def create_andesite_pool(http_nodes: Iterable[NodeDetails],
                          web_socket_nodes: Iterable[NodeDetails], *,
                          user_id: int,
-                         state: AbstractAndesiteState = AndesiteState,
+                         state: StateArgumentType = None,
                          http_pool_kwargs: Mapping[str, Any] = None,
                          web_socket_pool_kwargs: Mapping[str, Any] = None,
                          loop: asyncio.AbstractEventLoop = None) -> AndesiteClient:
@@ -760,7 +760,8 @@ def create_andesite_pool(http_nodes: Iterable[NodeDetails],
             connect to.
         user_id: Bot's user id.
         state: State handler to use for the pools. Defaults to `AndesiteState`,
-            because a state handler is required for node migration to work.
+            because a state handler is required for node migration to work. You
+            can pass `False` to disable state handling though.
         http_pool_kwargs: Additional keyword arguments to pass to the http pool
             constructor.
         web_socket_pool_kwargs: Additional keyword arguments to pass to the web
@@ -792,5 +793,7 @@ def create_andesite_pool(http_nodes: Iterable[NodeDetails],
     web_socket_pool = AndesiteWebSocketPoolBase(web_socket_clients, **web_socket_pool_kwargs)
 
     inst = AndesiteClient(http_pool, web_socket_pool, loop=loop)
+
+    # the setter will make sure the state is proper
     inst.state = state
     return inst

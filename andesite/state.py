@@ -8,23 +8,28 @@ with a custom `AbstractPlayerState` implementation.
 Both approaches have their advantages, but you should always consider that while
 the get operations are often performed together (especially during state
 migration), the set operations are not.
+
+Attributes:
+    StateArgumentType (Union[AbstractAndesiteState, bool, None]): (Type alias)
+        types which can be passed as a state handler to a client.
 """
 
 import abc
 import asyncio
 import functools
 import logging
-from typing import Any, Awaitable, Callable, Coroutine, Dict, Generic, Optional, TypeVar
+from typing import Any, Awaitable, Callable, Coroutine, Dict, Generic, Optional, TypeVar, Union
 
 from .event_target import NamedEvent
-from .models import AndesiteEvent, Player, PlayerUpdate, TrackEndEvent, TrackExceptionEvent, TrackStuckEvent, \
-    VoiceServerUpdate
+from .models import AndesiteEvent, Player, PlayerUpdate, TrackEndEvent, TrackExceptionEvent, TrackStartEvent, \
+    TrackStuckEvent, VoiceServerUpdate
 from .transform import build_from_raw, convert_to_raw
 
 __all__ = ["AbstractPlayerState", "PlayerState",
            "AbstractAndesiteState", "AndesiteState",
            "player_to_raw", "player_from_raw",
-           "voice_server_update_to_raw", "voice_server_update_from_raw"]
+           "voice_server_update_to_raw", "voice_server_update_from_raw",
+           "StateArgumentType", "_get_state"]
 
 log = logging.getLogger(__name__)
 
@@ -98,6 +103,9 @@ class AbstractPlayerState(abc.ABC):
     See Also:
         `AndesitePlayerState` for an in-memory implementation.
     """
+
+    def __str__(self) -> str:
+        return f"PlayerState(guild_id={self.guild_id})"
 
     @property
     @abc.abstractmethod
@@ -266,6 +274,9 @@ class AbstractAndesiteState(abc.ABC):
     Keeps track of the state of an Andesite node.
     """
 
+    def __str__(self) -> str:
+        return f"{type(self).__name__}"
+
     def handle_andesite_message(self, message: NamedEvent, *,
                                 loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
         """Handles the event of an andesite message being received.
@@ -391,6 +402,9 @@ class AndesiteState(AbstractAndesiteState, Generic[PST]):
 
         self._state_factory = state_factory
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(state_factory={self._state_factory!r})"
+
     def _get_or_create_player_state(self, guild_id: int) -> PST:
         try:
             player_state = self.player_states[guild_id]
@@ -412,8 +426,10 @@ class AndesiteState(AbstractAndesiteState, Generic[PST]):
 
         if isinstance(event, (TrackEndEvent, TrackExceptionEvent, TrackStuckEvent)):
             track = None
-        else:
+        elif isinstance(event, TrackStartEvent):
             track = event.track
+        else:
+            return
 
         state = self._get_or_create_player_state(event.guild_id)
         await state.set_track(track)
@@ -424,3 +440,31 @@ class AndesiteState(AbstractAndesiteState, Generic[PST]):
 
     async def get_player_state(self, guild_id: int) -> Optional[PST]:
         return self.player_states.get(guild_id)
+
+
+StateArgumentType = Union[AbstractAndesiteState, bool, None]
+
+
+def _get_state(state: StateArgumentType) -> Optional[AbstractAndesiteState]:
+    """Handle state creation/suppression.
+
+    Args:
+        state: State which was passed to the function.
+
+    Raises:
+        TypeError: If an invalid state argument was passed.
+
+    Returns:
+        An instance of `AndesiteState` if state is `None` or `True`,
+        `None` if state is `False`, and `state` itself if it's a state.
+    """
+    if state is None or state is True:
+        return AndesiteState()
+    elif state is False:
+        return None
+    elif isinstance(state, AbstractAndesiteState):
+        return state
+    else:
+        raise TypeError("State must implement AbstractAndesiteState. "
+                        "You can also use False to disable state handling or"
+                        "None to use the default state handler.")

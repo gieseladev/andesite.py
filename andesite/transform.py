@@ -26,11 +26,12 @@ __all__ = ["RawDataType",
            "convert_to_raw", "build_from_raw",
            "seq_build_all_items_from_raw",
            "map_build_all_values_from_raw",
-           "MapFunction", "map_convert_value", "map_convert_values", "map_convert_values_all", "map_build_values_from_raw",
+           "MapFunction", "map_convert_value", "map_convert_values", "map_convert_values_all",
+           "map_build_values_from_raw",
            "from_milli", "to_milli",
            "from_centi", "to_centi",
            "map_convert_values_from_milli", "map_convert_values_to_milli",
-           "map_filter_none", "map_rename_keys"]
+           "map_filter_none", "map_rename_keys", "map_remove_keys"]
 
 T = TypeVar("T")
 KT = TypeVar("KT")
@@ -468,3 +469,20 @@ def map_rename_keys(mapping: MutableMapping[str, Any], **key_maps: str) -> None:
             continue
         else:
             mapping[new_key] = value
+
+
+def map_remove_keys(mapping: MutableMapping[KT, Any], *keys: KT) -> None:
+    """Remove a number of keys (and their values) from a mapping.
+
+    Args:
+        mapping: Mapping to remove keys from.
+        *keys: Keys to remove.
+
+    Returns:
+        Nothing, the operation mutates the given mapping.
+    """
+    for key in keys:
+        try:
+            del mapping[key]
+        except KeyError:
+            pass

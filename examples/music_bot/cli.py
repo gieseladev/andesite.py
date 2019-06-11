@@ -37,7 +37,7 @@ def configure_logging():
     try:
         import colorlog
     except ImportError:
-        formatter = logging.Formatter("{levelname:8} {name:20} {message}", style="{")
+        formatter = logging.Formatter("{levelname:8} {name:30} {message}", style="{")
     else:
         formatter = colorlog.ColoredFormatter("{log_color}{levelname:8}{reset} {name:20} {blue}{message}", style="{")
 

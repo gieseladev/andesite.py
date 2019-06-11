@@ -12,13 +12,14 @@ See Also:
 
 import abc
 import copy
+import dataclasses
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Optional, Set, TYPE_CHECKING, Type, cast
+from typing import Dict, List, Mapping, Optional, Set, TYPE_CHECKING, Tuple, Type, Union, cast
 
 from andesite.event_target import NamedEvent
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, \
-    map_convert_values_from_milli, map_convert_values_to_milli, transform_input, transform_output
+    map_convert_values_from_milli, map_convert_values_to_milli, map_remove_keys, transform_input, transform_output
 from .debug import Error, Stats
 from .player import Player
 
@@ -61,6 +62,19 @@ class ConnectionUpdate(ReceiveOperation):
     __op__ = "connection-id"
 
     id: str
+
+
+@dataclass
+class MetadataUpdate(ReceiveOperation):
+    """Payload sent on connection start containing handshake response header.
+
+    Attributes:
+        data (Dict[str, Union[int, str, List[str]]]): Map of metadata key to
+            value.
+    """
+    __op__ = "metadata"
+
+    data: Dict[str, Union[int, str, List[str]]]
 
 
 @dataclass
@@ -134,7 +148,6 @@ class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
     type: str
     user_id: int
     guild_id: int
-    track: str
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -151,7 +164,8 @@ class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
 @dataclass
 class TrackStartEvent(AndesiteEvent):
     """Event emitted when a new track starts playing."""
-    ...
+
+    track: str
 
 
 class TrackEndReason(Enum):
@@ -189,6 +203,8 @@ class TrackEndEvent(AndesiteEvent):
             (`TrackEndReason.REPLACED`) or because the player is stopped
             (`TrackEndReason.STOPPED`, `TrackEndReason.CLEANUP`).
     """
+
+    track: str
     reason: TrackEndReason
     may_start_next: bool
 
@@ -213,6 +229,8 @@ class TrackExceptionEvent(AndesiteEvent):
         error (str): Error message
         exception (Error): Error data
     """
+    track: str
+
     error: str
     exception: Error
 
@@ -224,6 +242,8 @@ class TrackStuckEvent(AndesiteEvent):
     Attributes:
         threshold (float): Threshold in seconds
     """
+
+    track: str
     threshold: float
 
     @classmethod
@@ -237,6 +257,21 @@ class TrackStuckEvent(AndesiteEvent):
         data = transform_output(super(), data)
         map_convert_values_to_milli(data, "threshold")
         return data
+
+
+@dataclass
+class WebSocketClosedEvent(AndesiteEvent):
+    """Event emitted when the Andesite node disconnects from a voice channel.
+
+    Attributes:
+        reason (str): Reason for the disconnect
+        code (int): Error code
+        by_remote (bool): Whether the disconnect was caused by the remote.
+    """
+
+    reason: str
+    code: int
+    by_remote: bool
 
 
 @dataclass
@@ -258,6 +293,8 @@ class UnknownAndesiteEvent(AndesiteEvent):
     def __transform_input__(cls, data: RawDataType) -> RawDataType:
         # we want a clean body... does that sound weird? no, I'm sure it doesn't
         data["body"] = copy.deepcopy(data)
+
+        map_remove_keys(data, *(key for key in data.keys() if key not in _UNKNOWN_ANDESITE_EVENT_FIELD_NAMES))
         data = transform_input(super(), data)
         return data
 
@@ -271,7 +308,15 @@ class UnknownAndesiteEvent(AndesiteEvent):
         return body
 
 
-_EVENTS: Set[Type[AndesiteEvent]] = {TrackStartEvent, TrackEndEvent, TrackExceptionEvent, TrackStuckEvent}
+_UNKNOWN_ANDESITE_EVENT_FIELDS: Tuple[dataclasses.Field] = dataclasses.fields(UnknownAndesiteEvent)
+_UNKNOWN_ANDESITE_EVENT_FIELD_NAMES: Set[str] = {field.name for field in _UNKNOWN_ANDESITE_EVENT_FIELDS}
+
+_EVENTS: Set[Type[AndesiteEvent]] = {
+    TrackStartEvent,
+    TrackEndEvent,
+    TrackExceptionEvent, TrackStuckEvent,
+    WebSocketClosedEvent,
+}
 EVENT_MAP: Mapping[str, Type[AndesiteEvent]] = {event.__name__: event for event in _EVENTS}
 
 
@@ -291,7 +336,7 @@ def get_event_model(event_type: str) -> Type[AndesiteEvent]:
         return UnknownAndesiteEvent
 
 
-_OPS: Set[Type[ReceiveOperation]] = {PongResponse, ConnectionUpdate, StatsUpdate, PlayerUpdate}
+_OPS: Set[Type[ReceiveOperation]] = {PongResponse, ConnectionUpdate, MetadataUpdate, StatsUpdate, PlayerUpdate}
 OP_MAP: Mapping[str, Type[ReceiveOperation]] = {op.__op__: op for op in _OPS}
 
 

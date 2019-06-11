@@ -23,7 +23,7 @@ from .event_target import EventFilter, EventTarget, NamedEvent
 from .models import AndesiteEvent, BasePlayer, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, \
     Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, \
     Update, Vibrato, VolumeFilter, get_update_model
-from .state import AbstractAndesiteState, AbstractPlayerState
+from .state import AbstractAndesiteState, AbstractPlayerState, StateArgumentType, _get_state
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, \
     WebSocketDisconnectEvent
@@ -55,7 +55,7 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
     """
     try:
         client = await websockets.connect(uri, **kwargs)
-    except InvalidHandshake as e:
+    except (OSError, InvalidHandshake) as e:
         log.info(f"Connection to {uri} failed: {e}")
         return None
 
@@ -176,11 +176,8 @@ class AbstractAndesiteWebSocket(abc.ABC):
             return self._state_handler
 
     @state.setter
-    def state(self, state: Optional[AbstractAndesiteState]) -> None:
-        if not (state is None or isinstance(state, AbstractAndesiteState)):
-            raise TypeError(f"{type(state)} does not inherit from AbstractAndesiteState")
-
-        self._state_handler = state
+    def state(self, state: StateArgumentType) -> None:
+        self._state_handler = _get_state(state)
 
     @property
     @abc.abstractmethod
@@ -717,8 +714,9 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             for the first time.
         password: Authorization for the Andesite node.
             Set to `None` if the node doesn't have a password.
-        state: State handler to use. If `None` state handling is disabled.
-        max_connect_attempts: See the `max_connect_attempts` attribue.
+        state: State handler to use. If `False` state handling is disabled.
+            `None` to use the default state handler (`AndesiteState`).
+        max_connect_attempts: See the `max_connect_attempts` attribute.
         loop: Event loop to use for asynchronous operations.
             If no loop is provided it is dynamically retrieved when
             needed.
@@ -762,7 +760,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     _json_decoder: JSONDecoder
 
     def __init__(self, ws_uri: Union[str, URL], user_id: Optional[int], password: Optional[str], *,
-                 state: AbstractAndesiteState = None,
+                 state: StateArgumentType = None,
                  max_connect_attempts: int = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
         if isinstance(self, EventTarget):

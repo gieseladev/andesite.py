@@ -490,7 +490,9 @@ class EventTarget:
                 futures.append(self._run_event(listener.handler, event))
 
         for child_target in self._children:
-            futures.append(asyncio.ensure_future(child_target.dispatch(event), loop=self._loop))
+            fut = child_target.dispatch(event)
+            if fut is not None:
+                futures.append(asyncio.ensure_future(fut, loop=self._loop))
 
         if futures:
             return asyncio.gather(*futures, loop=self._loop)

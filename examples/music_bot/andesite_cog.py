@@ -12,7 +12,8 @@ from discord.ext.commands import Bot, Cog, CommandError, Context, command, guild
 
 import andesite
 # since we're using the discord.py library we can use these functions
-from andesite.discord import add_voice_server_update_handler, connect_voice_channel, disconnect_voice_channel, remove_voice_server_update_handler
+from andesite.discord import add_voice_server_update_handler, connect_voice_channel, disconnect_voice_channel, \
+    remove_voice_server_update_handler
 
 if TYPE_CHECKING:
     from .bot import OptionsType
@@ -77,6 +78,29 @@ class AndesiteCog(Cog, name="Andesite"):
         await disconnect_voice_channel(self.bot, ctx.guild.id)
 
     @guild_only()
+    @command("np")
+    async def now_playing_cmd(self, ctx: Context) -> None:
+        """Find out what's currently playing"""
+        track_info = None
+
+        player_state = await self.andesite_client.state.get_player_state(ctx.guild.id)
+        if player_state:
+            track = await player_state.get_track()
+            if track:
+                track_info = await self.andesite_client.decode_track(track)
+
+        if not track_info:
+            await ctx.send("Nothing playing")
+            return
+
+        info = track_info.info
+
+        embed = Embed(title=info.title)
+        embed.set_author(name=info.author)
+
+        await ctx.send(embed=embed)
+
+    @guild_only()
     @command("play")
     async def play_cmd(self, ctx: Context, *, query: str = None) -> None:
         """Play a track.
@@ -127,7 +151,8 @@ class AndesiteCog(Cog, name="Andesite"):
         """Ping the Andesite node"""
         async with ctx.typing():
             delay = await self.andesite_client.ping(ctx.guild.id)
-            await ctx.send(embed=Embed(title="Pong", description=f"After {round(1000 * delay)} milliseconds", colour=Colour.blue()))
+            await ctx.send(embed=Embed(title="Pong", description=f"After {round(1000 * delay)} milliseconds",
+                                       colour=Colour.blue()))
 
 
 def get_track_embed(track: andesite.TrackMetadata) -> Embed:

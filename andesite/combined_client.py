@@ -19,7 +19,7 @@ from yarl import URL
 
 from .event_target import EventTarget
 from .http_client import AbstractAndesiteHTTP, AndesiteHTTPBase, AndesiteHTTPInterface
-from .state import AbstractAndesiteState
+from .state import AbstractAndesiteState, _get_state
 from .web_socket_client import AbstractAndesiteWebSocket, AbstractAndesiteWebSocketClient, AndesiteWebSocketBase, \
     AndesiteWebSocketInterface
 
@@ -198,7 +198,7 @@ class AndesiteClient(AndesiteWebSocketInterface, AndesiteHTTPInterface, Andesite
 
 def create_andesite_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
                            user_id: int, *,
-                           state: AbstractAndesiteState = None,
+                           state: Union[AbstractAndesiteState, bool] = None,
                            loop: asyncio.AbstractEventLoop = None):
     """Create a new combined Andesite client.
 
@@ -207,8 +207,8 @@ def create_andesite_client(http_uri: Union[str, URL], web_socket_uri: Union[str,
         web_socket_uri: URI for the web socket endpoint
         password: Andesite password for authorization
         user_id: User ID
-        state: State handler to use. Defaults to `None` meaning that no
-            state is being kept.
+        state: State handler to use. Defaults to in-memory `AndesiteState`.
+            You can pass `False` to disable state handling.
         loop: Specify the event loop to use. The
             meaning of this value depends on the client,
             but you can safely omit it.
@@ -222,5 +222,6 @@ def create_andesite_client(http_uri: Union[str, URL], web_socket_uri: Union[str,
     web_socket_client = AndesiteWebSocketBase(web_socket_uri, user_id, password, loop=loop)
 
     inst = AndesiteClient(http_client, web_socket_client, loop=loop)
-    inst.state = state
+
+    inst.state = _get_state(state)
     return inst
