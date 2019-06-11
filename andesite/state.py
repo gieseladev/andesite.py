@@ -349,7 +349,7 @@ class AbstractAndesiteState(abc.ABC):
             message: Message that caused the error
             exc: Exception that was raised.
         """
-        log.error(f"{self} uncaught error {exc} when handling message {message}")
+        log.error(f"uncaught error {exc} in {self} when handling message {message}")
 
     async def on_handle_sent_message_error(self, guild_id: int, op: str, payload: Dict[str, Any],
                                            exc: Exception) -> None:
@@ -361,7 +361,7 @@ class AbstractAndesiteState(abc.ABC):
             payload: Raw payload which was sent.
             exc: Exception that was raised.
         """
-        log.error(f"{self} uncaught error {exc} when handling sent message {op} for guild {guild_id}: {exc}\n\n"
+        log.error(f"uncaught error {exc} in {self} when handling sent message {op} for guild {guild_id}: {exc}\n\n"
                   f"Payload: {payload}")
 
     @abc.abstractmethod
@@ -414,14 +414,14 @@ class AndesiteState(AbstractAndesiteState, Generic[PST]):
 
     async def handle_player_update(self, update: PlayerUpdate) -> None:
         if log.isEnabledFor(logging.DEBUG):
-            log.debug(f"{self} handling player update: {update}")
+            log.debug(f"handling player update for {self}: {update}")
 
         state = self._get_or_create_player_state(update.guild_id)
         await state.set_player(update.state)
 
     async def handle_andesite_event(self, event: AndesiteEvent) -> None:
         if log.isEnabledFor(logging.DEBUG):
-            log.debug(f"{self} handling andesite event: {event}")
+            log.debug(f"handling andesite event for {self}: {event}")
 
         if isinstance(event, (TrackEndEvent, TrackExceptionEvent, TrackStuckEvent)):
             track = None

@@ -239,6 +239,18 @@ def resolve_event_specifier(event: EventSpecifierType) -> str:
         raise TypeError(f"Unknown event specifier type {type(event).__name__!r}: {event}")
 
 
+def safe_wait_for(fut: Awaitable, timeout: float = None, *, loop: asyncio.AbstractEventLoop = None) -> asyncio.Future:
+    """Same as `asyncio.wait_for` but returns `None` instead of raising an `asyncio.TimeoutError`."""
+
+    async def wrapper() -> Optional[Any]:
+        try:
+            return await asyncio.wait_for(fut, timeout, loop=loop)
+        except asyncio.TimeoutError:
+            return None
+
+    return asyncio.ensure_future(wrapper(), loop=loop)
+
+
 class EventTarget:
     """An object that can dispatch `Event` instances to listeners.
 
@@ -258,16 +270,24 @@ class EventTarget:
         self._listeners = {}
         self._children = set()
 
+    def __str__(self) -> str:
+        total_listeners = len(self._one_time_listeners) + len(self._listeners)
+        total_children = len(self._children)
+        return f"{type(self).__name__}(listeners: {total_listeners}, children: {total_children})"
+
     @overload
-    def wait_for(self, event: EventSpecifierType, *, check: EventFilter) -> Awaitable[Event]:
+    def wait_for(self, event: EventSpecifierType, *,
+                 check: EventFilter = None) -> Awaitable[Event]:
         ...
 
     @overload
-    def wait_for(self, event: EventSpecifierType, *, check: EventFilter, timeout: float) -> Awaitable[Optional[Event]]:
+    def wait_for(self, event: EventSpecifierType, *,
+                 check: EventFilter = None,
+                 timeout: float) -> Awaitable[Optional[Event]]:
         ...
 
     def wait_for(self, event: EventSpecifierType, *,
-                 check: EventFilter,
+                 check: EventFilter = None,
                  timeout: float = None) -> Awaitable[Optional[Event]]:
         """Wait for an event to be dispatched.
 
@@ -296,7 +316,7 @@ class EventTarget:
 
         _push_map_list(self._one_time_listeners, event, listener)
 
-        return asyncio.wait_for(future, timeout=timeout, loop=self._loop)
+        return safe_wait_for(future, timeout=timeout, loop=self._loop)
 
     def add_dispatcher(self, target: "EventTarget") -> None:
         """Add a child event target which will dispatch the same events.
@@ -441,7 +461,7 @@ class EventTarget:
         if log.isEnabledFor(logging.DEBUG):
             # converting event to string may be expensive, so only
             # do it if we want it logged
-            log.debug(f"dispatching: {event}")
+            log.debug(f"dispatching event in {self}: {event}")
 
         futures: List[Union[Coroutine, asyncio.Future]] = []
         event_name = event.name

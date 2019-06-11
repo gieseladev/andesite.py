@@ -48,8 +48,24 @@ class ReceiveOperation(abc.ABC):
 
 @dataclass
 class PongResponse(ReceiveOperation):
-    """Simple pong response sent as a response to ping requests."""
+    """Simple pong response sent as a response to ping requests.
+
+    Attributes:
+        user_id (int): User id
+        guild_id (int): Guild id
+    """
     __op__ = "pong"
+
+    user_id: int
+    guild_id: int
+
+    @classmethod
+    def __transform_input__(cls, data: RawDataType) -> None:
+        map_convert_values(data, user_id=int, guild_id=int)
+
+    @classmethod
+    def __transform_output__(cls, data: RawDataType) -> None:
+        map_convert_values(data, user_id=str, guild_id=str)
 
 
 @dataclass

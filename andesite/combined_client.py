@@ -69,6 +69,12 @@ class AndesiteClientBase(AbstractAndesiteWebSocket, AbstractAndesiteHTTP, EventT
         self.send = web_socket_client.send
         self.request = http_client.request
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(http_client={self.http!r}, web_socket_client={self.web_socket!r})"
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}({self.http}, {self.web_socket})"
+
     @property
     def closed(self) -> bool:
         """Whether this client is closed and can no longer be used.

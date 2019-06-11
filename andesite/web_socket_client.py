@@ -19,6 +19,7 @@ from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtoc
 from websockets.http import Headers
 from yarl import URL
 
+from andesite.models.receive_operations import PongResponse
 from .event_target import EventFilter, EventTarget, NamedEvent
 from .models import AndesiteEvent, BasePlayer, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, \
     Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, \
@@ -267,7 +268,7 @@ class AbstractAndesiteWebSocket(abc.ABC):
 
         if track:
             if last_update is None:
-                log.warning(f"{self} loading player state without voice server update!")
+                log.warning(f"loading player state without voice server update! ({self})")
 
             # of course because Andesite is... great [citation needed] we need
             # to use two operations to set it up properly...
@@ -372,6 +373,8 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
         ...
 
 
+# TODO find a way to pass the event loop to the interface methods
+
 class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
     """Implementation of the web socket endpoints."""
 
@@ -401,7 +404,7 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
                               timeout: float = None) -> Optional[ReceiveOperation]:
         ...
 
-    async def wait_for_update(self, op: Union[ReceiveOperation, str], *,
+    async def wait_for_update(self, op: Union[Type[ReceiveOperation], str], *,
                               check: EventFilter = None,
                               guild_id: int = None,
                               timeout: float = None) -> Optional[ReceiveOperation]:
@@ -409,8 +412,8 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
 
         Args:
             op: Operation to wait for.
-                You can also pass a `ReceiveOperation` which provides better
-                type constraints.
+                You can also pass a `ReceiveOperation` class which provides
+                better type constraints.
             check: Additional checks to perform before accepting an Event.
                 The function is called with the `MsgReceiveEvent` and should
                 return a `bool`. If not set, all events with the correct op are
@@ -426,12 +429,15 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
             `ReceiveOperation` that was accepted.
             `None` if it timed-out.
         """
-        if isinstance(op, ReceiveOperation):
+        if issubclass(op, ReceiveOperation):
             op = op.__op__
+
+        if not isinstance(op, str):
+            raise TypeError(f"Op must be a string, not {type(op)}!")
 
         def _check(_event: MsgReceiveEvent) -> bool:
             if _event.op == op:
-                if guild_id is not None and guild_id != _event.get("guild_id"):
+                if guild_id is not None and guild_id != getattr(_event.data, "guild_id", None):
                     return False
 
                 if check is None:
@@ -441,8 +447,12 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
             else:
                 return False
 
-        event: Optional[MsgReceiveEvent] = await self.event_target.wait_for(MsgReceiveEvent, check=_check,
-                                                                            timeout=timeout)
+        event: Optional[MsgReceiveEvent] = await self.event_target.wait_for(
+            MsgReceiveEvent,
+            check=_check,
+            timeout=timeout,
+        )
+
         if event is not None:
             return event.data
         else:
@@ -661,8 +671,10 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
             Player for the guild
         """
 
-        await self.send(guild_id, "get-player", {})
-        player_update = await self.wait_for_update(PlayerUpdate, guild_id=guild_id)
+        player_update, _ = await asyncio.gather(
+            self.wait_for_update(PlayerUpdate, guild_id=guild_id),
+            self.send(guild_id, "get-player", {}),
+        )
         return player_update.state
 
     async def get_stats(self, guild_id: int) -> Stats:
@@ -688,14 +700,12 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
             Amount of seconds it took for the response to be received.
             Note: This is not necessarily an accurate reflection of the actual latency.
         """
-
-        def check_ping_response(event: RawMsgReceiveEvent) -> bool:
-            return event.body.get("ping", False)
-
         start = time.time()
 
-        await self.send(guild_id, "ping", {"ping": True})
-        await self.event_target.wait_for(RawMsgReceiveEvent, check=check_ping_response)
+        await asyncio.gather(
+            self.wait_for_update(PongResponse, guild_id=guild_id),
+            self.send(guild_id, "ping", {}),
+        )
 
         return time.time() - start
 
@@ -803,6 +813,13 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         self._json_decoder = JSONDecoder()
 
         self.state = state
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(ws_uri={self._ws_uri!r}, user_id={self.user_id!r}, " \
+            f"password=[HIDDEN], state={self.state!r}, max_connect_attempts={self.max_connect_attempts!r})"
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}({self._ws_uri})"
 
     @property
     def user_id(self) -> Optional[int]:
@@ -965,23 +982,23 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             except asyncio.CancelledError:
                 break
             except ConnectionClosed:
-                log.error("Disconnected from websocket, trying to reconnect!")
+                log.error(f"Disconnected from websocket, trying to reconnect {self}!")
                 _ = self.event_target.dispatch(WebSocketDisconnectEvent(self, False))
                 await self.connect()
                 continue
 
             if log.isEnabledFor(logging.DEBUG):
-                log.debug(f"Received message {raw_msg}")
+                log.debug(f"Received message in {self}: {raw_msg}")
 
             try:
                 data: Dict[str, Any] = self._json_decoder.decode(raw_msg)
             except JSONDecodeError as e:
-                log.error(f"Couldn't parse received JSON data: {e}\nmsg: {raw_msg}")
+                log.error(f"Couldn't parse received JSON data in {self}: {e}\nmsg: {raw_msg}")
                 continue
 
             if not isinstance(data, dict):
-                log.warning(
-                    f"Received invalid message type. Expecting object, received type {type(data).__name__}: {data}")
+                log.warning(f"Received invalid message type in {self}. "
+                            f"Expecting object, received type {type(data).__name__}: {data}")
                 continue
 
             _ = self.event_target.dispatch(RawMsgReceiveEvent(self, data))
@@ -989,19 +1006,19 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             try:
                 op = data.pop("op")
             except KeyError:
-                log.info(f"Ignoring message without op code: {data}")
+                log.info(f"Ignoring message without op code in {self}: {data}")
                 continue
 
             event_type = data.get("type")
             cls = get_update_model(op, event_type)
             if cls is None:
-                log.warning(f"Ignoring message with unknown op \"{op}\": {data}")
+                log.warning(f"Ignoring message with unknown op \"{op}\" in {self}: {data}")
                 continue
 
             try:
                 message: ReceiveOperation = build_from_raw(cls, data)
             except Exception as e:
-                log.error(f"Couldn't parse message from Andesite node ({e}): {data}")
+                log.error(f"Couldn't parse message in {self} from Andesite node to {cls} ({e}): {data}")
                 continue
 
             message.client = self
@@ -1009,7 +1026,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             _ = self.event_target.dispatch(MsgReceiveEvent(self, op, message))
 
             if isinstance(message, ConnectionUpdate):
-                log.info("received connection update, setting last connection id.")
+                log.info(f"received connection update, setting last connection id in {self}.")
                 self._last_connection_id = message.id
             elif isinstance(message, NamedEvent):
                 _ = self.event_target.dispatch(message)

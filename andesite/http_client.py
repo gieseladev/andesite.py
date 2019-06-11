@@ -295,6 +295,12 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
 
         self.aiohttp_session = ClientSession(headers=headers, loop=self._loop)
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(uri={self._base_url!r}, password=[HIDDEN])"
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}({self._base_url})"
+
     @property
     def closed(self) -> bool:
         return self.aiohttp_session.closed

@@ -315,7 +315,7 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
 
         penalties.append(new_ts)
 
-        log.info(f"{self} added penalty to {client}")
+        log.info(f"added penalty to {client} in {self}")
 
         if len(penalties) > self.max_penalties:
             log.warning(f"{client} has too many penalties, removing from {self}")
@@ -354,7 +354,7 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
             except AndesiteHTTPError:
                 raise
             except Exception as e:
-                log.info(f"{self} error in request: {e}")
+                log.info(f"error during request in {self}: {e}")
                 self._add_penalty(client)
 
 
