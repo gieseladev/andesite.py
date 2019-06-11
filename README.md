@@ -31,7 +31,7 @@ pip install andesite.py
 The following is a small example of how to use andesite.py. For more
 in-depth examples and information, please refer to the documentation.
 
-Please keep in mind that the following example is incomplete, it only
+Please keep in mind that the following example is incomplete. It only
 serves to demonstrate some andesite.py code.
 
 ```python
