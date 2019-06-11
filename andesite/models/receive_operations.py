@@ -302,7 +302,7 @@ class UnknownAndesiteEvent(AndesiteEvent):
     def __transform_output__(cls, data: RawDataType) -> RawDataType:
         data = transform_output(super(), data)
 
-        body: RawDataType = data["body"]
+        body: RawDataType = data.pop("body")
         # let the existing data overwrite the body
         body.update(data)
         return body

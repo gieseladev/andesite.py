@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 
-from andesite.transform import RawDataType, build_from_raw, convert_to_raw, from_centi, from_milli, map_build_all_values_from_raw, \
-    map_build_values_from_raw, map_convert_value, map_convert_values, map_convert_values_all, map_convert_values_from_milli, \
-    map_convert_values_to_milli, map_filter_none, map_rename_keys, seq_build_all_items_from_raw, to_centi, to_milli, transform_input, transform_output
+from andesite.transform import RawDataType, build_from_raw, convert_to_raw, from_centi, from_milli, \
+    map_build_all_values_from_raw, \
+    map_build_values_from_raw, map_convert_value, map_convert_values, map_convert_values_all, \
+    map_convert_values_from_milli, \
+    map_convert_values_to_milli, map_filter_none, map_rename_keys, seq_build_all_items_from_raw, to_centi, to_milli, \
+    transform_input, transform_output, map_remove_keys
 
 
 @dataclass
@@ -192,3 +195,10 @@ def test_map_rename_keys_none():
     data = {"hello": "world", "test": unique_object, "5": None}
     map_rename_keys(data, world="hello", lol="test")
     assert data == {"world": "world", "lol": unique_object, "5": None}
+
+
+def test_map_remove_keys():
+    data = {"a": 5, "b": 6, "c": 7}
+    map_remove_keys(data, "a", "b")
+
+    assert data == {"c": 7}

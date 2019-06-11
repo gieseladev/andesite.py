@@ -68,11 +68,13 @@ def ensure_environment() -> None:
         if version_info.major != 1:
             raise RuntimeError(f"discord.py library major version 1 needed, not {version_info.major}") from None
 
-        if version_info.minor != 0:
-            warnings.warn(f"This bot was written for version 1.0.0, you're using {version_info}. No guarantee that things will work out")
+        if version_info.minor not in {0, 1}:
+            warnings.warn(f"This bot was written for version 1.0.0, you're using {version_info}. "
+                          f"No guarantee that things will work out")
 
     except Exception:
-        warnings.warn("Couldn't access discord's version information! Don't be surprised if something doesn't work as it should")
+        warnings.warn("Couldn't access discord's version information! "
+                      "Don't be surprised if something doesn't work as it should")
 
 
 def main(args: Sequence[str] = None) -> None:
