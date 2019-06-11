@@ -62,7 +62,7 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
     return client
 
 
-def _get_ops_for_player(track: str, player: BasePlayer) -> Tuple[Play, Update]:
+def _get_ops_for_player(track: str, player: Optional[BasePlayer]) -> Tuple[Play, Update]:
     """Get operations which apply the state from the given player.
 
     Two operations are required to both play the track and set the filters.
@@ -75,18 +75,22 @@ def _get_ops_for_player(track: str, player: BasePlayer) -> Tuple[Play, Update]:
         Two operations which when sent to Andesite will apply the given player's
         state.
     """
-    play_op = Play(track,
-                   start=player.position,
-                   pause=player.paused,
-                   volume=player.volume,
-                   no_replace=False)
+    if player is not None:
+        play_op = Play(track,
+                       start=player.position,
+                       pause=player.paused,
+                       volume=player.volume,
+                       no_replace=False)
 
-    update_op = Update(
-        pause=player.paused,
-        position=player.position,
-        volume=player.volume,
-        filters=FilterUpdate(player.filters),
-    )
+        update_op = Update(
+            pause=player.paused,
+            position=player.position,
+            volume=player.volume,
+            filters=FilterUpdate(player.filters),
+        )
+    else:
+        play_op = Play(track)
+        update_op = Update()
 
     return play_op, update_op
 
@@ -255,10 +259,17 @@ class AbstractAndesiteWebSocket(abc.ABC):
 
         # TODO can we do mixer players?
 
-        track = await player_state.get_track()
+        track, player = await asyncio.gather(
+            player_state.get_track(),
+            player_state.get_player(),
+            loop=loop,
+        )
+
         if track:
-            player = await player_state.get_player()
-            # of course because Andesite is... great[citation needed] we need
+            if last_update is None:
+                log.warning(f"{self} loading player state without voice server update!")
+
+            # of course because Andesite is... great [citation needed] we need
             # to use two operations to set it up properly...
             play_op, update_op = _get_ops_for_player(track, player)
 
@@ -1004,7 +1015,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
                 _ = self.event_target.dispatch(message)
 
                 if self.state is not None:
-                    _ = self.state.handle_andesite_message(message, loop=self._loop)
+                    _ = self.state._handle_andesite_message(message, loop=self._loop)
 
     def _start_read_loop(self) -> None:
         """Start the web socket reader.
@@ -1045,7 +1056,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
             else:
                 state = self.state
                 if state:
-                    _ = state.handle_sent_message(guild_id, op, payload)
+                    _ = state._handle_sent_message(guild_id, op, payload)
 
                 return
 

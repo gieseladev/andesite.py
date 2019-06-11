@@ -277,8 +277,8 @@ class AbstractAndesiteState(abc.ABC):
     def __str__(self) -> str:
         return f"{type(self).__name__}"
 
-    def handle_andesite_message(self, message: NamedEvent, *,
-                                loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
+    def _handle_andesite_message(self, message: NamedEvent, *,
+                                 loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
         """Handles the event of an andesite message being received.
 
         Args:
@@ -295,8 +295,8 @@ class AbstractAndesiteState(abc.ABC):
         err_cb: Callable = functools.partial(self.on_handle_message_error, message)
         return _run_with_error_callback(coro, err_cb, loop=loop)
 
-    def handle_sent_message(self, guild_id: int, op: str, payload: Dict[str, Any], *,
-                            loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
+    def _handle_sent_message(self, guild_id: int, op: str, payload: Dict[str, Any], *,
+                             loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
         """Handles the event of a message being sent.
 
         Args:
@@ -365,15 +365,14 @@ class AbstractAndesiteState(abc.ABC):
                   f"Payload: {payload}")
 
     @abc.abstractmethod
-    async def get_player_state(self, guild_id: int) -> Optional[AbstractPlayerState]:
+    async def get(self, guild_id: int) -> AbstractPlayerState:
         """Get the player state of a guild.
 
         Args:
             guild_id: Guild to get player state for.
 
         Returns:
-            Player state for the given guild or `None` if the guild
-            doesn't have a player state.
+            Player state for the given guild.
         """
         ...
 
@@ -438,8 +437,8 @@ class AndesiteState(AbstractAndesiteState, Generic[PST]):
         player_state = self._get_or_create_player_state(guild_id)
         await player_state.set_voice_server_update(update)
 
-    async def get_player_state(self, guild_id: int) -> Optional[PST]:
-        return self.player_states.get(guild_id)
+    async def get(self, guild_id: int) -> PST:
+        return self._get_or_create_player_state(guild_id)
 
 
 StateArgumentType = Union[AbstractAndesiteState, bool, None]

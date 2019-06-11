@@ -198,7 +198,8 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
         """
         return await self.load_tracks(f"raw:{uri}")
 
-    async def search_tracks(self, query: str, *, searcher: AndesiteSearcherType = AndesiteSearcher.YOUTUBE) -> LoadedTrack:
+    async def search_tracks(self, query: str, *,
+                            searcher: AndesiteSearcherType = AndesiteSearcher.YOUTUBE) -> LoadedTrack:
         """Search tracks.
 
         Args:

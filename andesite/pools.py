@@ -131,6 +131,14 @@ class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
         """Close all clients in the pool."""
         await asyncio.gather(*(client.close() for client in self._clients), loop=self._loop)
 
+    async def reset(self) -> None:
+        """Reset all underlying clients so they may be used again.
+
+        This has the opposite effect of the `close` method making the clients
+        usable again.
+        """
+        await asyncio.gather(*(client.reset() for client in self), loop=self._loop)
+
     def _check_client(self, client: CT) -> Optional[CT]:
         """Check whether the client is usable.
 
@@ -206,6 +214,7 @@ class AndesiteHTTPPoolBase(ClientPool[AbstractAndesiteHTTP], AbstractAndesiteHTT
         penalty_time_frame: Number of seconds before a penalty expires and no
             long counts toward a client's total number of penalties.
     """
+
     _clients: Deque[AbstractAndesiteHTTP]
     _penalties: Dict[AbstractAndesiteHTTP, List[float]]
 
@@ -481,7 +490,7 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
 
     @state.setter
     def state(self, value: Optional[AbstractAndesiteState]) -> None:
-        super().state = value
+        super(AndesiteWebSocketPoolBase, type(self)).state.fset(self, value)
 
         for client in self:
             client.state = value
@@ -515,14 +524,6 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         """
         self._region_comparator = value
 
-    async def reset(self) -> None:
-        """Reset all underlying clients so they may be used again.
-
-        This has the opposite effect of the `close` method making the clients
-        usable again.
-        """
-        await asyncio.gather(client.reset() for client in self)
-
     def add_client(self, client: AbstractAndesiteWebSocket) -> None:
         """Add a new client to the pool.
 
@@ -535,6 +536,7 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         """
         super().add_client(client)
         self._clients.add(client)
+        self._client_guilds[client] = set()
         client.event_target.add_dispatcher(self.event_target)
 
         state = self.state
@@ -567,7 +569,7 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
         guild_ids = self._client_guilds.pop(client)
 
         for guild_id in guild_ids:
-            del self._client_guilds[guild_id]
+            del self._guild_clients[guild_id]
 
         # either both None in which case it doesn't matter or both the same state
         if client.state is self.state:
@@ -595,14 +597,13 @@ class AndesiteWebSocketPoolBase(ClientPool[AbstractAndesiteWebSocket], AbstractA
 
         fs: List[asyncio.Future] = []
         for guild_id in guild_ids:
-            fs.append(asyncio.ensure_future(self.find_best_client(guild_id), loop=self._loop))
+            fs.append(asyncio.ensure_future(self.assign_client(guild_id), loop=self._loop))
 
         new_clients: List[Optional[AbstractAndesiteWebSocket]] = await asyncio.gather(*fs, loop=self._loop)
 
         async def load_player_state(_guild_id: int, _client: AbstractAndesiteWebSocket) -> None:
-            player_state = await self.state.get_player_state(_guild_id)
-            if player_state:
-                await _client.load_player_state(player_state, loop=self._loop)
+            player_state = await self.state.get(_guild_id)
+            await _client.load_player_state(player_state, loop=self._loop)
 
         fs.clear()
 

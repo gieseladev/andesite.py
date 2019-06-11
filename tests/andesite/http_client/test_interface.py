@@ -3,15 +3,7 @@ from unittest import mock
 import pytest
 
 from andesite import AndesiteHTTPInterface
-
-
-async def _identity(m):
-    return m
-
-
-class AsyncMock(mock.Mock):
-    def __await__(self):
-        return _identity(self).__await__()
+from tests.andesite.async_mock import AsyncMock
 
 
 class MockAndesiteHTTP(AndesiteHTTPInterface):

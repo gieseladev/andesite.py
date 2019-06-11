@@ -83,11 +83,10 @@ class AndesiteCog(Cog, name="Andesite"):
         """Find out what's currently playing"""
         track_info = None
 
-        player_state = await self.andesite_client.state.get_player_state(ctx.guild.id)
-        if player_state:
-            track = await player_state.get_track()
-            if track:
-                track_info = await self.andesite_client.decode_track(track)
+        player_state = await self.andesite_client.state.get(ctx.guild.id)
+        track = await player_state.get_track()
+        if track:
+            track_info = await self.andesite_client.decode_track(track)
 
         if not track_info:
             await ctx.send("Nothing playing")
