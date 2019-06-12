@@ -4,7 +4,7 @@ The bot uses the `AndesiteClient` for a single Andesite node.
 
 
 ## Dependencies
-- [discord.py](https://github.com/Rapptz/discord.py/tree/rewrite)
+- [discord.py](https://github.com/Rapptz/discord.py)
 - [colorlog](https://github.com/borntyping/python-colorlog) (OPTIONAL)
 
 ## Running the bot

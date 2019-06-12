@@ -39,7 +39,7 @@ def configure_logging():
     except ImportError:
         formatter = logging.Formatter("{levelname:8} {name:30} {message}", style="{")
     else:
-        formatter = colorlog.ColoredFormatter("{log_color}{levelname:8}{reset} {name:20} {blue}{message}", style="{")
+        formatter = colorlog.ColoredFormatter("{log_color}{levelname:8}{reset} {name:30} {blue}{message}", style="{")
 
     handler.setFormatter(formatter)
 
@@ -61,7 +61,7 @@ def ensure_environment() -> None:
     try:
         import discord
     except ImportError:
-        raise RuntimeError("discord.py is not installed! Please install the rewrite version to run this") from None
+        raise RuntimeError("discord.py is not installed!") from None
 
     try:
         version_info = discord.version_info
