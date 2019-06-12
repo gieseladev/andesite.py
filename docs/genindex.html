@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Index &#8212; andesite.py 0.1.0 documentation</title>
+    <title>Index &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -670,9 +670,13 @@
 </li>
       <li><a href="reference/models.html#andesite.models.debug.GCStats">GCStats (class in andesite.models.debug)</a>
 </li>
-      <li><a href="reference/event_target.html#andesite.event_target.Event.get">get() (Event method)</a>
+      <li><a href="reference/state.html#andesite.state.AbstractAndesiteState.get">get() (AbstractAndesiteState method)</a>
 
       <ul>
+        <li><a href="reference/state.html#andesite.state.AndesiteState.get">(AndesiteState method)</a>
+</li>
+        <li><a href="reference/event_target.html#andesite.event_target.Event.get">(Event method)</a>
+</li>
         <li><a href="reference/clients.html#andesite.web_socket_client_events.MsgReceiveEvent.get">(MsgReceiveEvent method)</a>
 </li>
         <li><a href="reference/pools.html#andesite.pools.PoolClientAddEvent.get">(PoolClientAddEvent method)</a>
@@ -730,14 +734,14 @@
 </li>
       <li><a href="reference/models.html#andesite.models.filters.get_filter_model">get_filter_model() (in module andesite.models.filters)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/pools.html#andesite.pools.AndesiteWebSocketPool.get_guild_ids">get_guild_ids() (AndesiteWebSocketPool method)</a>
 
       <ul>
         <li><a href="reference/pools.html#andesite.pools.AndesiteWebSocketPoolBase.get_guild_ids">(AndesiteWebSocketPoolBase method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/pools.html#andesite.pools.AndesiteHTTPPool.get_next_client">get_next_client() (AndesiteHTTPPool method)</a>
 
       <ul>
@@ -756,12 +760,6 @@
         <li><a href="reference/pools.html#andesite.pools.AndesiteWebSocketPool.get_player">(AndesiteWebSocketPool method)</a>
 </li>
         <li><a href="reference/state.html#andesite.state.PlayerState.get_player">(PlayerState method)</a>
-</li>
-      </ul></li>
-      <li><a href="reference/state.html#andesite.state.AbstractAndesiteState.get_player_state">get_player_state() (AbstractAndesiteState method)</a>
-
-      <ul>
-        <li><a href="reference/state.html#andesite.state.AndesiteState.get_player_state">(AndesiteState method)</a>
 </li>
       </ul></li>
       <li><a href="reference/models.html#andesite.models.track.LoadedTrack.get_selected_track">get_selected_track() (LoadedTrack method)</a>
@@ -828,22 +826,10 @@
         <li><a href="reference/state.html#andesite.state.AndesiteState.handle_andesite_event">(AndesiteState method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/state.html#andesite.state.AbstractAndesiteState.handle_andesite_message">handle_andesite_message() (AbstractAndesiteState method)</a>
-
-      <ul>
-        <li><a href="reference/state.html#andesite.state.AndesiteState.handle_andesite_message">(AndesiteState method)</a>
-</li>
-      </ul></li>
       <li><a href="reference/state.html#andesite.state.AbstractAndesiteState.handle_player_update">handle_player_update() (AbstractAndesiteState method)</a>
 
       <ul>
         <li><a href="reference/state.html#andesite.state.AndesiteState.handle_player_update">(AndesiteState method)</a>
-</li>
-      </ul></li>
-      <li><a href="reference/state.html#andesite.state.AbstractAndesiteState.handle_sent_message">handle_sent_message() (AbstractAndesiteState method)</a>
-
-      <ul>
-        <li><a href="reference/state.html#andesite.state.AndesiteState.handle_sent_message">(AndesiteState method)</a>
 </li>
       </ul></li>
       <li><a href="reference/state.html#andesite.state.AbstractAndesiteState.handle_voice_server_update">handle_voice_server_update() (AbstractAndesiteState method)</a>
@@ -858,8 +844,6 @@
         <li><a href="reference/event_target.html#andesite.event_target.EventListener.handler">(EventListener attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/clients.html#andesite.combined_client.AndesiteClient.has_listener">has_listener() (AndesiteClient method)</a>
 
       <ul>
@@ -880,6 +864,8 @@
         <li><a href="reference/event_target.html#andesite.event_target.EventTarget.has_listener">(EventTarget method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/models.html#andesite.models.debug.MemoryStats.heap">heap (MemoryStats attribute)</a>
 </li>
       <li><a href="reference/clients.html#andesite.combined_client.AndesiteClient.http">http (AndesiteClient attribute)</a>
@@ -1027,6 +1013,8 @@
       <li><a href="reference/transform.html#andesite.transform.map_convert_values_to_milli">map_convert_values_to_milli() (in module andesite.transform)</a>
 </li>
       <li><a href="reference/transform.html#andesite.transform.map_filter_none">map_filter_none() (in module andesite.transform)</a>
+</li>
+      <li><a href="reference/transform.html#andesite.transform.map_remove_keys">map_remove_keys() (in module andesite.transform)</a>
 </li>
       <li><a href="reference/transform.html#andesite.transform.map_rename_keys">map_rename_keys() (in module andesite.transform)</a>
 </li>
@@ -1489,6 +1477,8 @@
 </li>
         <li><a href="reference/pools.html#andesite.pools.AndesiteWebSocketPoolBase.reset">(AndesiteWebSocketPoolBase method)</a>
 </li>
+        <li><a href="reference/pools.html#andesite.pools.ClientPool.reset">(ClientPool method)</a>
+</li>
         <li><a href="reference/models.html#andesite.models.filters.Filter.reset">(Filter method)</a>
 </li>
       </ul></li>
@@ -1676,6 +1666,8 @@
         <li><a href="reference/pools.html#andesite.pools.AndesiteWebSocketPoolBase.state">(AndesiteWebSocketPoolBase property)</a>
 </li>
       </ul></li>
+      <li><a href="reference/state.html#andesite.state.StateArgumentType">StateArgumentType (in module andesite.state)</a>, <a href="reference/state.html#andesite.state.StateArgumentType">[1]</a>
+</li>
       <li><a href="reference/models.html#andesite.models.debug.Stats">Stats (class in andesite.models.debug)</a>
 </li>
       <li><a href="reference/models.html#andesite.models.receive_operations.StatsUpdate.stats">stats (StatsUpdate attribute)</a>

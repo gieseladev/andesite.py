@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Models &#8212; andesite.py 0.1.0 documentation</title>
+    <title>Models &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -1700,7 +1700,7 @@ the message. This is set by the client that received the message.</p>
 
 <dl class="class">
 <dt id="andesite.models.receive_operations.AndesiteEvent">
-<em class="property">class </em><code class="sig-name descname">AndesiteEvent</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">user_id</em>, <em class="sig-param">guild_id</em>, <em class="sig-param">track</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/receive_operations.html#AndesiteEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.receive_operations.AndesiteEvent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">AndesiteEvent</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">user_id</em>, <em class="sig-param">guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/receive_operations.html#AndesiteEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.receive_operations.AndesiteEvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event sent by Andesite.</p>
 <dl class="attribute">
 <dt id="andesite.models.receive_operations.AndesiteEvent.type">
@@ -1904,7 +1904,7 @@ already triggered because another track started
 
 <dl class="class">
 <dt id="andesite.models.receive_operations.UnknownAndesiteEvent">
-<em class="property">class </em><code class="sig-name descname">UnknownAndesiteEvent</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">user_id</em>, <em class="sig-param">guild_id</em>, <em class="sig-param">track</em>, <em class="sig-param">body</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/receive_operations.html#UnknownAndesiteEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.receive_operations.UnknownAndesiteEvent" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">UnknownAndesiteEvent</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">user_id</em>, <em class="sig-param">guild_id</em>, <em class="sig-param">body</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/models/receive_operations.html#UnknownAndesiteEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.models.receive_operations.UnknownAndesiteEvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Special kind of event for unknown events.</p>
 <p>This shouldn’t occur at all unless the library is out-dated.</p>
 <dl class="attribute">

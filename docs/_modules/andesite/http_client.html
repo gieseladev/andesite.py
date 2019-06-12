@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.http_client &#8212; andesite.py 0.1.0 documentation</title>
+    <title>andesite.http_client &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -232,7 +232,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_tracks</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;raw:</span><span class="si">{uri}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.search_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.search_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">search_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">searcher</span><span class="p">:</span> <span class="n">AndesiteSearcherType</span> <span class="o">=</span> <span class="n">AndesiteSearcher</span><span class="o">.</span><span class="n">YOUTUBE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedTrack</span><span class="p">:</span>
+<div class="viewcode-block" id="AndesiteHTTPInterface.search_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.search_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">search_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                            <span class="n">searcher</span><span class="p">:</span> <span class="n">AndesiteSearcherType</span> <span class="o">=</span> <span class="n">AndesiteSearcher</span><span class="o">.</span><span class="n">YOUTUBE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedTrack</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Search tracks.</span>
 
 <span class="sd">        Args:</span>
@@ -327,6 +328,12 @@
             <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span> <span class="o">=</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(uri=</span><span class="si">{self._base_url!r}</span><span class="s2">, password=[HIDDEN])&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(</span><span class="si">{self._base_url}</span><span class="s2">)&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>

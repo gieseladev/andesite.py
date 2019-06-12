@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.transform &#8212; andesite.py 0.1.0 documentation</title>
+    <title>andesite.transform &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -60,11 +60,12 @@
            <span class="s2">&quot;convert_to_raw&quot;</span><span class="p">,</span> <span class="s2">&quot;build_from_raw&quot;</span><span class="p">,</span>
            <span class="s2">&quot;seq_build_all_items_from_raw&quot;</span><span class="p">,</span>
            <span class="s2">&quot;map_build_all_values_from_raw&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;MapFunction&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_value&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_all&quot;</span><span class="p">,</span> <span class="s2">&quot;map_build_values_from_raw&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;MapFunction&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_value&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_all&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;map_build_values_from_raw&quot;</span><span class="p">,</span>
            <span class="s2">&quot;from_milli&quot;</span><span class="p">,</span> <span class="s2">&quot;to_milli&quot;</span><span class="p">,</span>
            <span class="s2">&quot;from_centi&quot;</span><span class="p">,</span> <span class="s2">&quot;to_centi&quot;</span><span class="p">,</span>
            <span class="s2">&quot;map_convert_values_from_milli&quot;</span><span class="p">,</span> <span class="s2">&quot;map_convert_values_to_milli&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;map_filter_none&quot;</span><span class="p">,</span> <span class="s2">&quot;map_rename_keys&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;map_filter_none&quot;</span><span class="p">,</span> <span class="s2">&quot;map_rename_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;map_remove_keys&quot;</span><span class="p">]</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 <span class="n">KT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;KT&quot;</span><span class="p">)</span>
@@ -502,6 +503,23 @@
             <span class="k">continue</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mapping</span><span class="p">[</span><span class="n">new_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="map_remove_keys"><a class="viewcode-back" href="../../reference/transform.html#andesite.transform.map_remove_keys">[docs]</a><span class="k">def</span> <span class="nf">map_remove_keys</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Remove a number of keys (and their values) from a mapping.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mapping: Mapping to remove keys from.</span>
+<span class="sd">        *keys: Keys to remove.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Nothing, the operation mutates the given mapping.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
 </pre></div>
 
           </div>

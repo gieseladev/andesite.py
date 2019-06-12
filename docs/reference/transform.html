@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Transform &#8212; andesite.py 0.1.0 documentation</title>
+    <title>Transform &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -467,6 +467,26 @@ to rename keys that aren’t python-friendly.</p></li>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.transform.map_remove_keys">
+<code class="sig-name descname">map_remove_keys</code><span class="sig-paren">(</span><em class="sig-param">mapping</em>, <em class="sig-param">*keys</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_remove_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_remove_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a number of keys (and their values) from a mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[~KT, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Mapping to remove keys from.</p></li>
+<li><p><strong>*keys</strong> – Keys to remove.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Nothing, the operation mutates the given mapping.</p>
 </dd>
 </dl>
 </dd></dl>

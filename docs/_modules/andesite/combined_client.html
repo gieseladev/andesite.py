@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.combined_client &#8212; andesite.py 0.1.0 documentation</title>
+    <title>andesite.combined_client &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -53,7 +53,7 @@
 
 <span class="kn">from</span> <span class="nn">.event_target</span> <span class="k">import</span> <span class="n">EventTarget</span>
 <span class="kn">from</span> <span class="nn">.http_client</span> <span class="k">import</span> <span class="n">AbstractAndesiteHTTP</span><span class="p">,</span> <span class="n">AndesiteHTTPBase</span><span class="p">,</span> <span class="n">AndesiteHTTPInterface</span>
-<span class="kn">from</span> <span class="nn">.state</span> <span class="k">import</span> <span class="n">AbstractAndesiteState</span>
+<span class="kn">from</span> <span class="nn">.state</span> <span class="k">import</span> <span class="n">AbstractAndesiteState</span><span class="p">,</span> <span class="n">_get_state</span>
 <span class="kn">from</span> <span class="nn">.web_socket_client</span> <span class="k">import</span> <span class="n">AbstractAndesiteWebSocket</span><span class="p">,</span> <span class="n">AbstractAndesiteWebSocketClient</span><span class="p">,</span> <span class="n">AndesiteWebSocketBase</span><span class="p">,</span> \
     <span class="n">AndesiteWebSocketInterface</span>
 
@@ -102,6 +102,12 @@
         <span class="c1"># bind the methods directly</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">send</span> <span class="o">=</span> <span class="n">web_socket_client</span><span class="o">.</span><span class="n">send</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">http_client</span><span class="o">.</span><span class="n">request</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(http_client=</span><span class="si">{self.http!r}</span><span class="s2">, web_socket_client=</span><span class="si">{self.web_socket!r}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(</span><span class="si">{self.http}</span><span class="s2">, </span><span class="si">{self.web_socket}</span><span class="s2">)&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -232,7 +238,7 @@
 
 <div class="viewcode-block" id="create_andesite_client"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.create_andesite_client">[docs]</a><span class="k">def</span> <span class="nf">create_andesite_client</span><span class="p">(</span><span class="n">http_uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URL</span><span class="p">],</span> <span class="n">web_socket_uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URL</span><span class="p">],</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
                            <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                           <span class="n">state</span><span class="p">:</span> <span class="n">AbstractAndesiteState</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">state</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AbstractAndesiteState</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                            <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create a new combined Andesite client.</span>
 
@@ -241,8 +247,8 @@
 <span class="sd">        web_socket_uri: URI for the web socket endpoint</span>
 <span class="sd">        password: Andesite password for authorization</span>
 <span class="sd">        user_id: User ID</span>
-<span class="sd">        state: State handler to use. Defaults to `None` meaning that no</span>
-<span class="sd">            state is being kept.</span>
+<span class="sd">        state: State handler to use. Defaults to in-memory `AndesiteState`.</span>
+<span class="sd">            You can pass `False` to disable state handling.</span>
 <span class="sd">        loop: Specify the event loop to use. The</span>
 <span class="sd">            meaning of this value depends on the client,</span>
 <span class="sd">            but you can safely omit it.</span>
@@ -256,7 +262,8 @@
     <span class="n">web_socket_client</span> <span class="o">=</span> <span class="n">AndesiteWebSocketBase</span><span class="p">(</span><span class="n">web_socket_uri</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
 
     <span class="n">inst</span> <span class="o">=</span> <span class="n">AndesiteClient</span><span class="p">(</span><span class="n">http_client</span><span class="p">,</span> <span class="n">web_socket_client</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
-    <span class="n">inst</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+
+    <span class="n">inst</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">_get_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">inst</span></div>
 </pre></div>
 

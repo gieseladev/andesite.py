@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>State &#8212; andesite.py 0.1.0 documentation</title>
+    <title>State &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -44,6 +44,18 @@ with a custom <a class="reference internal" href="#andesite.state.AbstractPlayer
 Both approaches have their advantages, but you should always consider that while
 the get operations are often performed together (especially during state
 migration), the set operations are not.</p>
+<dl class="attribute">
+<dt id="andesite.state.StateArgumentType">
+<code class="sig-name descname">StateArgumentType</code><a class="headerlink" href="#andesite.state.StateArgumentType" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Type alias)
+types which can be passed as a state handler to a client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Union[<a class="reference internal" href="#andesite.state.AbstractAndesiteState" title="andesite.state.AbstractAndesiteState">AbstractAndesiteState</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)">None</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="class">
 <dt id="andesite.state.AbstractPlayerState">
 <em class="property">class </em><code class="sig-name descname">AbstractPlayerState</code><a class="reference internal" href="../_modules/andesite/state.html#AbstractPlayerState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AbstractPlayerState" title="Permalink to this definition">¶</a></dt>
@@ -287,19 +299,18 @@ returned data.</p>
 <dd><p>Andesite state handler.</p>
 <p>Keeps track of the state of an Andesite node.</p>
 <dl class="method">
-<dt id="andesite.state.AbstractAndesiteState.get_player_state">
-<em class="property">abstract async </em><code class="sig-name descname">get_player_state</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AbstractAndesiteState.get_player_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AbstractAndesiteState.get_player_state" title="Permalink to this definition">¶</a></dt>
+<dt id="andesite.state.AbstractAndesiteState.get">
+<em class="property">abstract async </em><code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AbstractAndesiteState.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AbstractAndesiteState.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the player state of a guild.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Guild to get player state for.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#andesite.state.AbstractPlayerState" title="andesite.state.AbstractPlayerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractPlayerState</span></code></a>]</p>
+<dd class="field-even"><p><a class="reference internal" href="#andesite.state.AbstractPlayerState" title="andesite.state.AbstractPlayerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractPlayerState</span></code></a></p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Player state for the given guild or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if the guild
-doesn’t have a player state.</p>
+<dd class="field-odd"><p>Player state for the given guild.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -319,23 +330,6 @@ doesn’t have a player state.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="andesite.state.AbstractAndesiteState.handle_andesite_message">
-<code class="sig-name descname">handle_andesite_message</code><span class="sig-paren">(</span><em class="sig-param">message</em>, <em class="sig-param">*</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AbstractAndesiteState.handle_andesite_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AbstractAndesiteState.handle_andesite_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles the event of an andesite message being received.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> (<a class="reference internal" href="event_target.html#andesite.event_target.NamedEvent" title="andesite.event_target.NamedEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedEvent</span></code></a>) – Message that was sent.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Future</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="andesite.state.AbstractAndesiteState.handle_player_update">
 <em class="property">abstract async </em><code class="sig-name descname">handle_player_update</code><span class="sig-paren">(</span><em class="sig-param">update</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AbstractAndesiteState.handle_player_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AbstractAndesiteState.handle_player_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handle a player update.</p>
@@ -345,25 +339,6 @@ doesn’t have a player state.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="andesite.state.AbstractAndesiteState.handle_sent_message">
-<code class="sig-name descname">handle_sent_message</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em>, <em class="sig-param">*</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AbstractAndesiteState.handle_sent_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AbstractAndesiteState.handle_sent_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles the event of a message being sent.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Guild id the message was sent for.</p></li>
-<li><p><strong>op</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Operation code.</p></li>
-<li><p><strong>payload</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Raw payload of the message.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Future</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -447,19 +422,18 @@ to the corresponding player state.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="andesite.state.AndesiteState.get_player_state">
-<em class="property">async </em><code class="sig-name descname">get_player_state</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AndesiteState.get_player_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AndesiteState.get_player_state" title="Permalink to this definition">¶</a></dt>
+<dt id="andesite.state.AndesiteState.get">
+<em class="property">async </em><code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AndesiteState.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AndesiteState.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the player state of a guild.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Guild to get player state for.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[~PST]</p>
+<dd class="field-even"><p>~PST</p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Player state for the given guild or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> if the guild
-doesn’t have a player state.</p>
+<dd class="field-odd"><p>Player state for the given guild.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -479,23 +453,6 @@ doesn’t have a player state.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="andesite.state.AndesiteState.handle_andesite_message">
-<code class="sig-name descname">handle_andesite_message</code><span class="sig-paren">(</span><em class="sig-param">message</em>, <em class="sig-param">*</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.state.AndesiteState.handle_andesite_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles the event of an andesite message being received.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> (<a class="reference internal" href="event_target.html#andesite.event_target.NamedEvent" title="andesite.event_target.NamedEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedEvent</span></code></a>) – Message that was sent.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Future</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="andesite.state.AndesiteState.handle_player_update">
 <em class="property">async </em><code class="sig-name descname">handle_player_update</code><span class="sig-paren">(</span><em class="sig-param">update</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#AndesiteState.handle_player_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.AndesiteState.handle_player_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handle a player update.</p>
@@ -505,25 +462,6 @@ doesn’t have a player state.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="andesite.state.AndesiteState.handle_sent_message">
-<code class="sig-name descname">handle_sent_message</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em>, <em class="sig-param">*</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.state.AndesiteState.handle_sent_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles the event of a message being sent.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Guild id the message was sent for.</p></li>
-<li><p><strong>op</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Operation code.</p></li>
-<li><p><strong>payload</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Raw payload of the message.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Future</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -660,6 +598,11 @@ creates a <code class="xref py py-obj docutils literal notranslate"><span class=
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="data">
+<dt>
+<code class="sig-name descname">StateArgumentType</code><em class="property"> = typing.Union[andesite.state.AbstractAndesiteState, bool, NoneType]</em></dt>
+<dd></dd></dl>
 
 </div>
 

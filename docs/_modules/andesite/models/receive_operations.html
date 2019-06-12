@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.models.receive_operations &#8212; andesite.py 0.1.0 documentation</title>
+    <title>andesite.models.receive_operations &#8212; andesite.py 0.1.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -46,13 +46,14 @@
 
 <span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">from</span> <span class="nn">andesite.event_target</span> <span class="k">import</span> <span class="n">NamedEvent</span>
 <span class="kn">from</span> <span class="nn">andesite.transform</span> <span class="k">import</span> <span class="n">RawDataType</span><span class="p">,</span> <span class="n">map_build_values_from_raw</span><span class="p">,</span> <span class="n">map_convert_values</span><span class="p">,</span> \
-    <span class="n">map_convert_values_from_milli</span><span class="p">,</span> <span class="n">map_convert_values_to_milli</span><span class="p">,</span> <span class="n">transform_input</span><span class="p">,</span> <span class="n">transform_output</span>
+    <span class="n">map_convert_values_from_milli</span><span class="p">,</span> <span class="n">map_convert_values_to_milli</span><span class="p">,</span> <span class="n">map_remove_keys</span><span class="p">,</span> <span class="n">transform_input</span><span class="p">,</span> <span class="n">transform_output</span>
 <span class="kn">from</span> <span class="nn">.debug</span> <span class="k">import</span> <span class="n">Error</span><span class="p">,</span> <span class="n">Stats</span>
 <span class="kn">from</span> <span class="nn">.player</span> <span class="k">import</span> <span class="n">Player</span>
 
@@ -81,8 +82,24 @@
 
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">PongResponse</span><span class="p">(</span><span class="n">ReceiveOperation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Simple pong response sent as a response to ping requests.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Simple pong response sent as a response to ping requests.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        user_id (int): User id</span>
+<span class="sd">        guild_id (int): Guild id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__op__</span> <span class="o">=</span> <span class="s2">&quot;pong&quot;</span>
+
+    <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">guild_id</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">guild_id</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ConnectionUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.receive_operations.ConnectionUpdate">[docs]</a><span class="nd">@dataclass</span>
@@ -95,6 +112,19 @@
     <span class="n">__op__</span> <span class="o">=</span> <span class="s2">&quot;connection-id&quot;</span>
 
     <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">MetadataUpdate</span><span class="p">(</span><span class="n">ReceiveOperation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Payload sent on connection start containing handshake response header.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        data (Dict[str, Union[int, str, List[str]]]): Map of metadata key to</span>
+<span class="sd">            value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__op__</span> <span class="o">=</span> <span class="s2">&quot;metadata&quot;</span>
+
+    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span>
 
 
 <div class="viewcode-block" id="StatsUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.receive_operations.StatsUpdate">[docs]</a><span class="nd">@dataclass</span>
@@ -168,7 +198,6 @@
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">track</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -185,7 +214,8 @@
 <div class="viewcode-block" id="TrackStartEvent"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.receive_operations.TrackStartEvent">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">TrackStartEvent</span><span class="p">(</span><span class="n">AndesiteEvent</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Event emitted when a new track starts playing.&quot;&quot;&quot;</span>
-    <span class="o">...</span></div>
+
+    <span class="n">track</span><span class="p">:</span> <span class="nb">str</span></div>
 
 
 <div class="viewcode-block" id="TrackEndReason"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.receive_operations.TrackEndReason">[docs]</a><span class="k">class</span> <span class="nc">TrackEndReason</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
@@ -223,6 +253,8 @@
 <span class="sd">            (`TrackEndReason.REPLACED`) or because the player is stopped</span>
 <span class="sd">            (`TrackEndReason.STOPPED`, `TrackEndReason.CLEANUP`).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">track</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">reason</span><span class="p">:</span> <span class="n">TrackEndReason</span>
     <span class="n">may_start_next</span><span class="p">:</span> <span class="nb">bool</span>
 
@@ -247,6 +279,8 @@
 <span class="sd">        error (str): Error message</span>
 <span class="sd">        exception (Error): Error data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">track</span><span class="p">:</span> <span class="nb">str</span>
+
     <span class="n">error</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">exception</span><span class="p">:</span> <span class="n">Error</span></div>
 
@@ -258,6 +292,8 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        threshold (float): Threshold in seconds</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">track</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="nd">@classmethod</span>
@@ -271,6 +307,21 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">transform_output</span><span class="p">(</span><span class="nb">super</span><span class="p">(),</span> <span class="n">data</span><span class="p">)</span>
         <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;threshold&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">WebSocketClosedEvent</span><span class="p">(</span><span class="n">AndesiteEvent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Event emitted when the Andesite node disconnects from a voice channel.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        reason (str): Reason for the disconnect</span>
+<span class="sd">        code (int): Error code</span>
+<span class="sd">        by_remote (bool): Whether the disconnect was caused by the remote.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">code</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">by_remote</span><span class="p">:</span> <span class="nb">bool</span>
 
 
 <div class="viewcode-block" id="UnknownAndesiteEvent"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.receive_operations.UnknownAndesiteEvent">[docs]</a><span class="nd">@dataclass</span>
@@ -292,6 +343,8 @@
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
         <span class="c1"># we want a clean body... does that sound weird? no, I&#39;m sure it doesn&#39;t</span>
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">map_remove_keys</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_UNKNOWN_ANDESITE_EVENT_FIELD_NAMES</span><span class="p">))</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">transform_input</span><span class="p">(</span><span class="nb">super</span><span class="p">(),</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span>
 
@@ -299,13 +352,21 @@
     <span class="k">def</span> <span class="nf">__transform_output__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RawDataType</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">transform_output</span><span class="p">(</span><span class="nb">super</span><span class="p">(),</span> <span class="n">data</span><span class="p">)</span>
 
-        <span class="n">body</span><span class="p">:</span> <span class="n">RawDataType</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">]</span>
+        <span class="n">body</span><span class="p">:</span> <span class="n">RawDataType</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">)</span>
         <span class="c1"># let the existing data overwrite the body</span>
         <span class="n">body</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">body</span></div>
 
 
-<span class="n">_EVENTS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">AndesiteEvent</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">TrackStartEvent</span><span class="p">,</span> <span class="n">TrackEndEvent</span><span class="p">,</span> <span class="n">TrackExceptionEvent</span><span class="p">,</span> <span class="n">TrackStuckEvent</span><span class="p">}</span>
+<span class="n">_UNKNOWN_ANDESITE_EVENT_FIELDS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">dataclasses</span><span class="o">.</span><span class="n">Field</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">UnknownAndesiteEvent</span><span class="p">)</span>
+<span class="n">_UNKNOWN_ANDESITE_EVENT_FIELD_NAMES</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">_UNKNOWN_ANDESITE_EVENT_FIELDS</span><span class="p">}</span>
+
+<span class="n">_EVENTS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">AndesiteEvent</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">TrackStartEvent</span><span class="p">,</span>
+    <span class="n">TrackEndEvent</span><span class="p">,</span>
+    <span class="n">TrackExceptionEvent</span><span class="p">,</span> <span class="n">TrackStuckEvent</span><span class="p">,</span>
+    <span class="n">WebSocketClosedEvent</span><span class="p">,</span>
+<span class="p">}</span>
 <span class="n">EVENT_MAP</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">AndesiteEvent</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">event</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">_EVENTS</span><span class="p">}</span>
 
 
@@ -325,7 +386,7 @@
         <span class="k">return</span> <span class="n">UnknownAndesiteEvent</span></div>
 
 
-<span class="n">_OPS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">ReceiveOperation</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">PongResponse</span><span class="p">,</span> <span class="n">ConnectionUpdate</span><span class="p">,</span> <span class="n">StatsUpdate</span><span class="p">,</span> <span class="n">PlayerUpdate</span><span class="p">}</span>
+<span class="n">_OPS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">ReceiveOperation</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">PongResponse</span><span class="p">,</span> <span class="n">ConnectionUpdate</span><span class="p">,</span> <span class="n">MetadataUpdate</span><span class="p">,</span> <span class="n">StatsUpdate</span><span class="p">,</span> <span class="n">PlayerUpdate</span><span class="p">}</span>
 <span class="n">OP_MAP</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">ReceiveOperation</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">op</span><span class="o">.</span><span class="n">__op__</span><span class="p">:</span> <span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">_OPS</span><span class="p">}</span>
 
 
