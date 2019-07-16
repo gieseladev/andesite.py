@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.pools &#8212; andesite.py 0.1.1 documentation</title>
+    <title>andesite.pools &#8212; andesite.py 0.1.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -815,7 +815,8 @@
 
     <span class="n">web_socket_clients</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">uri</span><span class="p">,</span> <span class="n">password</span> <span class="ow">in</span> <span class="n">web_socket_nodes</span><span class="p">:</span>
-        <span class="n">web_socket_clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AndesiteWebSocketBase</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">))</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">AndesiteWebSocketBase</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+        <span class="n">web_socket_clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ws</span><span class="p">)</span>
 
     <span class="n">http_pool_kwargs</span> <span class="o">=</span> <span class="n">http_pool_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
     <span class="n">http_pool_kwargs</span><span class="p">[</span><span class="s2">&quot;loop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop</span>
