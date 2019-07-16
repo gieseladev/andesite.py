@@ -781,7 +781,8 @@ def create_andesite_pool(http_nodes: Iterable[NodeDetails],
 
     web_socket_clients = []
     for uri, password in web_socket_nodes:
-        web_socket_clients.append(AndesiteWebSocketBase(uri, user_id, password, loop=loop))
+        ws = AndesiteWebSocketBase(uri, user_id, password, state=False, loop=loop)
+        web_socket_clients.append(ws)
 
     http_pool_kwargs = http_pool_kwargs or {}
     http_pool_kwargs["loop"] = loop

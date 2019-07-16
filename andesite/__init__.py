@@ -8,7 +8,7 @@ Attributes:
     __version__: Version of the installed andesite.py library.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 from .combined_client import *
 from .http_client import *
