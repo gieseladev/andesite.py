@@ -34,7 +34,7 @@ from weakref import WeakKeyDictionary, WeakValueDictionary
 
 import yarl
 
-from andesite import AndesiteClient
+from andesite import Client
 from .event_target import EventTarget, NamedEvent
 from .http_client import AbstractHTTP, HTTPError, HTTPInterface
 from .state import AbstractState, StateArgumentType
@@ -749,8 +749,8 @@ def create_pool(http_nodes: Iterable[NodeDetails],
                 state: StateArgumentType = None,
                 http_pool_kwargs: Mapping[str, Any] = None,
                 web_socket_pool_kwargs: Mapping[str, Any] = None,
-                loop: asyncio.AbstractEventLoop = None) -> AndesiteClient:
-    """Create an `AndesiteClient` with client pools.
+                loop: asyncio.AbstractEventLoop = None) -> Client:
+    """Create an `Client` with client pools.
 
     Uses `HTTPBase` and `WebSocketBase` which are contained in
     `HTTPPoolBase` and `WebSocketPoolBase` pools respectively.
@@ -794,7 +794,7 @@ def create_pool(http_nodes: Iterable[NodeDetails],
 
     web_socket_pool = WebSocketPoolBase(web_socket_clients, **web_socket_pool_kwargs)
 
-    inst = AndesiteClient(http_pool, web_socket_pool, loop=loop)
+    inst = Client(http_pool, web_socket_pool, loop=loop)
 
     # the setter will make sure the state is proper
     inst.state = state

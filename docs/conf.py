@@ -30,6 +30,11 @@ version = andesite.__version__
 # The full version, including alpha/beta/rc tags
 release = version
 
+# # unimport to set type checking flag later
+# for name in tuple(sys.modules):
+#     if name.startswith("andesite"):
+#         del sys.modules[name]
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -51,6 +56,8 @@ extensions = [
 ]
 
 set_type_checking_flag = True
+
+nitpicky = True
 
 add_module_names = False
 default_role = "py:obj"
@@ -182,6 +189,10 @@ epub_title = project
 epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
+
+# autodoc
+
+autodoc_member_order = 'bysource'
 
 # -- Options for intersphinx extension ---------------------------------------
 

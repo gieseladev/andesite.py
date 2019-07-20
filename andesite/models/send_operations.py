@@ -17,7 +17,9 @@ from andesite.transform import RawDataType, build_from_raw, from_centi, from_mil
     map_convert_values, map_convert_values_from_milli, map_convert_values_to_milli, to_centi, to_milli
 from .filters import FilterMap, FilterMapLike
 
-__all__ = ["SendOperation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
+__all__ = ["SendOperation",
+           "VoiceServerUpdate",
+           "Play", "Pause", "Seek", "Volume", "FilterUpdate", "Update", "MixerUpdate"]
 
 
 class SendOperation(abc.ABC):

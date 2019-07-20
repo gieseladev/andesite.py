@@ -7,12 +7,12 @@ Connecting to an Andesite node
 
 Let's imagine the most basic use case first:
 You have one Andesite server which you would like to connect to.
-For this case there's the `AndesiteClient` which does this for you.
+For this case there's the `Client` which does this for you.
 In reality the andesite client is a combination of both the web socket client
 and the http client, but it aims to hide this complexity.
 
 Unless you're using the `discord.py` library, you have to manually pass voice
-server updates to Andesite using `AndesiteClient.voice_server_update`.
+server updates to Andesite using `Client.voice_server_update`.
 If you are using `discord.py`, please refer to :ref:`discord.py`
 
 .. code-block:: python

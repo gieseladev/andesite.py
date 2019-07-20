@@ -4,7 +4,7 @@ This client combines the `WebSocket` and `HTTP` clients.
 
 There is the `ClientBase` which is simply the implementation
 of `AbstractWebSocket` and `AbstractHTTP` and then there
-is the actual client `AndesiteClient`.
+is the actual client `Client`.
 
 You can use the combined client for everything that implements
 the abstract methods. This means that you can use the combined client
@@ -23,14 +23,11 @@ from .state import AbstractState, _get_state
 from .web_socket_client import AbstractWebSocket, AbstractWebSocketClient, WebSocketBase, \
     WebSocketInterface
 
-__all__ = ["ClientBase", "AndesiteClient", "create_client"]
+__all__ = ["ClientBase", "Client", "create_client"]
 
 
 class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
-    """Implementation of `AbstractAndesiteWebSocket` and `AbstractAndesiteHTTP`.
-
-    See Also:
-        Use the `create` class method if you want to conveniently create the client.
+    """Implementation of `AbstractWebSocket` and `AbstractHTTP`.
 
     Args:
         http_client: Client to use for the http endpoints.
@@ -39,9 +36,9 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
 
     The `event_target` of the web socket client is set to the combined client.
 
-    This class implements `AbstractAndesiteWebSocketClient` if the underlying web socket client
+    This class implements `AbstractWebSocketClient` if the underlying web socket client
     is an instance of it. However, an `isinstance` check will always return `False`.
-    If the underlying client is not an instance of `AbstractAndesiteWebSocketClient`, all
+    If the underlying client is not an instance of `AbstractWebSocketClient`, all
     related methods will return `None`.
 
     Attributes:
@@ -180,24 +177,21 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         return await self.http.request(method, path, **kwargs)
 
 
-class AndesiteClient(WebSocketInterface, HTTPInterface, ClientBase):
+class Client(WebSocketInterface, HTTPInterface, ClientBase):
     """Andesite client which combines the web socket with the http client.
-
-    See Also:
-        Use the `create` class method if you want to conveniently create the client.
 
     Args:
         http_client: Client to use for the http endpoints.
         web_socket_client: Client to use for the web socket communication.
 
-    This class implements `AbstractAndesiteWebSocketClient` if the underlying web socket client
+    This class implements `AbstractWebSocketClient` if the underlying web socket client
     is an instance of it. However, an `isinstance` check will always return `False`.
-    If the underlying client is not an instance of `AbstractAndesiteWebSocketClient`, all
+    If the underlying client is not an instance of `AbstractWebSocketClient`, all
     related methods will return `None`.
 
     Attributes:
-        http (AbstractHTTP): HTTP client which is used for the `AbstractAndesiteHTTP` methods.
-        web_socket (AbstractWebSocket): WebSocket client which is used for the `AbstractAndesiteWebSocket` methods.
+        http (AbstractHTTP): HTTP client which is used for the `AbstractHTTP` methods.
+        web_socket (AbstractWebSocket): WebSocket client which is used for the `AbstractWebSocket` methods.
     """
     ...
 
@@ -205,7 +199,7 @@ class AndesiteClient(WebSocketInterface, HTTPInterface, ClientBase):
 def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
                   user_id: int, *,
                   state: Union[AbstractState, bool] = None,
-                  loop: asyncio.AbstractEventLoop = None):
+                  loop: asyncio.AbstractEventLoop = None) -> Client:
     """Create a new combined Andesite client.
 
     Args:
@@ -227,7 +221,7 @@ def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], pa
     http_client = HTTPBase(http_uri, password, loop=loop)
     web_socket_client = WebSocketBase(web_socket_uri, user_id, password, loop=loop)
 
-    inst = AndesiteClient(http_client, web_socket_client, loop=loop)
+    inst = Client(http_client, web_socket_client, loop=loop)
 
     inst.state = _get_state(state)
     return inst

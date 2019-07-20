@@ -25,7 +25,7 @@ class AndesiteCog(Cog, name="Andesite"):
     """Play music through the power of Andesite using andesite.py."""
     bot: Bot
     options: "OptionsType"
-    andesite_client: Optional[andesite.AndesiteClient]
+    andesite_client: Optional[andesite.Client]
 
     _last_session_id: Optional[str]
 

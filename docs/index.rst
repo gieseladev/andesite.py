@@ -10,6 +10,7 @@ andesite.py is a client library for `Andesite <https://github.com/natanbc/andesi
     intro
     quickstart
     reference/index
+    api
 
 
 

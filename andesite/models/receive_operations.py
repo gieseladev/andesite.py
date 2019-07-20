@@ -27,10 +27,13 @@ if TYPE_CHECKING:
     from andesite import AbstractWebSocketClient
 
 __all__ = ["ReceiveOperation",
-           "ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
+           "PongResponse",
+           "ConnectionUpdate", "MetadataUpdate", "StatsUpdate", "PlayerUpdate",
            "AndesiteEvent", "TrackStartEvent",
            "TrackEndReason", "TrackEndEvent",
-           "TrackExceptionEvent", "TrackStuckEvent", "UnknownAndesiteEvent",
+           "TrackExceptionEvent", "TrackStuckEvent",
+           "WebSocketClosedEvent",
+           "UnknownAndesiteEvent",
            "get_event_model", "get_update_model"]
 
 
