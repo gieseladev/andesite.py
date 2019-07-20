@@ -310,13 +310,13 @@ class EventTarget:
         """
         event = resolve_event_specifier(event)
 
-        # not using self._loop.create_future because loop may be None
-        future = asyncio.Future(loop=self._loop)
+        loop = self._loop or asyncio.get_event_loop()
+        future = loop.create_future()
         listener = OneTimeEventListener(future, check)
 
         _push_map_list(self._one_time_listeners, event, listener)
 
-        return safe_wait_for(future, timeout=timeout, loop=self._loop)
+        return safe_wait_for(future, timeout=timeout, loop=loop)
 
     def add_dispatcher(self, target: "EventTarget") -> None:
         """Add a child event target which will dispatch the same events.
