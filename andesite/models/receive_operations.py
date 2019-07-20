@@ -24,7 +24,7 @@ from .debug import Error, Stats
 from .player import Player
 
 if TYPE_CHECKING:
-    from andesite import AbstractAndesiteWebSocketClient
+    from andesite import AbstractWebSocketClient
 
 __all__ = ["ReceiveOperation",
            "ConnectionUpdate", "StatsUpdate", "PlayerUpdate",
@@ -38,12 +38,12 @@ class ReceiveOperation(abc.ABC):
     """Message sent by Andesite.
 
     Attributes:
-        client (Optional[AbstractAndesiteWebSocketClient]): Client that received
+        client (Optional[AbstractWebSocketClient]): Client that received
             the message. This is set by the client that received the message.
     """
     __op__: str
 
-    client: Optional["AbstractAndesiteWebSocketClient"] = None
+    client: Optional["AbstractWebSocketClient"] = None
 
 
 @dataclass

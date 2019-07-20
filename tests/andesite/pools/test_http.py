@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from andesite import AbstractAndesiteHTTP, AndesiteHTTPPool
+from andesite import AbstractHTTP, HTTPPool
 from tests.andesite.async_mock import AsyncMock
 
 
@@ -13,7 +13,7 @@ def mocked_build():
         yield mocked
 
 
-class MockAndesiteHTTP(AbstractAndesiteHTTP):
+class MockHTTP(AbstractHTTP):
     closed = mock.PropertyMock(return_value=False)
 
     close = AsyncMock()
@@ -25,12 +25,12 @@ class MockAndesiteHTTP(AbstractAndesiteHTTP):
 
 @pytest.mark.asyncio
 async def test_http_pool(mocked_build: mock.Mock):
-    client_a = MockAndesiteHTTP()
-    client_b = MockAndesiteHTTP()
+    client_a = MockHTTP()
+    client_b = MockHTTP()
 
     clients = [client_a, client_b]
 
-    pool = AndesiteHTTPPool(clients)
+    pool = HTTPPool(clients)
 
     pool.remove_client(client_a)
     pool.add_client(client_a)

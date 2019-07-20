@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 
-from andesite import AbstractAndesiteWebSocket, AndesiteWebSocketPool
+from andesite import AbstractWebSocket, WebSocketPool
 from tests.andesite.async_mock import AsyncMock
 
 
-class MockAndesiteWebSocket(AbstractAndesiteWebSocket):
+class MockWebSocket(AbstractWebSocket):
     closed = mock.PropertyMock(return_value=False)
 
     close = AsyncMock()
@@ -19,13 +19,13 @@ class MockAndesiteWebSocket(AbstractAndesiteWebSocket):
 
 @pytest.mark.asyncio
 async def test_ws_pool():
-    client_a = MockAndesiteWebSocket()
-    client_b = MockAndesiteWebSocket()
-    client_c = MockAndesiteWebSocket()
+    client_a = MockWebSocket()
+    client_b = MockWebSocket()
+    client_c = MockWebSocket()
 
     clients = [client_a, client_b, client_c]
 
-    pool = AndesiteWebSocketPool(clients)
+    pool = WebSocketPool(clients)
 
     assigned_client = await pool.assign_client(1234)
     assert assigned_client in clients

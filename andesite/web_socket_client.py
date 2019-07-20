@@ -1,6 +1,6 @@
 """Web socket client for Andesite.
 
-Use `AndesiteWebSocket` if you just want a client which
+Use `WebSocket` if you just want a client which
 connects to a single Andesite node.
 """
 
@@ -24,16 +24,16 @@ from .event_target import EventFilter, EventTarget, NamedEvent
 from .models import AndesiteEvent, BasePlayer, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, \
     Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, \
     Update, Vibrato, VolumeFilter, get_update_model
-from .state import AbstractAndesiteState, AbstractPlayerState, StateArgumentType, _get_state
+from .state import AbstractState, AbstractPlayerState, StateArgumentType, _get_state
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, \
     WebSocketDisconnectEvent
 
 __all__ = ["try_connect",
-           "AbstractAndesiteWebSocket", "AbstractAndesiteWebSocketClient",
-           "AndesiteWebSocketInterface",
-           "AndesiteWebSocketBase",
-           "AndesiteWebSocket"]
+           "AbstractWebSocket", "AbstractWebSocketClient",
+           "WebSocketInterface",
+           "WebSocketBase",
+           "WebSocket"]
 
 ROPT = TypeVar("ROPT", bound=ReceiveOperation)
 ET = TypeVar("ET", bound=AndesiteEvent)
@@ -96,15 +96,15 @@ def _get_ops_for_player(track: str, player: Optional[BasePlayer]) -> Tuple[Play,
     return play_op, update_op
 
 
-class AbstractAndesiteWebSocket(abc.ABC):
+class AbstractWebSocket(abc.ABC):
     """Abstract base class for an Andesite web socket client.
 
-    This class is separate from `AbstractAndesiteWebSocketClient` to
+    This class is separate from `AbstractWebSocketClient` to
     support more complex clients which use more than one web socket
     connection (ex: Pools).
 
     See Also:
-        `AbstractAndesiteWebSocketClient` for the abstract base class
+        `AbstractWebSocketClient` for the abstract base class
         for actual web socket clients.
 
 
@@ -133,7 +133,7 @@ class AbstractAndesiteWebSocket(abc.ABC):
     """
 
     _event_target: EventTarget
-    _state_handler: Optional[AbstractAndesiteState]
+    _state_handler: Optional[AbstractState]
 
     @property
     def event_target(self) -> EventTarget:
@@ -157,23 +157,23 @@ class AbstractAndesiteWebSocket(abc.ABC):
             return self._event_target
 
     @property
-    def state(self) -> Optional[AbstractAndesiteState]:
+    def state(self) -> Optional[AbstractState]:
         """State handler for the client.
 
         You may manually set this value to a different state handler which
-        implements the `AbstractAndesiteState`. You can also set the state back
+        implements the `AbstractState`. You can also set the state back
         to `None`.
         Note that this won't apply the state to the client! You can use the
         `load_player_state` method do load individual player states.
 
         If not state is set the getter either returns the current instance, if
-        it happens to implement `AbstractAndesiteState`, otherwise it returns
+        it happens to implement `AbstractState`, otherwise it returns
         `None`.
         """
         try:
             return self._state_handler
         except AttributeError:
-            if isinstance(self, AbstractAndesiteState):
+            if isinstance(self, AbstractState):
                 self._state_handler = self
             else:
                 self._state_handler = None
@@ -239,7 +239,7 @@ class AbstractAndesiteWebSocket(abc.ABC):
 
         Notes:
             Using `SendOperation` instances to send messages is slightly
-            less efficient than calling the respective `AndesiteWebSocket` methods
+            less efficient than calling the respective `WebSocket` methods
             directly.
         """
         await self.send(guild_id, operation.__op__, convert_to_raw(operation))
@@ -281,14 +281,14 @@ class AbstractAndesiteWebSocket(abc.ABC):
             )
 
 
-class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
+class AbstractWebSocketClient(AbstractWebSocket, abc.ABC):
     """Abstract base class for a singular web socket connection to Andesite.
 
     If you're creating a new client and it doesn't use only one Andesite node,
-    you should implement `AbstractAndesiteWebSocket` instead.
+    you should implement `AbstractWebSocket` instead.
 
     See Also:
-        `AbstractAndesiteWebSocket` for more details.
+        `AbstractWebSocket` for more details.
     """
 
     @property
@@ -375,7 +375,7 @@ class AbstractAndesiteWebSocketClient(AbstractAndesiteWebSocket, abc.ABC):
 
 # TODO find a way to pass the event loop to the interface methods
 
-class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
+class WebSocketInterface(AbstractWebSocket, abc.ABC):
     """Implementation of the web socket endpoints."""
 
     @overload
@@ -725,7 +725,7 @@ class AndesiteWebSocketInterface(AbstractAndesiteWebSocket, abc.ABC):
         await self.send(guild_id, "voice-server-update", payload)
 
 
-class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
+class WebSocketBase(AbstractWebSocketClient):
     """Client for the Andesite WebSocket handler.
 
     Args:
@@ -736,7 +736,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         password: Authorization for the Andesite node.
             Set to `None` if the node doesn't have a password.
         state: State handler to use. If `False` state handling is disabled.
-            `None` to use the default state handler (`AndesiteState`).
+            `None` to use the default state handler (`State`).
         max_connect_attempts: See the `max_connect_attempts` attribute.
         loop: Event loop to use for asynchronous operations.
             If no loop is provided it is dynamically retrieved when
@@ -747,7 +747,7 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
     You can delete the `connection_id` property to disable this.
 
     See Also:
-        `AbstractAndesiteWebSocketClient` for more details including a list
+        `AbstractWebSocketClient` for more details including a list
         of events that are dispatched.
 
     Attributes:
@@ -969,12 +969,12 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         methods for controlling the reader.
 
         See Also:
-            `AndesiteWebSocket._start_read_loop` to start the read loop.
-            `AndesiteWebSocket._stop_read_loop` to stop the read loop.
+            `WebSocket._start_read_loop` to start the read loop.
+            `WebSocket._stop_read_loop` to stop the read loop.
 
         Notes:
-            The read loop is automatically managed by the `AndesiteWebSocket.connect`
-            and `AndesiteWebSocket.disconnect` methods.
+            The read loop is automatically managed by the `WebSocket.connect`
+            and `WebSocket.disconnect` methods.
         """
         while True:
             try:
@@ -1082,9 +1082,9 @@ class AndesiteWebSocketBase(AbstractAndesiteWebSocketClient):
         await self.connect()
 
 
-class AndesiteWebSocket(AndesiteWebSocketBase, EventTarget, AndesiteWebSocketInterface):
+class WebSocket(WebSocketBase, EventTarget, WebSocketInterface):
     """Client for the Andesite WebSocket endpoints.
 
     See Also:
-        `AndesiteWebSocketBase` for details on the constructor and implementation.
+        `WebSocketBase` for details on the constructor and implementation.
     """

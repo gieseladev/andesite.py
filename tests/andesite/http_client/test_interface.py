@@ -2,11 +2,11 @@ from unittest import mock
 
 import pytest
 
-from andesite import AndesiteHTTPInterface
+from andesite import HTTPInterface
 from tests.andesite.async_mock import AsyncMock
 
 
-class MockAndesiteHTTP(AndesiteHTTPInterface):
+class MockAndesiteHTTP(HTTPInterface):
     closed = AsyncMock()
 
     close = AsyncMock()

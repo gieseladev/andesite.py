@@ -1,7 +1,7 @@
 """Debug models for Andesite.
 
 These models are used in either `Stats` which represents the Andesite
-stats returned by `AndesiteWebSocketInterface.get_stats` or `Error` which is
+stats returned by `WebSocketInterface.get_stats` or `Error` which is
 used to represent an Andesite error.
 """
 
@@ -144,7 +144,7 @@ class PlayersStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     total: int
     playing: int
@@ -161,7 +161,7 @@ class RuntimeVMStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     name: str
     vendor: str
@@ -179,7 +179,7 @@ class RuntimeSpecStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     name: str
     vendor: str
@@ -201,7 +201,7 @@ class RuntimeVersionStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     feature: int
     interim: int
@@ -227,7 +227,7 @@ class RuntimeStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     uptime: int
     pid: int
@@ -254,7 +254,7 @@ class OSStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     processors: int
     name: str
@@ -272,7 +272,7 @@ class CPUStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     andesite: float
     system: float
@@ -304,7 +304,7 @@ class ThreadStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     running: int
     daemon: int
@@ -322,7 +322,7 @@ class CompilationStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     name: str
     total_time: int
@@ -340,7 +340,7 @@ class MemoryCommonUsageStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     init: int
     used: int
@@ -359,7 +359,7 @@ class MemoryStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     pending_finalization: int
     heap: MemoryCommonUsageStats
@@ -382,7 +382,7 @@ class GCStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     name: str
     collection_count: int
@@ -408,7 +408,7 @@ class MemoryPoolStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     name: str
     type: str
@@ -436,7 +436,7 @@ class MemoryManagerStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     name: str
     pools: List[str]
@@ -454,7 +454,7 @@ class FrameStats:
 
     See Also:
         This statistic can be found in `Stats` which is retrieved from Andesite by
-        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.
+        the clients. Both `HTTP` and `WebSocket` are able to get them.
     """
     user: int
     guild: int

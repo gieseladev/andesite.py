@@ -1,16 +1,16 @@
 import pytest
 
-from andesite import AndesiteSearcher, get_andesite_searcher
+from andesite import Searcher, get_searcher
 
 
 def test_get_andesite_searcher():
-    yt = AndesiteSearcher.YOUTUBE
-    assert get_andesite_searcher(yt) is yt
-    assert get_andesite_searcher("youtube") is yt
-    assert get_andesite_searcher("ytsearch") is yt
+    yt = Searcher.YOUTUBE
+    assert get_searcher(yt) is yt
+    assert get_searcher("youtube") is yt
+    assert get_searcher("ytsearch") is yt
 
     with pytest.raises(TypeError):
-        get_andesite_searcher(5)
+        get_searcher(5)
 
     with pytest.raises(ValueError):
-        get_andesite_searcher("garbage")
+        get_searcher("garbage")

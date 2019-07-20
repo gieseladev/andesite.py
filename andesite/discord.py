@@ -20,7 +20,7 @@ from asyncio import Future
 from typing import Any, Callable, Dict, Iterable, Optional, Set, TYPE_CHECKING, Tuple, Union, cast, overload
 
 from .pools import RegionGuildComparator
-from .web_socket_client import AndesiteWebSocketInterface
+from .web_socket_client import WebSocketInterface
 
 if TYPE_CHECKING:
     from discord import Client, VoiceChannel, Guild
@@ -187,13 +187,13 @@ class SocketResponseHandler:
 
     Attributes:
         discord_client (discord.Client): discord.py client that is listened to.
-        andesite_client (AndesiteWebSocketInterface): Andesite client to send
+        andesite_client (WebSocketInterface): Andesite client to send
             the voice server update.
     """
     discord_client: "Client"
-    andesite_client: AndesiteWebSocketInterface
+    andesite_client: WebSocketInterface
 
-    def __init__(self, discord_client: "Client", andesite_client: AndesiteWebSocketInterface) -> None:
+    def __init__(self, discord_client: "Client", andesite_client: WebSocketInterface) -> None:
         self.discord_client = discord_client
         self.andesite_client = andesite_client
 
@@ -250,7 +250,7 @@ class SocketResponseHandler:
 SOCKET_RESPONSE_HANDLERS_ATTR: str = "__andesite_socket_response_handlers__"
 
 
-def get_andesite_socket_response_handlers(obj: Any) -> Dict[AndesiteWebSocketInterface, SocketResponseHandler]:
+def get_andesite_socket_response_handlers(obj: Any) -> Dict[WebSocketInterface, SocketResponseHandler]:
     """Get the socket response handlers added to the discord client.
 
     If it doesn't exist, a new one is created and added to the object.
@@ -264,7 +264,7 @@ def get_andesite_socket_response_handlers(obj: Any) -> Dict[AndesiteWebSocketInt
     return handlers
 
 
-def add_voice_server_update_handler(discord_client: "Client", andesite_client: AndesiteWebSocketInterface) -> None:
+def add_voice_server_update_handler(discord_client: "Client", andesite_client: WebSocketInterface) -> None:
     """Add a voice server update listener to the discord client.
 
     Args:
@@ -272,7 +272,7 @@ def add_voice_server_update_handler(discord_client: "Client", andesite_client: A
         andesite_client: Andesite web socket client to use to send the voice server update.
 
     This will listen to socket responses using the discord client
-    and trigger `AndesiteWebSocketInterface.voice_server_update`.
+    and trigger `WebSocketInterface.voice_server_update`.
     """
     handlers = get_andesite_socket_response_handlers(discord_client)
 
@@ -285,7 +285,7 @@ def add_voice_server_update_handler(discord_client: "Client", andesite_client: A
     handlers[andesite_client] = handler
 
 
-def remove_voice_server_update_handler(discord_client: "Client", andesite_client: AndesiteWebSocketInterface) -> None:
+def remove_voice_server_update_handler(discord_client: "Client", andesite_client: WebSocketInterface) -> None:
     """Remove the socket response handler added by `add_voice_server_update_handler`.
 
     Args:
@@ -372,7 +372,7 @@ def create_region_comparator(discord_client: "Client", *,
                              region_comp: Callable[[str, str], int] = None) -> RegionGuildComparator:
     """Create a region comparator which compares the guild region with the node region.
 
-    You can use the created comparator for the `AndesiteWebSocketPool`.
+    You can use the created comparator for the `WebSocketPool`.
 
     Args:
         discord_client: Client to use to determine the guild region.

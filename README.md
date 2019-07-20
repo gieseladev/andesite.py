@@ -40,7 +40,7 @@ import asyncio
 import andesite
 
 
-client = andesite.create_andesite_client(
+client = andesite.create_client(
     "http://localhost:5000",            # REST endpoint
     "ws://localhost:5000/websocket",    # WebSocket endpoint
     None,                               # Andesite password

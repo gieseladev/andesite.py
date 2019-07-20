@@ -2,15 +2,15 @@
 
 If you want to store your state externally for example in a database, there
 are two approaches you can use. You can either implement the
-`AbstractAndesiteState` and use the default `AndesitePlayerState` (which can be
-easily converted to and from JSON), or you can use the default `AndesiteState`
+`AbstractState` and use the default `AndesitePlayerState` (which can be
+easily converted to and from JSON), or you can use the default `State`
 with a custom `AbstractPlayerState` implementation.
 Both approaches have their advantages, but you should always consider that while
 the get operations are often performed together (especially during state
 migration), the set operations are not.
 
 Attributes:
-    StateArgumentType (Union[AbstractAndesiteState, bool, None]): (Type alias)
+    StateArgumentType (Union[AbstractState, bool, None]): (Type alias)
         types which can be passed as a state handler to a client.
 """
 
@@ -26,7 +26,7 @@ from .models import AndesiteEvent, Player, PlayerUpdate, TrackEndEvent, TrackExc
 from .transform import build_from_raw, convert_to_raw
 
 __all__ = ["AbstractPlayerState", "PlayerState",
-           "AbstractAndesiteState", "AndesiteState",
+           "AbstractState", "State",
            "player_to_raw", "player_from_raw",
            "voice_server_update_to_raw", "voice_server_update_from_raw",
            "StateArgumentType", "_get_state"]
@@ -97,7 +97,7 @@ class AbstractPlayerState(abc.ABC):
 
     Notes:
         Unless you're doing something weird you don't need to call the setter
-        functions. If the player state is managed by an `AbstractAndesiteState`
+        functions. If the player state is managed by an `AbstractState`
         which is connected to a client then everything is done for you.
 
     See Also:
@@ -168,7 +168,7 @@ class PlayerState(AbstractPlayerState):
     The player state can be converted to a JSON-serialisable dict using
     `to_raw`. A state can also be created from said dict using the classmethod
     `from_raw`. These methods exist to make it easy to implement a custom
-    `AbstractAndesiteState` which loads and stores serialised player states.
+    `AbstractState` which loads and stores serialised player states.
     """
 
     def __init__(self, guild_id: int):
@@ -268,7 +268,7 @@ def _run_with_error_callback(coro: Coroutine, err_cb: Callable[[Exception], Awai
     return asyncio.ensure_future(wrapper(), loop=loop)
 
 
-class AbstractAndesiteState(abc.ABC):
+class AbstractState(abc.ABC):
     """Andesite state handler.
 
     Keeps track of the state of an Andesite node.
@@ -380,8 +380,8 @@ class AbstractAndesiteState(abc.ABC):
 PST = TypeVar("PST", bound=AbstractPlayerState)
 
 
-class AndesiteState(AbstractAndesiteState, Generic[PST]):
-    """Default implementation of `AbstractAndesiteState`.
+class State(AbstractState, Generic[PST]):
+    """Default implementation of `AbstractState`.
 
     Stores the player states in memory.
 
@@ -441,10 +441,10 @@ class AndesiteState(AbstractAndesiteState, Generic[PST]):
         return self._get_or_create_player_state(guild_id)
 
 
-StateArgumentType = Union[AbstractAndesiteState, bool, None]
+StateArgumentType = Union[AbstractState, bool, None]
 
 
-def _get_state(state: StateArgumentType) -> Optional[AbstractAndesiteState]:
+def _get_state(state: StateArgumentType) -> Optional[AbstractState]:
     """Handle state creation/suppression.
 
     Args:
@@ -454,16 +454,16 @@ def _get_state(state: StateArgumentType) -> Optional[AbstractAndesiteState]:
         TypeError: If an invalid state argument was passed.
 
     Returns:
-        An instance of `AndesiteState` if state is `None` or `True`,
+        An instance of `State` if state is `None` or `True`,
         `None` if state is `False`, and `state` itself if it's a state.
     """
     if state is None or state is True:
-        return AndesiteState()
+        return State()
     elif state is False:
         return None
-    elif isinstance(state, AbstractAndesiteState):
+    elif isinstance(state, AbstractState):
         return state
     else:
-        raise TypeError("State must implement AbstractAndesiteState. "
+        raise TypeError("State must implement AbstractState. "
                         "You can also use False to disable state handling or"
                         "None to use the default state handler.")

@@ -1,6 +1,6 @@
 """Sendable operations to Andesite.
 
-These operations can be sent using `AbstractAndesiteWebSocket.send_operation`.
+These operations can be sent using `AbstractWebSocket.send_operation`.
 
 See Also:
     `andesite.models.receive_operations` for operations sent by Andesite.
@@ -22,10 +22,10 @@ __all__ = ["SendOperation", "VoiceServerUpdate", "Play", "Pause", "Seek", "Volum
 
 class SendOperation(abc.ABC):
     """SendOperation is a model that can be passed as a payload to the
-    `AndesiteWebSocket` client.
+    `WebSocket` client.
 
     See Also:
-        `AndesiteWebSocket.send_operation`
+        `WebSocket.send_operation`
     """
     __op__: str
 

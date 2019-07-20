@@ -2,21 +2,21 @@
 
 There are multiple client classes in this module.
 If you just want to use Andesite's HTTP endpoints,
-use `AndesiteHTTP`.
+use `HTTP`.
 
-`AndesiteHTTPInterface` contains the implementation
+`HTTPInterface` contains the implementation
 of the endpoint methods. It's an abstract base class,
 if you want to inherit its methods you need to implement
-`AbstractAndesiteHTTP`.
+`AbstractHTTP`.
 
-Finally there is `AndesiteHTTPBase` which is just the default
-implementation of `AbstractAndesiteHTTP`. `AndesiteHTTP` is
-just a combination of `AndesiteHTTPBase` and `AndesiteHTTPInterface`.
+Finally there is `HTTPBase` which is just the default
+implementation of `AbstractHTTP`. `HTTP` is
+just a combination of `HTTPBase` and `HTTPInterface`.
 
 
 Attributes:
-    USER_AGENT (str): User agent used by the `AndesiteHTTP` client.
-    AndesiteSearcherType (Union[AndesiteSearcher, str]): (Type alias) Types supported by `get_andesite_searcher`
+    USER_AGENT (str): User agent used by the `HTTP` client.
+    SearcherType (Union[Searcher, str]): (Type alias) Types supported by `get_searcher`
 """
 import abc
 import asyncio
@@ -31,17 +31,17 @@ from . import __version__
 from .models import LoadedTrack, Stats, TrackInfo
 from .transform import build_from_raw, seq_build_all_items_from_raw
 
-__all__ = ["USER_AGENT", "AndesiteHTTPError",
-           "AndesiteSearcher", "AndesiteSearcherType", "get_andesite_searcher",
-           "AbstractAndesiteHTTP", "AndesiteHTTPInterface",
-           "AndesiteHTTPBase", "AndesiteHTTP"]
+__all__ = ["USER_AGENT", "HTTPError",
+           "Searcher", "SearcherType", "get_searcher",
+           "AbstractHTTP", "HTTPInterface",
+           "HTTPBase", "HTTP"]
 
 log = logging.getLogger(__name__)
 
 USER_AGENT = f"andesite.py/{__version__} (https://github.com/gieseladev/andesite.py)"
 
 
-class AndesiteHTTPError(Exception):
+class HTTPError(Exception):
     """Andesite error.
 
     Attributes:
@@ -60,25 +60,25 @@ class AndesiteHTTPError(Exception):
         return f"AndesiteError ({self.code}): {self.message}"
 
 
-class AndesiteSearcher(Enum):
+class Searcher(Enum):
     """Supported search engines for Andesite."""
     YOUTUBE = "ytsearch"
     SOUNDCLOUD = "scsearch"
 
 
-AndesiteSearcherType = Union[AndesiteSearcher, str]
+SearcherType = Union[Searcher, str]
 
 
-def get_andesite_searcher(searcher: AndesiteSearcherType) -> AndesiteSearcher:
-    """Get the `AndesiteSearcher` for the given `AndesiteSearcherType`.
+def get_searcher(searcher: SearcherType) -> Searcher:
+    """Get the `Searcher` for the given `SearcherType`.
 
     Args:
         searcher: Searcher to resolve. If searcher happens to be
-            of type `AndesiteSearcher` already, it is simply returned.
+            of type `Searcher` already, it is simply returned.
 
-    This function can resolve the following `AndesiteSearcher` specifications:
+    This function can resolve the following `Searcher` specifications:
 
-    - `AndesiteSearcher` instance
+    - `Searcher` instance
     - Searcher id (i.e. "ytsearch", "scsearch")
     - Service name (i.e. "youtube", "soundcloud"). Note that the casing doesn't
       matter, as the provided names are converted to uppercase.
@@ -88,19 +88,19 @@ def get_andesite_searcher(searcher: AndesiteSearcherType) -> AndesiteSearcher:
         ValueError: If searcher is a string but doesn't resolve to a valid
             searcher.
     """
-    if isinstance(searcher, AndesiteSearcher):
+    if isinstance(searcher, Searcher):
         return searcher
     elif isinstance(searcher, str):
         try:
-            return AndesiteSearcher[searcher.upper()]
+            return Searcher[searcher.upper()]
         except KeyError:
             # if this causes a ValueError, just let it raise
-            return AndesiteSearcher(searcher)
+            return Searcher(searcher)
     else:
-        raise TypeError(f"Can only resolve {AndesiteSearcherType}, not {type(searcher)}: {searcher}")
+        raise TypeError(f"Can only resolve {SearcherType}, not {type(searcher)}: {searcher}")
 
 
-class AbstractAndesiteHTTP(abc.ABC):
+class AbstractHTTP(abc.ABC):
     """Abstract base class which requires a request method and a close method."""
 
     @property
@@ -142,15 +142,15 @@ class AbstractAndesiteHTTP(abc.ABC):
         task. You should use the provided methods whenever possible.
 
         Raises:
-            AndesiteHTTPError: If Andesite returns an error.
+            HTTPError: If Andesite returns an error.
         """
         ...
 
 
-class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
+class HTTPInterface(AbstractHTTP, abc.ABC):
     """Abstract implementation of the endpoints.
 
-    This does not include the player routes, as they are already covered by the `AndesiteWebSocket`.
+    This does not include the player routes, as they are already covered by the `WebSocket`.
     The client uses the user agent `USER_AGENT` for every request.
     """
 
@@ -158,7 +158,7 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
         """Get the node's statistics.
 
         Raises:
-            AndesiteHTTPError: If Andesite returns an error.
+            HTTPError: If Andesite returns an error.
         """
         data = await self.request("GET", "stats")
         return build_from_raw(Stats, data)
@@ -171,7 +171,7 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
                 so it supports the search syntax for example.
 
         Raises:
-            AndesiteHTTPError: If Andesite returns an error.
+            HTTPError: If Andesite returns an error.
 
         See Also:
             `search_tracks` to search for a track using a query.
@@ -190,7 +190,7 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
             uri: URI to load
 
         Raises:
-            AndesiteHTTPError: If Andesite returns an error.
+            HTTPError: If Andesite returns an error.
 
         See Also:
             `load_tracks` to load a track using an identifier.
@@ -199,23 +199,23 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
         return await self.load_tracks(f"raw:{uri}")
 
     async def search_tracks(self, query: str, *,
-                            searcher: AndesiteSearcherType = AndesiteSearcher.YOUTUBE) -> LoadedTrack:
+                            searcher: SearcherType = Searcher.YOUTUBE) -> LoadedTrack:
         """Search tracks.
 
         Args:
             query: Search query to search for
             searcher: Specify the searcher to use. Defaults to YouTube.
-                See `AndesiteSearcher` for the supported searchers.
+                See `Searcher` for the supported searchers.
 
         Raises:
-            AndesiteHTTPError: If Andesite returns an error.
+            HTTPError: If Andesite returns an error.
 
         Notes:
             This is a utility method for the `load_tracks` method.
             A search query is just an identifier with the format
             "<searcher>:<query>".
         """
-        searcher_id = get_andesite_searcher(searcher).value
+        searcher_id = get_searcher(searcher).value
         return await self.load_tracks(f"{searcher_id}:{query}")
 
     async def decode_track(self, track: str) -> Optional[TrackInfo]:
@@ -226,8 +226,8 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
 
         Returns:
             `TrackInfo` of the provided data, `None` if the data is invalid.
-            Note that this method doesn't raise `AndesiteHTTPError`!
-            If you need the `AndesiteHTTPError` to be raised, use `decode_tracks`.
+            Note that this method doesn't raise `HTTPError`!
+            If you need the `HTTPError` to be raised, use `decode_tracks`.
 
         See Also:
             Please use `decode_tracks` if you need to decode multiple
@@ -235,7 +235,7 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
         """
         try:
             data = await self.request("POST", "decodetrack", json=dict(track=track))
-        except AndesiteHTTPError as e:
+        except HTTPError as e:
             if log.isEnabledFor(logging.DEBUG):
                 log.debug(f"Couldn't decode track: {e}")
             return None
@@ -252,15 +252,15 @@ class AndesiteHTTPInterface(AbstractAndesiteHTTP, abc.ABC):
             List of `TrackInfo` in order of the provided tracks.
 
         Raises:
-            AndesiteHTTPError: If Andesite returns an error.
+            HTTPError: If Andesite returns an error.
         """
         data = await self.request("POST", "decodetracks", json=list(tracks))
         seq_build_all_items_from_raw(data, TrackInfo)
         return data
 
 
-class AndesiteHTTPBase(AbstractAndesiteHTTP):
-    """Standard implementation of `AbstractAndesiteHTTP`.
+class HTTPBase(AbstractHTTP):
+    """Standard implementation of `AbstractHTTP`.
 
     Args:
         password: Password to use for authorization. Use `None` if
@@ -271,8 +271,8 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
             for the underlying `aiohttp.ClientSession`.
 
     See Also:
-        `AndesiteHTTP` for the client which includes the
-            `AndesiteHTTPInterface` methods.
+        `HTTP` for the client which includes the
+            `HTTPInterface` methods.
 
     Attributes:
         aiohttp_session (aiohttp.ClientSession): Client session used to make
@@ -332,15 +332,15 @@ class AndesiteHTTPBase(AbstractAndesiteHTTP):
                     log.debug("Couldn't extract keys \"code\" and \"message\" from data, letting aiohttp raise!")
                     resp.raise_for_status()
                 else:
-                    raise AndesiteHTTPError(code, message)
+                    raise HTTPError(code, message)
 
             return data
 
 
-class AndesiteHTTP(AndesiteHTTPInterface, AndesiteHTTPBase):
+class HTTP(HTTPInterface, HTTPBase):
     """Client for Andesite's HTTP endpoints.
 
     See Also:
-        `AndesiteHTTPBase` for more details.
+        `HTTPBase` for more details.
     """
     ...
