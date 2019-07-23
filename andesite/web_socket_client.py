@@ -841,7 +841,10 @@ class WebSocketBase(AbstractWebSocketClient):
 
     @property
     def connected(self) -> bool:
-        return self.web_socket_client and self.web_socket_client.open
+        if self.web_socket_client:
+            return self.web_socket_client.open
+        else:
+            return False
 
     @property
     def connection_id(self) -> Optional[str]:
