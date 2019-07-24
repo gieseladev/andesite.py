@@ -4,27 +4,25 @@ Use `WebSocket` if you just want a client which
 connects to a single Andesite node.
 """
 
+from __future__ import annotations
+
 import abc
 import asyncio
 import logging
+import math
 import time
 from collections import deque
 from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
 from typing import Any, Deque, Dict, Optional, Tuple, Type, TypeVar, Union, overload
 
-import math
 import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 from websockets.http import Headers
 from yarl import URL
 
-from andesite.models.receive_operations import PongResponse
+import andesite
 from .event_target import EventFilter, EventTarget, NamedEvent
-from .models import AndesiteEvent, BasePlayer, ConnectionUpdate, Equalizer, FilterMap, FilterMapLike, FilterUpdate, \
-    Karaoke, Play, Player, PlayerUpdate, ReceiveOperation, SendOperation, Stats, StatsUpdate, Timescale, Tremolo, \
-    Update, Vibrato, VolumeFilter, get_update_model
-from .state import AbstractState, AbstractPlayerState, StateArgumentType, _get_state
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
 from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, \
     WebSocketDisconnectEvent
@@ -35,8 +33,8 @@ __all__ = ["try_connect",
            "WebSocketBase",
            "WebSocket"]
 
-ROPT = TypeVar("ROPT", bound=ReceiveOperation)
-ET = TypeVar("ET", bound=AndesiteEvent)
+ROPT = TypeVar("ROPT", bound=andesite.ReceiveOperation)
+ET = TypeVar("ET", bound=andesite.AndesiteEvent)
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +61,7 @@ async def try_connect(uri: str, **kwargs) -> Optional[WebSocketClientProtocol]:
     return client
 
 
-def _get_ops_for_player(track: str, player: Optional[BasePlayer]) -> Tuple[Play, Update]:
+def _get_ops_for_player(track: str, player: Optional[andesite.BasePlayer]) -> Tuple[andesite.Play, andesite.Update]:
     """Get operations which apply the state from the given player.
 
     Two operations are required to both play the track and set the filters.
@@ -77,21 +75,21 @@ def _get_ops_for_player(track: str, player: Optional[BasePlayer]) -> Tuple[Play,
         state.
     """
     if player is not None:
-        play_op = Play(track,
-                       start=player.position,
-                       pause=player.paused,
-                       volume=player.volume,
-                       no_replace=False)
+        play_op = andesite.Play(track,
+                                start=player.position,
+                                pause=player.paused,
+                                volume=player.volume,
+                                no_replace=False)
 
-        update_op = Update(
+        update_op = andesite.Update(
             pause=player.paused,
             position=player.position,
             volume=player.volume,
-            filters=FilterUpdate(player.filters),
+            filters=andesite.FilterUpdate(player.filters),
         )
     else:
-        play_op = Play(track)
-        update_op = Update()
+        play_op = andesite.Play(track)
+        update_op = andesite.Update()
 
     return play_op, update_op
 
@@ -133,7 +131,7 @@ class AbstractWebSocket(abc.ABC):
     """
 
     _event_target: EventTarget
-    _state_handler: Optional[AbstractState]
+    _state_handler: Optional[andesite.AbstractState]
 
     @property
     def event_target(self) -> EventTarget:
@@ -157,7 +155,7 @@ class AbstractWebSocket(abc.ABC):
             return self._event_target
 
     @property
-    def state(self) -> Optional[AbstractState]:
+    def state(self) -> Optional[andesite.AbstractState]:
         """State handler for the client.
 
         You may manually set this value to a different state handler which
@@ -173,7 +171,7 @@ class AbstractWebSocket(abc.ABC):
         try:
             return self._state_handler
         except AttributeError:
-            if isinstance(self, AbstractState):
+            if isinstance(self, andesite.AbstractState):
                 self._state_handler = self
             else:
                 self._state_handler = None
@@ -181,8 +179,8 @@ class AbstractWebSocket(abc.ABC):
             return self._state_handler
 
     @state.setter
-    def state(self, state: StateArgumentType) -> None:
-        self._state_handler = _get_state(state)
+    def state(self, state: andesite.StateArgumentType) -> None:
+        self._state_handler = andesite._get_state(state)
 
     @property
     @abc.abstractmethod
@@ -230,7 +228,7 @@ class AbstractWebSocket(abc.ABC):
         """
         ...
 
-    async def send_operation(self, guild_id: int, operation: SendOperation) -> None:
+    async def send_operation(self, guild_id: int, operation: andesite.SendOperation) -> None:
         """Send a `SendOperation`.
 
         Args:
@@ -244,7 +242,7 @@ class AbstractWebSocket(abc.ABC):
         """
         await self.send(guild_id, operation.__op__, convert_to_raw(operation))
 
-    async def load_player_state(self, player_state: AbstractPlayerState, *,
+    async def load_player_state(self, player_state: andesite.AbstractPlayerState, *,
                                 loop: asyncio.AbstractEventLoop = None) -> None:
         """Load a player state.
 
@@ -394,20 +392,20 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
     @overload
     async def wait_for_update(self, op: str, *,
                               check: EventFilter = None,
-                              guild_id: int = None) -> ReceiveOperation:
+                              guild_id: int = None) -> andesite.ReceiveOperation:
         ...
 
     @overload
     async def wait_for_update(self, op: str, *,
                               check: EventFilter = None,
                               guild_id: int = None,
-                              timeout: float = None) -> Optional[ReceiveOperation]:
+                              timeout: float = None) -> Optional[andesite.ReceiveOperation]:
         ...
 
-    async def wait_for_update(self, op: Union[Type[ReceiveOperation], str], *,
+    async def wait_for_update(self, op: Union[Type[andesite.ReceiveOperation], str], *,
                               check: EventFilter = None,
                               guild_id: int = None,
-                              timeout: float = None) -> Optional[ReceiveOperation]:
+                              timeout: float = None) -> Optional[andesite.ReceiveOperation]:
         """Wait for an Andesite update which meets the requirements.
 
         Args:
@@ -429,7 +427,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             `ReceiveOperation` that was accepted.
             `None` if it timed-out.
         """
-        if issubclass(op, ReceiveOperation):
+        if issubclass(op, andesite.ReceiveOperation):
             op = op.__op__
 
         if not isinstance(op, str):
@@ -460,7 +458,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
 
     # noinspection PyOverloads
     @overload
-    async def play(self, guild_id: int, track: Play) -> None:
+    async def play(self, guild_id: int, track: andesite.Play) -> None:
         ...
 
     @overload
@@ -472,7 +470,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
                    no_replace: bool = False) -> None:
         ...
 
-    async def play(self, guild_id: int, track: Union[str, Play], *,
+    async def play(self, guild_id: int, track: Union[str, andesite.Play], *,
                    start: float = None,
                    end: float = None,
                    pause: bool = None,
@@ -495,7 +493,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             no_replace: if True and a track is already playing/paused,
                 this command is ignored (Default: False)
         """
-        if isinstance(track, Play):
+        if isinstance(track, andesite.Play):
             payload = convert_to_raw(track)
         else:
             payload = dict(track=track, start=to_milli(start), end=to_milli(end), pause=pause, volume=to_centi(volume),
@@ -545,7 +543,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
         await self.send(guild_id, "volume", payload)
 
     @overload
-    async def update(self, guild_id: int, update: Update) -> None:
+    async def update(self, guild_id: int, update: andesite.Update) -> None:
         ...
 
     @overload
@@ -553,14 +551,14 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
                      pause: bool = None,
                      position: float = None,
                      volume: float = None,
-                     filters: FilterMapLike = None) -> None:
+                     filters: andesite.FilterMapLike = None) -> None:
         ...
 
-    async def update(self, guild_id: int, update: Update = None, *,
+    async def update(self, guild_id: int, update: andesite.Update = None, *,
                      pause: bool = None,
                      position: float = None,
                      volume: float = None,
-                     filters: FilterMapLike = None) -> None:
+                     filters: andesite.FilterMapLike = None) -> None:
         """Send an update.
 
         You may either provide the given keyword arguments,
@@ -576,7 +574,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             volume: volume to set on the player
             filters: configuration for the filters
         """
-        if isinstance(update, Update):
+        if isinstance(update, andesite.Update):
             payload = convert_to_raw(update)
         else:
             if filters:
@@ -595,7 +593,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
         """
         await self.send(guild_id, "destroy", {})
 
-    async def mixer(self, guild_id: int, enable: bool = None, **players: Union[Play, Update]) -> None:
+    async def mixer(self, guild_id: int, enable: bool = None, **players: Union[andesite.Play, andesite.Update]) -> None:
         """Configure the mixer player.
 
         Args:
@@ -609,26 +607,26 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
         await self.send(guild_id, "mixer", payload)
 
     @overload
-    async def filters(self, guild_id: int, filter_update: FilterMap) -> None:
+    async def filters(self, guild_id: int, filter_update: andesite.FilterMap) -> None:
         ...
 
     @overload
     async def filters(self, guild_id: int, *,
-                      equalizer: Equalizer = None,
-                      karaoke: Karaoke = None,
-                      timescale: Timescale = None,
-                      tremolo: Tremolo = None,
-                      vibrato: Vibrato = None,
-                      volume: VolumeFilter = None) -> None:
+                      equalizer: andesite.Equalizer = None,
+                      karaoke: andesite.Karaoke = None,
+                      timescale: andesite.Timescale = None,
+                      tremolo: andesite.Tremolo = None,
+                      vibrato: andesite.Vibrato = None,
+                      volume: andesite.VolumeFilter = None) -> None:
         ...
 
-    async def filters(self, guild_id: int, filter_update: FilterMap = None, *,
-                      equalizer: Equalizer = None,
-                      karaoke: Karaoke = None,
-                      timescale: Timescale = None,
-                      tremolo: Tremolo = None,
-                      vibrato: Vibrato = None,
-                      volume: VolumeFilter = None,
+    async def filters(self, guild_id: int, filter_update: andesite.FilterMap = None, *,
+                      equalizer: andesite.Equalizer = None,
+                      karaoke: andesite.Karaoke = None,
+                      timescale: andesite.Timescale = None,
+                      tremolo: andesite.Tremolo = None,
+                      vibrato: andesite.Vibrato = None,
+                      volume: andesite.VolumeFilter = None,
                       **custom_filters: Any) -> None:
         """Configure the filters of a player.
 
@@ -646,7 +644,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             **custom_filters: Ability to specify additional filters
                 that aren't supported by the library.
         """
-        if isinstance(filter_update, FilterUpdate):
+        if isinstance(filter_update, andesite.FilterUpdate):
             payload = convert_to_raw(filter_update)
         else:
             payload = convert_to_raw(dict(
@@ -661,7 +659,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
 
         await self.send(guild_id, "filters", payload)
 
-    async def get_player(self, guild_id: int) -> Player:
+    async def get_player(self, guild_id: int) -> andesite.Player:
         """Get the player.
 
         Args:
@@ -672,12 +670,12 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
         """
 
         player_update, _ = await asyncio.gather(
-            self.wait_for_update(PlayerUpdate, guild_id=guild_id),
+            self.wait_for_update(andesite.PlayerUpdate, guild_id=guild_id),
             self.send(guild_id, "get-player", {}),
         )
         return player_update.state
 
-    async def get_stats(self, guild_id: int) -> Stats:
+    async def get_stats(self, guild_id: int) -> andesite.Stats:
         """Get the Andesite stats.
 
         Args:
@@ -687,7 +685,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             Statistics for the node
         """
         await self.send(guild_id, "get-stats", {})
-        stats_update = await self.wait_for_update(StatsUpdate)
+        stats_update = await self.wait_for_update(andesite.StatsUpdate)
         return stats_update.stats
 
     async def ping(self, guild_id: int) -> float:
@@ -703,7 +701,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
         start = time.time()
 
         await asyncio.gather(
-            self.wait_for_update(PongResponse, guild_id=guild_id),
+            self.wait_for_update(andesite.PongResponse, guild_id=guild_id),
             self.send(guild_id, "ping", {}),
         )
 
@@ -781,7 +779,7 @@ class WebSocketBase(AbstractWebSocketClient):
     _json_decoder: JSONDecoder
 
     def __init__(self, ws_uri: Union[str, URL], user_id: Optional[int], password: Optional[str], *,
-                 state: StateArgumentType = None,
+                 state: andesite.StateArgumentType = None,
                  max_connect_attempts: int = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
         if isinstance(self, EventTarget):
@@ -816,7 +814,7 @@ class WebSocketBase(AbstractWebSocketClient):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(ws_uri={self._ws_uri!r}, user_id={self.user_id!r}, " \
-            f"password=[HIDDEN], state={self.state!r}, max_connect_attempts={self.max_connect_attempts!r})"
+               f"password=[HIDDEN], state={self.state!r}, max_connect_attempts={self.max_connect_attempts!r})"
 
     def __str__(self) -> str:
         return f"{type(self).__name__}({self._ws_uri})"
@@ -1013,13 +1011,13 @@ class WebSocketBase(AbstractWebSocketClient):
                 continue
 
             event_type = data.get("type")
-            cls = get_update_model(op, event_type)
+            cls = andesite.get_update_model(op, event_type)
             if cls is None:
                 log.warning(f"Ignoring message with unknown op \"{op}\" in {self}: {data}")
                 continue
 
             try:
-                message: ReceiveOperation = build_from_raw(cls, data)
+                message: andesite.ReceiveOperation = build_from_raw(cls, data)
             except Exception as e:
                 log.error(f"Couldn't parse message in {self} from Andesite node to {cls} ({e}): {data}")
                 continue
@@ -1028,7 +1026,7 @@ class WebSocketBase(AbstractWebSocketClient):
 
             _ = self.event_target.dispatch(MsgReceiveEvent(self, op, message))
 
-            if isinstance(message, ConnectionUpdate):
+            if isinstance(message, andesite.ConnectionUpdate):
                 log.info(f"received connection update, setting last connection id in {self}.")
                 self._last_connection_id = message.id
             elif isinstance(message, NamedEvent):

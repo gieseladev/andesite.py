@@ -13,31 +13,11 @@ Client
 
 .. autofunction:: create_client
 
-.. autoclass:: Client
-    :members:
-    :inherited-members:
-
-.. autoclass:: WebSocketClient
-    :members:
-    :inherited-members:
-
-.. autoclass:: HTTPClient
-    :members:
-    :inherited-members:
-
 
 Pool
 ----
 
 .. autofunction:: create_pool
-
-.. autoclass:: WebSocketPool
-    :members:
-    :inherited-members:
-
-.. autoclass:: HTTPPool
-    :members:
-    :inherited-members:
 
 
 Models

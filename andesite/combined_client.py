@@ -17,16 +17,13 @@ from typing import Any, Dict, Optional, Union
 
 from yarl import URL
 
+import andesite
 from .event_target import EventTarget
-from .http_client import AbstractHTTP, HTTPBase, HTTPInterface
-from .state import AbstractState, _get_state
-from .web_socket_client import AbstractWebSocket, AbstractWebSocketClient, WebSocketBase, \
-    WebSocketInterface
 
 __all__ = ["ClientBase", "Client", "create_client"]
 
 
-class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
+class ClientBase(andesite.AbstractWebSocket, andesite.AbstractHTTP, EventTarget):
     """Implementation of `AbstractWebSocket` and `AbstractHTTP`.
 
     Args:
@@ -46,10 +43,10 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         web_socket (AbstractWebSocket): WebSocket client which is used for the `AbstractAndesiteWebSocket` methods.
     """
 
-    http: AbstractHTTP
-    web_socket: AbstractWebSocket
+    http: andesite.AbstractHTTP
+    web_socket: andesite.AbstractWebSocket
 
-    def __init__(self, http_client: AbstractHTTP, web_socket_client: AbstractWebSocket, *,
+    def __init__(self, http_client: andesite.AbstractHTTP, web_socket_client: andesite.AbstractWebSocket, *,
                  loop: asyncio.AbstractEventLoop = None) -> None:
         super().__init__(loop=loop)
 
@@ -81,11 +78,11 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         return self.http.closed or self.web_socket.closed
 
     @property
-    def state(self) -> Optional[AbstractState]:
+    def state(self) -> Optional[andesite.AbstractState]:
         return self.web_socket.state
 
     @state.setter
-    def state(self, value: Optional[AbstractState]) -> None:
+    def state(self, value: Optional[andesite.AbstractState]) -> None:
         self.web_socket.state = value
 
     @property
@@ -95,7 +92,7 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         This method returns `None` if the web socket client isn't a
         `AbstractWebSocketClient`.
         """
-        if not isinstance(self.web_socket, AbstractWebSocketClient):
+        if not isinstance(self.web_socket, andesite.AbstractWebSocketClient):
             return None
 
         return self.web_socket.connected
@@ -107,7 +104,7 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         This method returns `None` if the web socket client isn't a
         `AbstractWebSocketClient`.
         """
-        if not isinstance(self.web_socket, AbstractWebSocketClient):
+        if not isinstance(self.web_socket, andesite.AbstractWebSocketClient):
             return None
 
         return self.web_socket.connection_id
@@ -122,7 +119,7 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         This method doesn't do anything if the web socket client isn't a
         `AbstractWebSocketClient`.
         """
-        if not isinstance(self.web_socket, AbstractWebSocketClient):
+        if not isinstance(self.web_socket, andesite.AbstractWebSocketClient):
             return
 
         await self.web_socket.connect(max_attempts=max_attempts)
@@ -133,7 +130,7 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         This method doesn't do anything if the web socket client isn't a
         `AbstractWebSocketClient`.
         """
-        if not isinstance(self.web_socket, AbstractWebSocketClient):
+        if not isinstance(self.web_socket, andesite.AbstractWebSocketClient):
             return
 
         await self.web_socket.disconnect()
@@ -177,7 +174,7 @@ class ClientBase(AbstractWebSocket, AbstractHTTP, EventTarget):
         return await self.http.request(method, path, **kwargs)
 
 
-class Client(WebSocketInterface, HTTPInterface, ClientBase):
+class Client(andesite.WebSocketInterface, andesite.HTTPInterface, ClientBase):
     """Andesite client which combines the web socket with the http client.
 
     Args:
@@ -198,7 +195,7 @@ class Client(WebSocketInterface, HTTPInterface, ClientBase):
 
 def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
                   user_id: int, *,
-                  state: Union[AbstractState, bool] = None,
+                  state: Union[andesite.AbstractState, bool] = None,
                   loop: asyncio.AbstractEventLoop = None) -> Client:
     """Create a new combined Andesite client.
 
@@ -218,10 +215,10 @@ def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], pa
         its clients.
     """
 
-    http_client = HTTPBase(http_uri, password, loop=loop)
-    web_socket_client = WebSocketBase(web_socket_uri, user_id, password, loop=loop)
+    http_client = andesite.HTTPBase(http_uri, password, loop=loop)
+    web_socket_client = andesite.WebSocketBase(web_socket_uri, user_id, password, loop=loop)
 
     inst = Client(http_client, web_socket_client, loop=loop)
 
-    inst.state = _get_state(state)
+    inst.state = andesite._get_state(state)
     return inst

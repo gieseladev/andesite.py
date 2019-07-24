@@ -1,20 +1,19 @@
 """Event models for the web socket client."""
 
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, Generic, TYPE_CHECKING, TypeVar
+from typing import Any, Dict, Generic, TypeVar
 
+import andesite
 from .event_target import NamedEvent
-from .models import AndesiteEvent, ReceiveOperation
-
-if TYPE_CHECKING:
-    from .web_socket_client import AbstractWebSocketClient
 
 __all__ = ["WebSocketConnectEvent", "WebSocketDisconnectEvent",
            "RawMsgReceiveEvent", "MsgReceiveEvent",
            "RawMsgSendEvent"]
 
-ROPT = TypeVar("ROPT", bound=ReceiveOperation)
-ET = TypeVar("ET", bound=AndesiteEvent)
+ROPT = TypeVar("ROPT", bound=andesite.ReceiveOperation)
+ET = TypeVar("ET", bound=andesite.AndesiteEvent)
 
 log = logging.getLogger(__name__)
 
@@ -28,9 +27,9 @@ class WebSocketConnectEvent(NamedEvent):
     """
     __event_name__ = "ws_connect"
 
-    client: "AbstractWebSocketClient"
+    client: andesite.AbstractWebSocketClient
 
-    def __init__(self, client: "AbstractWebSocketClient") -> None:
+    def __init__(self, client: andesite.AbstractWebSocketClient) -> None:
         super().__init__(client=client)
 
 
@@ -43,10 +42,10 @@ class WebSocketDisconnectEvent(NamedEvent):
     """
     __event_name__ = "ws_disconnect"
 
-    client: "AbstractWebSocketClient"
+    client: andesite.AbstractWebSocketClient
     deliberate: bool
 
-    def __init__(self, client: "AbstractWebSocketClient", deliberate: bool) -> None:
+    def __init__(self, client: andesite.AbstractWebSocketClient, deliberate: bool) -> None:
         super().__init__(client=client, deliberate=deliberate)
 
 
@@ -61,10 +60,10 @@ class RawMsgReceiveEvent(NamedEvent):
             than being loaded from the raw JSON string.
             For example, the names are still in dromedaryCase.
     """
-    client: "AbstractWebSocketClient"
+    client: andesite.AbstractWebSocketClient
     body: Dict[str, Any]
 
-    def __init__(self, client: "AbstractWebSocketClient", body: Dict[str, Any]) -> None:
+    def __init__(self, client: andesite.AbstractWebSocketClient, body: Dict[str, Any]) -> None:
         super().__init__(client=client, body=body)
 
 
@@ -84,11 +83,11 @@ class MsgReceiveEvent(NamedEvent, Generic[ROPT]):
         data (ReceiveOperation): Loaded message model.
             The type of this depends on the op.
     """
-    client: "AbstractWebSocketClient"
+    client: andesite.AbstractWebSocketClient
     op: str
     data: ROPT
 
-    def __init__(self, client: "AbstractWebSocketClient", op: str, data: ROPT) -> None:
+    def __init__(self, client: andesite.AbstractWebSocketClient, op: str, data: ROPT) -> None:
         super().__init__(client=client, op=op, data=data)
 
 
@@ -105,10 +104,10 @@ class RawMsgSendEvent(NamedEvent):
         op (str): Op-code to be executed
         body (Dict[str, Any]): Raw body of the message
     """
-    client: "AbstractWebSocketClient"
+    client: andesite.AbstractWebSocketClient
     guild_id: int
     op: str
     body: Dict[str, Any]
 
-    def __init__(self, client: "AbstractWebSocketClient", guild_id: int, op: str, body: Dict[str, Any]) -> None:
+    def __init__(self, client: andesite.AbstractWebSocketClient, guild_id: int, op: str, body: Dict[str, Any]) -> None:
         super().__init__(client=client, guild_id=guild_id, op=op, body=body)

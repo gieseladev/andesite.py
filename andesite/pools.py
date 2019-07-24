@@ -34,11 +34,8 @@ from weakref import WeakKeyDictionary, WeakValueDictionary
 
 import yarl
 
-from andesite import Client
+import andesite
 from .event_target import EventTarget, NamedEvent
-from .http_client import AbstractHTTP, HTTPError, HTTPInterface
-from .state import AbstractState, StateArgumentType
-from .web_socket_client import AbstractWebSocket, WebSocketInterface
 
 __all__ = ["PoolException", "PoolEmptyError",
            "PoolClientAddEvent", "PoolClientRemoveEvent",
@@ -191,7 +188,7 @@ class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
 
 # HTTP pool
 
-class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
+class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
     """Andesite HTTP client pool.
 
     Args:
@@ -215,14 +212,14 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
             long counts toward a client's total number of penalties.
     """
 
-    _clients: Deque[AbstractHTTP]
-    _penalties: Dict[AbstractHTTP, List[float]]
+    _clients: Deque[andesite.AbstractHTTP]
+    _penalties: Dict[andesite.AbstractHTTP, List[float]]
 
     timeout: float
     max_penalties: int
     penalty_time_frame: float
 
-    def __init__(self, clients: Iterable[AbstractHTTP], *,
+    def __init__(self, clients: Iterable[andesite.AbstractHTTP], *,
                  timeout: float = None,
                  max_penalties: int = 5,
                  penalty_time_frame: float = 60,
@@ -237,7 +234,7 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
         self.max_penalties = max_penalties
         self.penalty_time_frame = penalty_time_frame
 
-    def add_client(self, client: AbstractHTTP) -> None:
+    def add_client(self, client: andesite.AbstractHTTP) -> None:
         """Add a new client to the pool.
 
         Args:
@@ -249,7 +246,7 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
         super().add_client(client)
         self._clients.append(client)
 
-    def remove_client(self, client: AbstractHTTP) -> None:
+    def remove_client(self, client: andesite.AbstractHTTP) -> None:
         """Remove a client from the pool.
 
         Args:
@@ -264,7 +261,7 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
 
         super().remove_client(client)
 
-    def get_current_client(self) -> Optional[AbstractHTTP]:
+    def get_current_client(self) -> Optional[andesite.AbstractHTTP]:
         """Get the current http client.
 
         Returns:
@@ -275,7 +272,7 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
         except IndexError:
             return None
 
-    def get_next_client(self) -> Optional[AbstractHTTP]:
+    def get_next_client(self) -> Optional[andesite.AbstractHTTP]:
         """Move to the next http client and return it.
 
         In reality this returns the next client
@@ -299,7 +296,7 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
             # everything seems in order with this client
             return client
 
-    def _add_penalty(self, client: AbstractHTTP) -> None:
+    def _add_penalty(self, client: andesite.AbstractHTTP) -> None:
         penalties = self._penalties[client]
 
         new_ts = time.monotonic()
@@ -351,14 +348,14 @@ class HTTPPoolBase(ClientPool[AbstractHTTP], AbstractHTTP):
 
             try:
                 return done_fut.result()
-            except HTTPError:
+            except andesite.HTTPError:
                 raise
             except Exception as e:
                 log.info(f"error during request in {self}: {e}")
                 self._add_penalty(client)
 
 
-class HTTPPool(HTTPInterface, HTTPPoolBase):
+class HTTPPool(andesite.HTTPInterface, HTTPPoolBase):
     """Andesite HTTP client pool.
 
     This is just a wrapper around `HTTPPoolBase` which adds the
@@ -389,7 +386,7 @@ class ScoringData:
         guild_id (int): Guild id which the client should be evaluated for
     """
     pool: "WebSocketPoolBase"
-    client: AbstractWebSocket
+    client: andesite.AbstractWebSocket
     node_region: Optional[str]
     region_comparator: Optional[RegionGuildComparator]
     guild_ids: Set[int]
@@ -434,7 +431,7 @@ def default_scoring_function(data: ScoringData) -> Tuple[int, int, int]:
     return connected, region_score, -len(data.guild_ids)
 
 
-class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
+class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.AbstractWebSocket):
     """Base implementation of a web socket pool.
 
     Args:
@@ -456,17 +453,17 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
     state will result in an error.
     """
 
-    _clients: Set[AbstractWebSocket]
+    _clients: Set[andesite.AbstractWebSocket]
 
-    _guild_clients: MutableMapping[int, AbstractWebSocket]
-    _client_guilds: MutableMapping[AbstractWebSocket, Set[int]]
+    _guild_clients: MutableMapping[int, andesite.AbstractWebSocket]
+    _client_guilds: MutableMapping[andesite.AbstractWebSocket, Set[int]]
 
     _scoring_function: PoolScoringFunction
     _scoring_func_is_coro: bool
     _region_comparator: RegionGuildComparator
 
-    def __init__(self, clients: Iterable[AbstractWebSocket], *,
-                 state: StateArgumentType = None,
+    def __init__(self, clients: Iterable[andesite.AbstractWebSocket], *,
+                 state: andesite.StateArgumentType = None,
                  scoring_function: PoolScoringFunction = None,
                  region_comparator: RegionGuildComparator = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
@@ -485,11 +482,11 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
             self.add_client(client)
 
     @property
-    def state(self) -> Optional[AbstractState]:
+    def state(self) -> Optional[andesite.AbstractState]:
         return super().state
 
     @state.setter
-    def state(self, value: Optional[AbstractState]) -> None:
+    def state(self, value: Optional[andesite.AbstractState]) -> None:
         super(WebSocketPoolBase, type(self)).state.fset(self, value)
 
         for client in self:
@@ -524,7 +521,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
         """
         self._region_comparator = value
 
-    def add_client(self, client: AbstractWebSocket) -> None:
+    def add_client(self, client: andesite.AbstractWebSocket) -> None:
         """Add a new client to the pool.
 
         Args:
@@ -547,7 +544,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
 
             client.state = state
 
-    def remove_client(self, client: AbstractWebSocket) -> None:
+    def remove_client(self, client: andesite.AbstractWebSocket) -> None:
         """Remove a web socket client from the pool.
 
         Args:
@@ -579,7 +576,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
 
         super().remove_client(client)
 
-    async def pull_client(self, client: AbstractWebSocket) -> None:
+    async def pull_client(self, client: andesite.AbstractWebSocket) -> None:
         """Remove a client from the pool and migrate its state to another node.
 
         Args:
@@ -599,9 +596,9 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
         for guild_id in guild_ids:
             fs.append(asyncio.ensure_future(self.assign_client(guild_id), loop=self._loop))
 
-        new_clients: List[Optional[AbstractWebSocket]] = await asyncio.gather(*fs, loop=self._loop)
+        new_clients: List[Optional[andesite.AbstractWebSocket]] = await asyncio.gather(*fs, loop=self._loop)
 
-        async def load_player_state(_guild_id: int, _client: AbstractWebSocket) -> None:
+        async def load_player_state(_guild_id: int, _client: andesite.AbstractWebSocket) -> None:
             player_state = await self.state.get(_guild_id)
             await _client.load_player_state(player_state, loop=self._loop)
 
@@ -612,7 +609,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
 
         await asyncio.gather(*fs, loop=self._loop)
 
-    def get_client(self, guild_id: int) -> Optional[AbstractWebSocket]:
+    def get_client(self, guild_id: int) -> Optional[andesite.AbstractWebSocket]:
         """Get the andesite web socket client which is used for the given guild."""
         try:
             client = self._guild_clients[guild_id]
@@ -623,7 +620,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
 
         return client
 
-    def iter_client_guild_ids(self) -> Iterator[Tuple[AbstractWebSocket, Set[int]]]:
+    def iter_client_guild_ids(self) -> Iterator[Tuple[andesite.AbstractWebSocket, Set[int]]]:
         """Iterate over all clients with their assigned guild ids."""
         for client in self._clients:
             yield client, self.get_guild_ids(client)
@@ -635,18 +632,18 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
         else:
             return self._scoring_function(data)
 
-    async def find_best_client(self, guild_id: int) -> Optional[AbstractWebSocket]:
+    async def find_best_client(self, guild_id: int) -> Optional[andesite.AbstractWebSocket]:
         """Determine the best client for the given guild.
 
         If there are multiple clients with the same score, a
         random one is returned.
         """
-        best_clients: List[AbstractWebSocket] = []
+        best_clients: List[andesite.AbstractWebSocket] = []
         best_score: Any = None
 
         score_fs: List[asyncio.Future] = []
 
-        async def perform_score_calc(_score_data: ScoringData) -> Tuple[AbstractWebSocket, Any]:
+        async def perform_score_calc(_score_data: ScoringData) -> Tuple[andesite.AbstractWebSocket, Any]:
             return _score_data.client, await self.calculate_score(_score_data)
 
         for client, guild_ids in self.iter_client_guild_ids():
@@ -659,7 +656,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
             score_data = ScoringData(self, client, node_region, self.region_comparator, guild_ids, guild_id)
             score_fs.append(asyncio.ensure_future(perform_score_calc(score_data), loop=self._loop))
 
-        scores: List[Tuple[AbstractWebSocket, Any]] = await asyncio.gather(*score_fs, loop=self._loop)
+        scores: List[Tuple[andesite.AbstractWebSocket, Any]] = await asyncio.gather(*score_fs, loop=self._loop)
         for client, score in scores:
             if best_score is not None:
                 if score < best_score:
@@ -675,7 +672,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
         except IndexError:
             return None
 
-    def _assign_client(self, client: AbstractWebSocket, guild_id: int) -> None:
+    def _assign_client(self, client: andesite.AbstractWebSocket, guild_id: int) -> None:
         """Internally assign a guild to a client.
 
         This creates both the guild id -> client and
@@ -694,7 +691,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
 
         guild_ids.add(guild_id)
 
-    async def assign_client(self, guild_id: int) -> Optional[AbstractWebSocket]:
+    async def assign_client(self, guild_id: int) -> Optional[andesite.AbstractWebSocket]:
         """Assign a client to the given guild.
 
         If the guild already has a client, it is simply returned.
@@ -706,7 +703,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
 
         return client
 
-    def get_guild_ids(self, client: AbstractWebSocket) -> Set[int]:
+    def get_guild_ids(self, client: andesite.AbstractWebSocket) -> Set[int]:
         """Get the guild ids which the client is assigned to.
 
         Args:
@@ -732,7 +729,7 @@ class WebSocketPoolBase(ClientPool[AbstractWebSocket], AbstractWebSocket):
         await client.send(guild_id, op, payload)
 
 
-class WebSocketPool(WebSocketInterface, WebSocketPoolBase):
+class WebSocketPool(andesite.WebSocketInterface, WebSocketPoolBase):
     """Pool of Andesite web socket connections.
 
     Please refer to `WebSocketPoolBase` for the documentation.
@@ -746,10 +743,10 @@ NodeDetails = Tuple[Union[str, yarl.URL], Optional[str]]
 def create_pool(http_nodes: Iterable[NodeDetails],
                 web_socket_nodes: Iterable[NodeDetails], *,
                 user_id: int,
-                state: StateArgumentType = None,
+                state: andesite.StateArgumentType = None,
                 http_pool_kwargs: Mapping[str, Any] = None,
                 web_socket_pool_kwargs: Mapping[str, Any] = None,
-                loop: asyncio.AbstractEventLoop = None) -> Client:
+                loop: asyncio.AbstractEventLoop = None) -> andesite.Client:
     """Create an `Client` with client pools.
 
     Uses `HTTPBase` and `WebSocketBase` which are contained in
@@ -794,7 +791,7 @@ def create_pool(http_nodes: Iterable[NodeDetails],
 
     web_socket_pool = WebSocketPoolBase(web_socket_clients, **web_socket_pool_kwargs)
 
-    inst = Client(http_pool, web_socket_pool, loop=loop)
+    inst = andesite.Client(http_pool, web_socket_pool, loop=loop)
 
     # the setter will make sure the state is proper
     inst.state = state

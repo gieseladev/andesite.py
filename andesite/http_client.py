@@ -18,6 +18,7 @@ Attributes:
     USER_AGENT (str): User agent used by the `HTTP` client.
     SearcherType (Union[Searcher, str]): (Type alias) Types supported by `get_searcher`
 """
+
 import abc
 import asyncio
 import logging
@@ -27,8 +28,7 @@ from typing import Any, Iterable, List, Optional, Union
 from aiohttp import ClientSession
 from yarl import URL
 
-from . import __version__
-from .models import LoadedTrack, Stats, TrackInfo
+import andesite
 from .transform import build_from_raw, seq_build_all_items_from_raw
 
 __all__ = ["USER_AGENT", "HTTPError",
@@ -38,7 +38,7 @@ __all__ = ["USER_AGENT", "HTTPError",
 
 log = logging.getLogger(__name__)
 
-USER_AGENT = f"andesite.py/{__version__} (https://github.com/gieseladev/andesite.py)"
+USER_AGENT = f"andesite.py/{andesite.__version__} (https://github.com/gieseladev/andesite.py)"
 
 
 class HTTPError(Exception):
@@ -154,16 +154,16 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
     The client uses the user agent `USER_AGENT` for every request.
     """
 
-    async def get_stats(self) -> Stats:
+    async def get_stats(self) -> andesite.Stats:
         """Get the node's statistics.
 
         Raises:
             HTTPError: If Andesite returns an error.
         """
         data = await self.request("GET", "stats")
-        return build_from_raw(Stats, data)
+        return build_from_raw(andesite.Stats, data)
 
-    async def load_tracks(self, identifier: str) -> LoadedTrack:
+    async def load_tracks(self, identifier: str) -> andesite.LoadedTrack:
         """Load tracks.
 
         Args:
@@ -177,9 +177,9 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
             `search_tracks` to search for a track using a query.
         """
         data = await self.request("GET", "loadtracks", params=dict(identifier=identifier))
-        return build_from_raw(LoadedTrack, data)
+        return build_from_raw(andesite.LoadedTrack, data)
 
-    async def load_tracks_safe(self, uri: str) -> LoadedTrack:
+    async def load_tracks_safe(self, uri: str) -> andesite.LoadedTrack:
         """Load tracks from url.
 
         This is different from `load_tracks` insofar that it ignores
@@ -199,7 +199,7 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
         return await self.load_tracks(f"raw:{uri}")
 
     async def search_tracks(self, query: str, *,
-                            searcher: SearcherType = Searcher.YOUTUBE) -> LoadedTrack:
+                            searcher: SearcherType = Searcher.YOUTUBE) -> andesite.LoadedTrack:
         """Search tracks.
 
         Args:
@@ -218,7 +218,7 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
         searcher_id = get_searcher(searcher).value
         return await self.load_tracks(f"{searcher_id}:{query}")
 
-    async def decode_track(self, track: str) -> Optional[TrackInfo]:
+    async def decode_track(self, track: str) -> Optional[andesite.TrackInfo]:
         """Get the `TrackInfo` from the encoded track data.
 
         Args:
@@ -240,9 +240,9 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
                 log.debug(f"Couldn't decode track: {e}")
             return None
         else:
-            return build_from_raw(TrackInfo, data)
+            return build_from_raw(andesite.TrackInfo, data)
 
-    async def decode_tracks(self, tracks: Iterable[str]) -> List[TrackInfo]:
+    async def decode_tracks(self, tracks: Iterable[str]) -> List[andesite.TrackInfo]:
         """Get the `TrackInfo` from multiple encoded track data strings.
 
         Args:
@@ -255,7 +255,7 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
             HTTPError: If Andesite returns an error.
         """
         data = await self.request("POST", "decodetracks", json=list(tracks))
-        seq_build_all_items_from_raw(data, TrackInfo)
+        seq_build_all_items_from_raw(data, andesite.TrackInfo)
         return data
 
 

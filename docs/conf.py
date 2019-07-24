@@ -30,10 +30,10 @@ version = andesite.__version__
 # The full version, including alpha/beta/rc tags
 release = version
 
-# # unimport to set type checking flag later
-# for name in tuple(sys.modules):
-#     if name.startswith("andesite"):
-#         del sys.modules[name]
+# unimport to set type checking flag later
+for name in tuple(sys.modules):
+    if name.startswith("andesite"):
+        del sys.modules[name]
 
 # -- General configuration ---------------------------------------------------
 

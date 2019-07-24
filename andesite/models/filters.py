@@ -515,7 +515,7 @@ class FilterMap(MutableMapping):
         else:
             if not isinstance(value, cls):
                 if isinstance(value, dict):
-                    value = self[name] = cls(**value)
+                    value = self[name] = build_from_raw(cls, value)
                 else:
                     raise TypeError(f"Expected {cls}, found {type(value)!r}: {value}")
 

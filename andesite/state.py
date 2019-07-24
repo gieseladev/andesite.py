@@ -20,9 +20,8 @@ import functools
 import logging
 from typing import Any, Awaitable, Callable, Coroutine, Dict, Generic, Optional, TypeVar, Union
 
+import andesite
 from .event_target import NamedEvent
-from .models import AndesiteEvent, Player, PlayerUpdate, TrackEndEvent, TrackExceptionEvent, TrackStartEvent, \
-    TrackStuckEvent, VoiceServerUpdate
 from .transform import build_from_raw, convert_to_raw
 
 __all__ = ["AbstractPlayerState", "PlayerState",
@@ -34,7 +33,7 @@ __all__ = ["AbstractPlayerState", "PlayerState",
 log = logging.getLogger(__name__)
 
 
-def player_to_raw(player: Player) -> Dict[str, Any]:
+def player_to_raw(player: andesite.Player) -> Dict[str, Any]:
     """Convert the given player to a JSON-serialisable dict.
 
     Args:
@@ -48,7 +47,7 @@ def player_to_raw(player: Player) -> Dict[str, Any]:
     return convert_to_raw(player)
 
 
-def player_from_raw(data: Dict[str, Any]) -> Player:
+def player_from_raw(data: Dict[str, Any]) -> andesite.Player:
     """Recreate a player from the converted dict.
 
     Args:
@@ -60,10 +59,10 @@ def player_from_raw(data: Dict[str, Any]) -> Player:
     Returns:
         Created `Player` instance.
     """
-    return build_from_raw(Player, data)
+    return build_from_raw(andesite.Player, data)
 
 
-def voice_server_update_to_raw(update: VoiceServerUpdate) -> Dict[str, Any]:
+def voice_server_update_to_raw(update: andesite.VoiceServerUpdate) -> Dict[str, Any]:
     """Convert the given voice server update to a JSON-serialisable dict.
 
     Args:
@@ -77,7 +76,7 @@ def voice_server_update_to_raw(update: VoiceServerUpdate) -> Dict[str, Any]:
     return convert_to_raw(update)
 
 
-def voice_server_update_from_raw(data: Dict[str, Any]) -> VoiceServerUpdate:
+def voice_server_update_from_raw(data: Dict[str, Any]) -> andesite.VoiceServerUpdate:
     """Recreate a voice server update from the converted dict.
 
     Args:
@@ -89,7 +88,7 @@ def voice_server_update_from_raw(data: Dict[str, Any]) -> VoiceServerUpdate:
     Returns:
         Created `VoiceServerUpdate` instance.
     """
-    return build_from_raw(VoiceServerUpdate, data)
+    return build_from_raw(andesite.VoiceServerUpdate, data)
 
 
 class AbstractPlayerState(abc.ABC):
@@ -114,7 +113,7 @@ class AbstractPlayerState(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_player(self) -> Optional[Player]:
+    async def get_player(self) -> Optional[andesite.Player]:
         """Get the player information.
 
         Returns:
@@ -124,7 +123,7 @@ class AbstractPlayerState(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def set_player(self, player: Optional[Player]) -> None:
+    async def set_player(self, player: Optional[andesite.Player]) -> None:
         """Set the current player.
 
         Args:
@@ -134,7 +133,7 @@ class AbstractPlayerState(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_voice_server_update(self) -> Optional[VoiceServerUpdate]:
+    async def get_voice_server_update(self) -> Optional[andesite.VoiceServerUpdate]:
         """Get the last voice server update that was sent to the player.
 
         Returns:
@@ -143,7 +142,7 @@ class AbstractPlayerState(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def set_voice_server_update(self, update: Optional[VoiceServerUpdate]) -> None:
+    async def set_voice_server_update(self, update: Optional[andesite.VoiceServerUpdate]) -> None:
         """Set the last voice server update.
 
         Args:
@@ -182,10 +181,10 @@ class PlayerState(AbstractPlayerState):
     def guild_id(self) -> int:
         return self._guild_id
 
-    async def get_player(self) -> Optional[Player]:
+    async def get_player(self) -> Optional[andesite.Player]:
         return self._player
 
-    async def set_player(self, player: Optional[Player]) -> None:
+    async def set_player(self, player: Optional[andesite.Player]) -> None:
         self._player = player
 
     async def get_track(self) -> Optional[str]:
@@ -194,10 +193,10 @@ class PlayerState(AbstractPlayerState):
     async def set_track(self, track: Optional[str]) -> None:
         self._track = track
 
-    async def get_voice_server_update(self) -> Optional[VoiceServerUpdate]:
+    async def get_voice_server_update(self) -> Optional[andesite.VoiceServerUpdate]:
         return self._voice_server_update
 
-    async def set_voice_server_update(self, update: Optional[VoiceServerUpdate]) -> None:
+    async def set_voice_server_update(self, update: Optional[andesite.VoiceServerUpdate]) -> None:
         self._voice_server_update = update
 
     @classmethod
@@ -285,9 +284,9 @@ class AbstractState(abc.ABC):
             message: Message that was sent.
             loop: Event loop to use.
         """
-        if isinstance(message, PlayerUpdate):
+        if isinstance(message, andesite.PlayerUpdate):
             coro = self.handle_player_update(message)
-        elif isinstance(message, AndesiteEvent):
+        elif isinstance(message, andesite.AndesiteEvent):
             coro = self.handle_andesite_event(message)
         else:
             return None
@@ -306,7 +305,7 @@ class AbstractState(abc.ABC):
             loop: Event loop to use.
         """
         if op == "voice-server-update":
-            update = VoiceServerUpdate(payload["sessionId"], payload["event"])
+            update = andesite.VoiceServerUpdate(payload["sessionId"], payload["event"])
             coro = self.handle_voice_server_update(guild_id, update)
         else:
             return None
@@ -315,7 +314,7 @@ class AbstractState(abc.ABC):
         return _run_with_error_callback(coro, err_cb, loop=loop)
 
     @abc.abstractmethod
-    async def handle_player_update(self, update: PlayerUpdate) -> None:
+    async def handle_player_update(self, update: andesite.PlayerUpdate) -> None:
         """Handle a player update.
 
         Args:
@@ -324,7 +323,7 @@ class AbstractState(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def handle_andesite_event(self, event: AndesiteEvent) -> None:
+    async def handle_andesite_event(self, event: andesite.AndesiteEvent) -> None:
         """Handle an Andesite event.
 
         Args:
@@ -333,7 +332,7 @@ class AbstractState(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def handle_voice_server_update(self, guild_id: int, update: VoiceServerUpdate) -> None:
+    async def handle_voice_server_update(self, guild_id: int, update: andesite.VoiceServerUpdate) -> None:
         """Handle a voice server update.
 
         Args:
@@ -412,20 +411,20 @@ class State(AbstractState, Generic[PST]):
 
         return player_state
 
-    async def handle_player_update(self, update: PlayerUpdate) -> None:
+    async def handle_player_update(self, update: andesite.PlayerUpdate) -> None:
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f"handling player update for {self}: {update}")
 
         state = self._get_or_create_player_state(update.guild_id)
         await state.set_player(update.state)
 
-    async def handle_andesite_event(self, event: AndesiteEvent) -> None:
+    async def handle_andesite_event(self, event: andesite.AndesiteEvent) -> None:
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f"handling andesite event for {self}: {event}")
 
-        if isinstance(event, (TrackEndEvent, TrackExceptionEvent, TrackStuckEvent)):
+        if isinstance(event, (andesite.TrackEndEvent, andesite.TrackExceptionEvent, andesite.TrackStuckEvent)):
             track = None
-        elif isinstance(event, TrackStartEvent):
+        elif isinstance(event, andesite.TrackStartEvent):
             track = event.track
         else:
             return
@@ -433,7 +432,7 @@ class State(AbstractState, Generic[PST]):
         state = self._get_or_create_player_state(event.guild_id)
         await state.set_track(track)
 
-    async def handle_voice_server_update(self, guild_id: int, update: VoiceServerUpdate) -> None:
+    async def handle_voice_server_update(self, guild_id: int, update: andesite.VoiceServerUpdate) -> None:
         player_state = self._get_or_create_player_state(guild_id)
         await player_state.set_voice_server_update(update)
 

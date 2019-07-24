@@ -15,6 +15,7 @@ pytest-asyncio = "*"
 sphinx = "*"
 sphinx-autodoc-typehints = "*"
 sphinxcontrib-asyncio = "*"
+discord-py = "*"
 
 [requires]
 python_version = "3.7"

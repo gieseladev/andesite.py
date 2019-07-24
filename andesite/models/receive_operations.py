@@ -10,21 +10,21 @@ See Also:
     `andesite.models.send_operations` for operations sent to Andesite.
 """
 
+from __future__ import annotations
+
 import abc
 import copy
 import dataclasses
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Mapping, Optional, Set, TYPE_CHECKING, Tuple, Type, Union, cast
+from typing import Dict, List, Mapping, Optional, Set, Tuple, Type, Union, cast
 
+import andesite
 from andesite.event_target import NamedEvent
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, \
     map_convert_values_from_milli, map_convert_values_to_milli, map_remove_keys, transform_input, transform_output
 from .debug import Error, Stats
 from .player import Player
-
-if TYPE_CHECKING:
-    from andesite import AbstractWebSocketClient
 
 __all__ = ["ReceiveOperation",
            "PongResponse",
@@ -41,12 +41,12 @@ class ReceiveOperation(abc.ABC):
     """Message sent by Andesite.
 
     Attributes:
-        client (Optional[AbstractWebSocketClient]): Client that received
+        client (Optional[andesite.AbstractWebSocketClient]): Client that received
             the message. This is set by the client that received the message.
     """
     __op__: str
 
-    client: Optional["AbstractWebSocketClient"] = None
+    client: Optional[andesite.AbstractWebSocketClient] = None
 
 
 @dataclass
@@ -102,7 +102,7 @@ class StatsUpdate(ReceiveOperation):
 
     Attributes:
         user_id (int): User ID
-        stats (Stats): Statistics
+        stats (andesite.Stats): Statistics
     """
     __op__ = "stats"
 
@@ -126,7 +126,7 @@ class PlayerUpdate(NamedEvent, ReceiveOperation):
     Attributes:
         user_id (int): user id
         guild_id (int): guild id
-        state (Player): player
+        state (andesite.Player): player
     """
     __op__ = "player-update"
 
@@ -158,8 +158,6 @@ class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
         user_id (int): User ID
         guild_id (int): Guild ID
         track (str): Base64 encoded track data
-
-    Inherits from `NamedEvent` so it can be dispatched by an `EventTarget`.
     """
     __op__ = "event"
     __event_name__ = "andesite_event"

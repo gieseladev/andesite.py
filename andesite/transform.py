@@ -19,7 +19,6 @@ from functools import partial
 from typing import Any, Callable, Dict, MutableMapping, MutableSequence, Optional, Type, TypeVar, cast, overload
 
 import lettercase
-from lettercase import ConversionMemo, LetterCase
 
 __all__ = ["RawDataType",
            "transform_input", "transform_output",
@@ -40,7 +39,7 @@ VT = TypeVar("VT")
 RawDataType = Dict[str, Any]
 
 # memo used to speed up key conversion
-CONVERTER_MEMO = ConversionMemo(LetterCase.DROMEDARY, LetterCase.SNAKE)
+CONVERTER_MEMO = lettercase.ConversionMemo()
 
 
 def _transform(transformer: Callable[[RawDataType], Optional[RawDataType]], data: RawDataType) -> RawDataType:
@@ -150,7 +149,7 @@ def convert_to_raw(obj: Any) -> RawDataType:
 
         data = transform_output(obj, data)
 
-        lettercase.mut_convert_keys(data, LetterCase.SNAKE, LetterCase.DROMEDARY, memo=CONVERTER_MEMO)
+        lettercase.mut_convert_keys(data, lettercase.SNAKE_CASE, lettercase.DROMEDARY_CASE, memo=CONVERTER_MEMO)
 
         return data
     elif isinstance(obj, (list, tuple)):
@@ -190,7 +189,7 @@ def build_from_raw(cls: Type[T], raw_data: Optional[RawDataType]) -> Optional[T]
     if raw_data is None:
         return None
 
-    lettercase.mut_convert_keys(raw_data, LetterCase.DROMEDARY, LetterCase.SNAKE, memo=CONVERTER_MEMO)
+    lettercase.mut_convert_keys(raw_data, lettercase.DROMEDARY_CASE, lettercase.SNAKE_CASE, memo=CONVERTER_MEMO)
     raw_data = transform_input(cls, raw_data)
 
     return cls(**raw_data)
