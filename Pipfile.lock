@@ -81,11 +81,11 @@
         },
         "lettercase": {
             "hashes": [
-                "sha256:e0ce9a704d806bd839400713eb18914a05a9c91586d88e0b01e78b56a1016dd7",
-                "sha256:f396f73abb0e3f70b85723a0970043874ad75407442938e56ceb8d6d533ee5b8"
+                "sha256:1d31e0701e1d2538d40bd3cd1ee9890a1c609e224d637a3d117fe134d6f76f39",
+                "sha256:543ceba47c89bc9a675d8b02286d29965ec8d279fc82f058af1922cfcbab9503"
             ],
             "index": "pypi",
-            "version": "==0.3.1"
+            "version": "==0.3.2"
         },
         "multidict": {
             "hashes": [

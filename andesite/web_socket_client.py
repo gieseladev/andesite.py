@@ -945,8 +945,8 @@ class WebSocketBase(AbstractWebSocketClient):
 
             try:
                 message: andesite.ReceiveOperation = build_from_raw(cls, data)
-            except Exception as e:
-                log.error(f"Couldn't parse message in {self} from Andesite node to {cls} ({e}): {data}")
+            except Exception:
+                log.exception(f"Couldn't parse message in {self} from Andesite node to {cls}: {data}")
                 continue
 
             message.client = self
