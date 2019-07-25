@@ -20,14 +20,12 @@ you can swap it out however you want.
 usable.
 
 ## Installation
-
 You can install the library from PyPI using pip:
 ```shell
 pip install andesite.py
 ```
 
 ## Look & Feel
-
 The following is a small example of how to use andesite.py. For more
 in-depth examples and information, please refer to the documentation.
 
@@ -66,3 +64,11 @@ documentation.
 
 You can also take a look at the [examples](examples) directory
 for a reference.
+
+
+## Alternatives
+If andesite.py isn't what you're looking for, first of all, please
+leave some feedback, but secondly here are some alternative Python client
+libraries which you can use:
+
+- [granitepy](https://github.com/twitch0001/granitepy)

@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
+import dataclasses
 import logging
-from typing import Any, Dict, Generic, TypeVar
+from typing import Any, Dict, TypeVar
 
 import andesite
-from .event_target import NamedEvent
 
 __all__ = ["WebSocketConnectEvent", "WebSocketDisconnectEvent",
-           "RawMsgReceiveEvent", "MsgReceiveEvent",
+           "RawMsgReceiveEvent",
            "RawMsgSendEvent"]
 
 ROPT = TypeVar("ROPT", bound=andesite.ReceiveOperation)
@@ -18,38 +18,32 @@ ET = TypeVar("ET", bound=andesite.AndesiteEvent)
 log = logging.getLogger(__name__)
 
 
-class WebSocketConnectEvent(NamedEvent):
+@dataclasses.dataclass()
+class WebSocketConnectEvent:
     """Event dispatched when a connection has been established.
 
     Attributes:
         client (AbstractWebSocketClient): Web socket client which
             connected.
     """
-    __event_name__ = "ws_connect"
-
     client: andesite.AbstractWebSocketClient
 
-    def __init__(self, client: andesite.AbstractWebSocketClient) -> None:
-        super().__init__(client=client)
 
-
-class WebSocketDisconnectEvent(NamedEvent):
+@dataclasses.dataclass()
+class WebSocketDisconnectEvent:
     """Event dispatched when a client was disconnected.
 
     Attributes:
         client (AbstractWebSocketClient): Web socket client which connected.
         deliberate (bool): Whether the disconnect was deliberate.
     """
-    __event_name__ = "ws_disconnect"
 
     client: andesite.AbstractWebSocketClient
     deliberate: bool
 
-    def __init__(self, client: andesite.AbstractWebSocketClient, deliberate: bool) -> None:
-        super().__init__(client=client, deliberate=deliberate)
 
-
-class RawMsgReceiveEvent(NamedEvent):
+@dataclasses.dataclass()
+class RawMsgReceiveEvent:
     """Event emitted when a web socket message is received.
 
     Attributes:
@@ -63,35 +57,9 @@ class RawMsgReceiveEvent(NamedEvent):
     client: andesite.AbstractWebSocketClient
     body: Dict[str, Any]
 
-    def __init__(self, client: andesite.AbstractWebSocketClient, body: Dict[str, Any]) -> None:
-        super().__init__(client=client, body=body)
 
-
-class MsgReceiveEvent(NamedEvent, Generic[ROPT]):
-    """Event emitted when a web socket message is received.
-
-    Attributes:
-        client (AbstractWebSocketClient): Web socket client that
-            received the message.
-        op (str): Operation.
-            This will be one of the following:
-
-            - connection-id
-            - player-update
-            - stats
-            - event
-        data (ReceiveOperation): Loaded message model.
-            The type of this depends on the op.
-    """
-    client: andesite.AbstractWebSocketClient
-    op: str
-    data: ROPT
-
-    def __init__(self, client: andesite.AbstractWebSocketClient, op: str, data: ROPT) -> None:
-        super().__init__(client=client, op=op, data=data)
-
-
-class RawMsgSendEvent(NamedEvent):
+@dataclasses.dataclass()
+class RawMsgSendEvent:
     """Event dispatched before a web socket message is sent.
 
     It's important to note that this is not a receipt of a message being sent,
@@ -108,6 +76,3 @@ class RawMsgSendEvent(NamedEvent):
     guild_id: int
     op: str
     body: Dict[str, Any]
-
-    def __init__(self, client: andesite.AbstractWebSocketClient, guild_id: int, op: str, body: Dict[str, Any]) -> None:
-        super().__init__(client=client, guild_id=guild_id, op=op, body=body)

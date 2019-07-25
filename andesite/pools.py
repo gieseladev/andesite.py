@@ -21,21 +21,21 @@ Attributes:
 
 import abc
 import asyncio
+import dataclasses
 import inspect
 import logging
 import random
 import time
 from collections import defaultdict, deque
 from contextlib import suppress
-from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Collection, Deque, Dict, Generic, Iterable, Iterator, List, Mapping, \
     MutableMapping, Optional, Set, Tuple, TypeVar, Union
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
+import aiobservable
 import yarl
 
 import andesite
-from .event_target import EventTarget, NamedEvent
 
 __all__ = ["PoolException", "PoolEmptyError",
            "PoolClientAddEvent", "PoolClientRemoveEvent",
@@ -68,7 +68,8 @@ class PoolEmptyError(PoolException):
     ...
 
 
-class PoolClientAddEvent(NamedEvent, Generic[CT]):
+@dataclasses.dataclass()
+class PoolClientAddEvent(Generic[CT]):
     """Event for when a new client is added to a pool.
 
     Attributes:
@@ -78,11 +79,9 @@ class PoolClientAddEvent(NamedEvent, Generic[CT]):
     pool: "ClientPool"
     client: CT
 
-    def __init__(self, pool: "ClientPool", client: CT) -> None:
-        super().__init__(pool=pool, client=client)
 
-
-class PoolClientRemoveEvent(NamedEvent, Generic[CT]):
+@dataclasses.dataclass()
+class PoolClientRemoveEvent(Generic[CT]):
     """Event for when a client is removed from a pool.
 
     Attributes:
@@ -92,11 +91,8 @@ class PoolClientRemoveEvent(NamedEvent, Generic[CT]):
     pool: "ClientPool"
     client: CT
 
-    def __init__(self, pool: "ClientPool", client: CT) -> None:
-        super().__init__(pool=pool, client=client)
 
-
-class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
+class ClientPool(aiobservable.Observable, Collection[CT], abc.ABC, Generic[CT]):
     """Andesite client pool."""
     _clients: Collection[CT]
 
@@ -126,7 +122,7 @@ class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
 
     async def close(self) -> None:
         """Close all clients in the pool."""
-        await asyncio.gather(*(client.close() for client in self._clients), loop=self._loop)
+        await asyncio.gather(*(client.close() for client in self._clients), loop=self.loop)
 
     async def reset(self) -> None:
         """Reset all underlying clients so they may be used again.
@@ -134,7 +130,7 @@ class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
         This has the opposite effect of the `close` method making the clients
         usable again.
         """
-        await asyncio.gather(*(client.reset() for client in self), loop=self._loop)
+        await asyncio.gather(*(client.reset() for client in self), loop=self.loop)
 
     def _check_client(self, client: CT) -> Optional[CT]:
         """Check whether the client is usable.
@@ -169,7 +165,7 @@ class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
         if client in self:
             raise ValueError(f"Client {client!r} already in {self}")
 
-        _ = self.dispatch(PoolClientAddEvent(self, client))
+        _ = self.emit(PoolClientAddEvent(self, client))
 
     @abc.abstractmethod
     def remove_client(self, client: CT) -> None:
@@ -183,7 +179,7 @@ class ClientPool(EventTarget, Generic[CT], Collection, abc.ABC):
 
         Dispatches the `PoolClientRemoveEvent` event.
         """
-        _ = self.dispatch(PoolClientRemoveEvent(self, client))
+        _ = self.emit(PoolClientRemoveEvent(self, client))
 
 
 # HTTP pool
@@ -334,12 +330,12 @@ class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
             if client is None:
                 raise PoolEmptyError(self)
 
-            fut = asyncio.ensure_future(client.request(method, path, **kwargs), loop=self._loop)
+            fut = asyncio.ensure_future(client.request(method, path, **kwargs), loop=self.loop)
             running_fs.add(fut)
 
             done_fs, pending_fs = await asyncio.wait(running_fs,
                                                      return_when=asyncio.FIRST_COMPLETED,
-                                                     loop=self._loop)
+                                                     loop=self.loop)
             try:
                 done_fut = done_fs.pop()
             except KeyError:
@@ -371,7 +367,7 @@ class HTTPPool(andesite.HTTPInterface, HTTPPoolBase):
 RegionGuildComparator = Callable[[int, Optional[str]], int]
 
 
-@dataclass
+@dataclasses.dataclass
 class ScoringData:
     """Data passed to the web socket scoring scoring function.
 
@@ -534,7 +530,7 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
         super().add_client(client)
         self._clients.add(client)
         self._client_guilds[client] = set()
-        client.event_target.add_dispatcher(self.event_target)
+        client.event_target.add_child(self.event_target)
 
         state = self.state
         if state is not None:
@@ -572,7 +568,7 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
         if client.state is self.state:
             client.state = None
 
-        client.event_target.remove_dispatcher(self.event_target)
+        client.event_target.remove_child(self.event_target)
 
         super().remove_client(client)
 
@@ -594,20 +590,20 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
 
         fs: List[asyncio.Future] = []
         for guild_id in guild_ids:
-            fs.append(asyncio.ensure_future(self.assign_client(guild_id), loop=self._loop))
+            fs.append(asyncio.ensure_future(self.assign_client(guild_id), loop=self.loop))
 
-        new_clients: List[Optional[andesite.AbstractWebSocket]] = await asyncio.gather(*fs, loop=self._loop)
+        new_clients: List[Optional[andesite.AbstractWebSocket]] = await asyncio.gather(*fs, loop=self.loop)
 
         async def load_player_state(_guild_id: int, _client: andesite.AbstractWebSocket) -> None:
             player_state = await self.state.get(_guild_id)
-            await _client.load_player_state(player_state, loop=self._loop)
+            await _client.load_player_state(player_state, loop=self.loop)
 
         fs.clear()
 
         for guild_id, new_client in zip(guild_ids, new_clients):
-            fs.append(asyncio.ensure_future(load_player_state(guild_id, new_client), loop=self._loop))
+            fs.append(asyncio.ensure_future(load_player_state(guild_id, new_client), loop=self.loop))
 
-        await asyncio.gather(*fs, loop=self._loop)
+        await asyncio.gather(*fs, loop=self.loop)
 
     def get_client(self, guild_id: int) -> Optional[andesite.AbstractWebSocket]:
         """Get the andesite web socket client which is used for the given guild."""
@@ -654,9 +650,9 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
                 node_region = None
 
             score_data = ScoringData(self, client, node_region, self.region_comparator, guild_ids, guild_id)
-            score_fs.append(asyncio.ensure_future(perform_score_calc(score_data), loop=self._loop))
+            score_fs.append(asyncio.ensure_future(perform_score_calc(score_data), loop=self.loop))
 
-        scores: List[Tuple[andesite.AbstractWebSocket, Any]] = await asyncio.gather(*score_fs, loop=self._loop)
+        scores: List[Tuple[andesite.AbstractWebSocket, Any]] = await asyncio.gather(*score_fs, loop=self.loop)
         for client, score in scores:
             if best_score is not None:
                 if score < best_score:

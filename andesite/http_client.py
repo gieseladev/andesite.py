@@ -221,6 +221,11 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
     async def decode_track(self, track: str) -> Optional[andesite.TrackInfo]:
         """Get the `TrackInfo` from the encoded track data.
 
+        Notes:
+            If you find yourself using this method a lot, you might want to use
+            `lptrack <https://github.com/gieseladev/lptrack>`_ which can decode
+            and encode the track data locally.
+
         Args:
             track: base 64 encoded track data to decode.
 
@@ -279,13 +284,13 @@ class HTTPBase(AbstractHTTP):
             requests.
     """
     aiohttp_session: ClientSession
+    loop: asyncio.AbstractEventLoop
 
-    _loop: asyncio.AbstractEventLoop
     _base_url: URL
 
     def __init__(self, uri: Union[str, URL], password: Optional[str], *,
                  loop: asyncio.AbstractEventLoop = None) -> None:
-        self._loop = loop if loop is not None else asyncio.get_event_loop()
+        self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._base_url = URL(uri)
 
         headers = {"User-Agent": USER_AGENT}
@@ -293,7 +298,7 @@ class HTTPBase(AbstractHTTP):
         if password is not None:
             headers["Authorization"] = password
 
-        self.aiohttp_session = ClientSession(headers=headers, loop=self._loop)
+        self.aiohttp_session = ClientSession(headers=headers, loop=self.loop)
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(uri={self._base_url!r}, password=[HIDDEN])"
@@ -310,7 +315,7 @@ class HTTPBase(AbstractHTTP):
 
     async def reset(self) -> None:
         self.aiohttp_session = ClientSession(headers=self.aiohttp_session._default_headers,
-                                             loop=self._loop)
+                                             loop=self.loop)
 
     async def request(self, method: str, path: str, **kwargs) -> Any:
         url = self._base_url / path

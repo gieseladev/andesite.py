@@ -8,6 +8,7 @@ aiohttp = "*"
 websockets = "*"
 lettercase = "*"
 yarl = "*"
+aiobservable = "*"
 
 [dev-packages]
 pytest = "*"

@@ -21,7 +21,6 @@ import logging
 from typing import Any, Awaitable, Callable, Coroutine, Dict, Generic, Optional, TypeVar, Union
 
 import andesite
-from .event_target import NamedEvent
 from .transform import build_from_raw, convert_to_raw
 
 __all__ = ["AbstractPlayerState", "PlayerState",
@@ -276,7 +275,7 @@ class AbstractState(abc.ABC):
     def __str__(self) -> str:
         return f"{type(self).__name__}"
 
-    def _handle_andesite_message(self, message: NamedEvent, *,
+    def _handle_andesite_message(self, message: andesite.ReceiveOperation, *,
                                  loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
         """Handles the event of an andesite message being received.
 
@@ -341,7 +340,7 @@ class AbstractState(abc.ABC):
         """
         ...
 
-    async def on_handle_message_error(self, message: NamedEvent, exc: Exception) -> None:
+    async def on_handle_message_error(self, message: andesite.ReceiveOperation, exc: Exception) -> None:
         """Called when an error occurs during message handling.
 
         Args:

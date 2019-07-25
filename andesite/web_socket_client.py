@@ -16,15 +16,15 @@ from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
 from typing import Any, Deque, Dict, Optional, Tuple, Type, TypeVar, Union, overload
 
+import aiobservable
 import websockets
 from websockets import ConnectionClosed, InvalidHandshake, WebSocketClientProtocol
 from websockets.http import Headers
 from yarl import URL
 
 import andesite
-from .event_target import EventFilter, EventTarget, NamedEvent
 from .transform import build_from_raw, convert_to_raw, map_filter_none, to_centi, to_milli
-from .web_socket_client_events import MsgReceiveEvent, RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, \
+from .web_socket_client_events import RawMsgReceiveEvent, RawMsgSendEvent, WebSocketConnectEvent, \
     WebSocketDisconnectEvent
 
 __all__ = ["try_connect",
@@ -130,11 +130,11 @@ class AbstractWebSocket(abc.ABC):
           event is received.
     """
 
-    _event_target: EventTarget
+    _event_target: aiobservable.Observable
     _state_handler: Optional[andesite.AbstractState]
 
     @property
-    def event_target(self) -> EventTarget:
+    def event_target(self) -> aiobservable.Observable:
         """Event target to send events to.
 
         If no event target is set, but the instance is itself an event target,
@@ -147,10 +147,10 @@ class AbstractWebSocket(abc.ABC):
         try:
             return self._event_target
         except AttributeError:
-            if isinstance(self, EventTarget):
+            if isinstance(self, aiobservable.Observable):
                 self._event_target = self
             else:
-                self._event_target = EventTarget()
+                self._event_target = aiobservable.Observable()
 
             return self._event_target
 
@@ -376,85 +376,18 @@ class AbstractWebSocketClient(AbstractWebSocket, abc.ABC):
 class WebSocketInterface(AbstractWebSocket, abc.ABC):
     """Implementation of the web socket endpoints."""
 
-    @overload
-    async def wait_for_update(self, op: Type[ROPT], *,
-                              check: EventFilter = None,
-                              guild_id: int = None) -> ROPT:
-        ...
-
-    @overload
-    async def wait_for_update(self, op: Type[ROPT], *,
-                              check: EventFilter = None,
-                              guild_id: int = None,
-                              timeout: float = None) -> Optional[ROPT]:
-        ...
-
-    @overload
-    async def wait_for_update(self, op: str, *,
-                              check: EventFilter = None,
-                              guild_id: int = None) -> andesite.ReceiveOperation:
-        ...
-
-    @overload
-    async def wait_for_update(self, op: str, *,
-                              check: EventFilter = None,
-                              guild_id: int = None,
-                              timeout: float = None) -> Optional[andesite.ReceiveOperation]:
-        ...
-
-    async def wait_for_update(self, op: Union[Type[andesite.ReceiveOperation], str], *,
-                              check: EventFilter = None,
-                              guild_id: int = None,
-                              timeout: float = None) -> Optional[andesite.ReceiveOperation]:
-        """Wait for an Andesite update which meets the requirements.
-
-        Args:
-            op: Operation to wait for.
-                You can also pass a `ReceiveOperation` class which provides
-                better type constraints.
-            check: Additional checks to perform before accepting an Event.
-                The function is called with the `MsgReceiveEvent` and should
-                return a `bool`. If not set, all events with the correct op are
-                accepted.
-            guild_id: Guild id to check against.
-                If `None`, the guild id isn't checked.
-            timeout: Timeout in seconds to wait before aborting.
-                If you don't set this, the method will wait forever.
-
-        Events that were emitted by another client are ignored entirely.
-
-        Returns:
-            `ReceiveOperation` that was accepted.
-            `None` if it timed-out.
-        """
-        if issubclass(op, andesite.ReceiveOperation):
-            op = op.__op__
-
-        if not isinstance(op, str):
-            raise TypeError(f"Op must be a string, not {type(op)}!")
-
-        def _check(_event: MsgReceiveEvent) -> bool:
-            if _event.op == op:
-                if guild_id is not None and guild_id != getattr(_event.data, "guild_id", None):
-                    return False
-
-                if check is None:
-                    return True
-                else:
-                    return check(_event)
-            else:
+    async def wait_for_receive(self, op_type: Type[ROPT], guild_id: int = None) -> ROPT:
+        def _guild_check(op: andesite.ReceiveOperation) -> bool:
+            try:
+                # noinspection PyUnresolvedReferences
+                gid = op.guild_id
+            except AttributeError:
                 return False
 
-        event: Optional[MsgReceiveEvent] = await self.event_target.wait_for(
-            MsgReceiveEvent,
-            check=_check,
-            timeout=timeout,
-        )
+            return gid == guild_id
 
-        if event is not None:
-            return event.data
-        else:
-            return None
+        predicate = _guild_check if guild_id is not None else None
+        return await self.event_target.once(op_type, predicate=predicate)
 
     # noinspection PyOverloads
     @overload
@@ -669,10 +602,8 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             Player for the guild
         """
 
-        player_update, _ = await asyncio.gather(
-            self.wait_for_update(andesite.PlayerUpdate, guild_id=guild_id),
-            self.send(guild_id, "get-player", {}),
-        )
+        await self.send(guild_id, "get-player", {})
+        player_update = await self.wait_for_receive(andesite.PlayerUpdate, guild_id=guild_id)
         return player_update.state
 
     async def get_stats(self, guild_id: int) -> andesite.Stats:
@@ -685,7 +616,7 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
             Statistics for the node
         """
         await self.send(guild_id, "get-stats", {})
-        stats_update = await self.wait_for_update(andesite.StatsUpdate)
+        stats_update = await self.wait_for_receive(andesite.StatsUpdate)
         return stats_update.stats
 
     async def ping(self, guild_id: int) -> float:
@@ -701,8 +632,8 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
         start = time.time()
 
         await asyncio.gather(
-            self.wait_for_update(andesite.PongResponse, guild_id=guild_id),
             self.send(guild_id, "ping", {}),
+            self.wait_for_receive(andesite.PongResponse, guild_id=guild_id),
         )
 
         return time.time() - start
@@ -758,6 +689,7 @@ class WebSocketBase(AbstractWebSocketClient):
             Don't use the presence of this attribute to check whether
             the client is connected, use the `connected` property.
     """
+    loop = Optional[asyncio.AbstractEventLoop]
     max_connect_attempts: Optional[int]
 
     web_socket_client: Optional[WebSocketClientProtocol]
@@ -767,8 +699,6 @@ class WebSocketBase(AbstractWebSocketClient):
     _ws_uri: str
     _headers: Headers
     _last_connection_id: Optional[str]
-
-    _loop = asyncio.AbstractEventLoop
 
     _connect_lock: asyncio.Lock
     _message_queue: Deque[str]
@@ -782,10 +712,10 @@ class WebSocketBase(AbstractWebSocketClient):
                  state: andesite.StateArgumentType = None,
                  max_connect_attempts: int = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
-        if isinstance(self, EventTarget):
+        if isinstance(self, aiobservable.Observable):
             super().__init__(loop=loop)
         else:
-            self._loop = loop
+            self.loop = loop
 
         self._ws_uri = str(ws_uri)
 
@@ -904,13 +834,13 @@ class WebSocketBase(AbstractWebSocketClient):
         max_attempts = max_attempts or self.max_connect_attempts
 
         while max_attempts is None or attempt <= max_attempts:
-            client = await try_connect(self._ws_uri, extra_headers=headers, loop=self._loop)
+            client = await try_connect(self._ws_uri, extra_headers=headers, loop=self.loop)
             if client:
                 break
 
             timeout = int(math.pow(attempt, 1.5))
             log.info(f"Connection unsuccessful, trying again in {timeout} seconds")
-            await asyncio.sleep(timeout, loop=self._loop)
+            await asyncio.sleep(timeout, loop=self.loop)
 
             attempt += 1
         else:
@@ -920,7 +850,7 @@ class WebSocketBase(AbstractWebSocketClient):
         self.web_socket_client = client
         self._start_read_loop()
 
-        _ = self.event_target.dispatch(WebSocketConnectEvent(self))
+        _ = self.event_target.emit(WebSocketConnectEvent(self))
 
         await self._replay_message_queue()
 
@@ -937,7 +867,7 @@ class WebSocketBase(AbstractWebSocketClient):
 
         if self.connected:
             await self.web_socket_client.close(reason="disconnect")
-            _ = self.event_target.dispatch(WebSocketDisconnectEvent(self, True))
+            _ = self.event_target.emit(WebSocketDisconnectEvent(self, True))
 
     async def reset(self) -> None:
         await self.disconnect()
@@ -984,7 +914,7 @@ class WebSocketBase(AbstractWebSocketClient):
                 break
             except ConnectionClosed:
                 log.error(f"Disconnected from websocket, trying to reconnect {self}!")
-                _ = self.event_target.dispatch(WebSocketDisconnectEvent(self, False))
+                _ = self.event_target.emit(WebSocketDisconnectEvent(self, False))
                 await self.connect()
                 continue
 
@@ -1002,7 +932,7 @@ class WebSocketBase(AbstractWebSocketClient):
                             f"Expecting object, received type {type(data).__name__}: {data}")
                 continue
 
-            _ = self.event_target.dispatch(RawMsgReceiveEvent(self, data))
+            _ = self.event_target.emit(RawMsgReceiveEvent(self, data))
 
             try:
                 op = data.pop("op")
@@ -1024,16 +954,14 @@ class WebSocketBase(AbstractWebSocketClient):
 
             message.client = self
 
-            _ = self.event_target.dispatch(MsgReceiveEvent(self, op, message))
-
             if isinstance(message, andesite.ConnectionUpdate):
                 log.info(f"received connection update, setting last connection id in {self}.")
                 self._last_connection_id = message.id
-            elif isinstance(message, NamedEvent):
-                _ = self.event_target.dispatch(message)
 
-                if self.state is not None:
-                    _ = self.state._handle_andesite_message(message, loop=self._loop)
+            _ = self.event_target.emit(message)
+
+            if self.state is not None:
+                _ = self.state._handle_andesite_message(message, loop=self.loop)
 
     def _start_read_loop(self) -> None:
         """Start the web socket reader.
@@ -1043,7 +971,7 @@ class WebSocketBase(AbstractWebSocketClient):
         if self._read_loop and not self._read_loop.done():
             return
 
-        self._read_loop = asyncio.ensure_future(self._web_socket_reader(), loop=self._loop)
+        self._read_loop = asyncio.ensure_future(self._web_socket_reader(), loop=self.loop)
 
     def _stop_read_loop(self) -> None:
         """Stop the web socket reader.
@@ -1058,7 +986,7 @@ class WebSocketBase(AbstractWebSocketClient):
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
         payload.update(guildId=str(guild_id), op=op)
 
-        _ = self.event_target.dispatch(RawMsgSendEvent(self, guild_id, op, payload))
+        _ = self.event_target.emit(RawMsgSendEvent(self, guild_id, op, payload))
 
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f"sending payload: {payload}")
@@ -1083,7 +1011,7 @@ class WebSocketBase(AbstractWebSocketClient):
         await self.connect()
 
 
-class WebSocket(WebSocketBase, EventTarget, WebSocketInterface):
+class WebSocket(WebSocketBase, WebSocketInterface, aiobservable.Observable):
     """Client for the Andesite WebSocket endpoints.
 
     See Also:

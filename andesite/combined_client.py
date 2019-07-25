@@ -15,15 +15,15 @@ import asyncio
 from contextlib import suppress
 from typing import Any, Dict, Optional, Union
 
+import aiobservable
 from yarl import URL
 
 import andesite
-from .event_target import EventTarget
 
 __all__ = ["ClientBase", "Client", "create_client"]
 
 
-class ClientBase(andesite.AbstractWebSocket, andesite.AbstractHTTP, EventTarget):
+class ClientBase(andesite.AbstractWebSocket, andesite.AbstractHTTP, aiobservable.Observable):
     """Implementation of `AbstractWebSocket` and `AbstractHTTP`.
 
     Args:
@@ -57,7 +57,7 @@ class ClientBase(andesite.AbstractWebSocket, andesite.AbstractHTTP, EventTarget)
         # self.event_target will most likely resolve to self, but maybe
         # the user is trying to pull some inception shit with nested
         # clients and who would I be to deny them their fun?
-        web_socket_client.event_target.add_dispatcher(self.event_target)
+        web_socket_client.event_target.add_child(self.event_target)
 
         # bind the methods directly
         self.send = web_socket_client.send

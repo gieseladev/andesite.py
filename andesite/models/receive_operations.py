@@ -20,7 +20,6 @@ from enum import Enum
 from typing import Dict, List, Mapping, Optional, Set, Tuple, Type, Union, cast
 
 import andesite
-from andesite.event_target import NamedEvent
 from andesite.transform import RawDataType, map_build_values_from_raw, map_convert_values, \
     map_convert_values_from_milli, map_convert_values_to_milli, map_remove_keys, transform_input, transform_output
 from .debug import Error, Stats
@@ -120,7 +119,7 @@ class StatsUpdate(ReceiveOperation):
 
 
 @dataclass
-class PlayerUpdate(NamedEvent, ReceiveOperation):
+class PlayerUpdate(ReceiveOperation):
     """Player update sent by Andesite for active players.
 
     Attributes:
@@ -134,9 +133,6 @@ class PlayerUpdate(NamedEvent, ReceiveOperation):
     guild_id: int
     state: Player
 
-    def __post_init__(self) -> None:
-        super().__init__()
-
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
         map_convert_values(data, user_id=int, guild_id=int)
@@ -148,7 +144,7 @@ class PlayerUpdate(NamedEvent, ReceiveOperation):
 
 
 @dataclass
-class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
+class AndesiteEvent(ReceiveOperation, abc.ABC):
     """Event sent by Andesite.
 
     Attributes:
@@ -160,14 +156,10 @@ class AndesiteEvent(NamedEvent, ReceiveOperation, abc.ABC):
         track (str): Base64 encoded track data
     """
     __op__ = "event"
-    __event_name__ = "andesite_event"
 
     type: str
     user_id: int
     guild_id: int
-
-    def __post_init__(self) -> None:
-        super().__init__()
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
@@ -302,7 +294,6 @@ class UnknownAndesiteEvent(AndesiteEvent):
             Please note that the keys are in snake_case.
 
     """
-    __event_name__ = "unknown_andesite_event"
 
     body: RawDataType
 
