@@ -421,7 +421,7 @@ def default_scoring_function(data: ScoringData) -> Tuple[int, int, int]:
     except AttributeError:
         connected = 1
     else:
-        connected = int(connected)
+        connected = 1 if connected else 0
 
     if data.region_comparator:
         region_score = data.region_comparator(data.guild_id, data.node_region)
