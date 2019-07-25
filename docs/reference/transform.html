@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Transform &#8212; andesite.py 0.1.2 documentation</title>
+    <title>Transform &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -15,6 +15,7 @@
     <link rel="canonical" href="/andesite.py/docs/reference/transform.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Overview" href="../api.html" />
     <link rel="prev" title="State" href="state.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -206,28 +207,6 @@ the result to the index.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="andesite.transform.map_build_all_values_from_raw">
-<code class="sig-name descname">map_build_all_values_from_raw</code><span class="sig-paren">(</span><em class="sig-param">mapping</em>, <em class="sig-param">cls</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_build_all_values_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_build_all_values_from_raw" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build all values of a mapping.</p>
-<p>This calls <a class="reference internal" href="#andesite.transform.build_from_raw" title="andesite.transform.build_from_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_raw</span></code></a> on all values of the mapping
-and replaces the old value with the result.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]) – Mutable mapping whose values are to be built</p></li>
-<li><p><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T]) – Type to convert the values to</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>This method mutates the provided mapping, it does not return anything.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
 <dt id="andesite.transform.map_convert_value">
 <code class="sig-name descname">map_convert_value</code><span class="sig-paren">(</span><em class="sig-param">mapping</em>, <em class="sig-param">key</em>, <em class="sig-param">func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_convert_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_convert_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call a function on the value of a key of the provided mapping.</p>
@@ -312,6 +291,28 @@ The function is run using <a class="reference internal" href="#andesite.transfor
 <li><p><strong>**key_types</strong> – key -&gt; type mapping.
 For each key the value will be converted to the provided type
 using <a class="reference internal" href="#andesite.transform.build_from_raw" title="andesite.transform.build_from_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_raw</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This method mutates the provided mapping, it does not return anything.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.transform.map_build_all_values_from_raw">
+<code class="sig-name descname">map_build_all_values_from_raw</code><span class="sig-paren">(</span><em class="sig-param">mapping</em>, <em class="sig-param">cls</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/transform.html#map_build_all_values_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.transform.map_build_all_values_from_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build all values of a mapping.</p>
+<p>This calls <a class="reference internal" href="#andesite.transform.build_from_raw" title="andesite.transform.build_from_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_raw</span></code></a> on all values of the mapping
+and replaces the old value with the result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mapping</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]) – Mutable mapping whose values are to be built</p></li>
+<li><p><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T]) – Type to convert the values to</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -524,6 +525,7 @@ to rename keys that aren’t python-friendly.</p></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Transform</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -532,6 +534,7 @@ to rename keys that aren’t python-friendly.</p></li>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="index.html">Reference</a><ul>
       <li>Previous: <a href="state.html" title="previous chapter">State</a></li>
+      <li>Next: <a href="../api.html" title="next chapter">API Overview</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -562,7 +565,7 @@ to rename keys that aren’t python-friendly.</p></li>
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

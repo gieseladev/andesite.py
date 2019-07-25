@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Quick-start &#8212; andesite.py 0.1.2 documentation</title>
+    <title>Quick-start &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -39,17 +39,17 @@
 <h2>Connecting to an Andesite node<a class="headerlink" href="#connecting-to-an-andesite-node" title="Permalink to this headline">¶</a></h2>
 <p>Let’s imagine the most basic use case first:
 You have one Andesite server which you would like to connect to.
-For this case there’s the <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteClient</span></code> which does this for you.
+For this case there’s the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code> which does this for you.
 In reality the andesite client is a combination of both the web socket client
 and the http client, but it aims to hide this complexity.</p>
 <p>Unless you’re using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.py</span></code> library, you have to manually pass voice
-server updates to Andesite using <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteClient.voice_server_update</span></code>.
+server updates to Andesite using <code class="xref py py-obj docutils literal notranslate"><span class="pre">Client.voice_server_update</span></code>.
 If you are using <code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.py</span></code>, please refer to <a class="reference internal" href="#discord-py"><span class="std std-ref">Using the discord.py integration</span></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">andesite</span>
 
 <span class="c1"># We use the create function because it creates</span>
 <span class="c1"># the underlying clients for us.</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">create_andesite_client</span><span class="p">(</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">create_client</span><span class="p">(</span>
     <span class="s2">&quot;http://localhost:5000&quot;</span><span class="p">,</span>                <span class="c1"># url for the http endpoints</span>
     <span class="s2">&quot;ws://localhost:5000/websocket&quot;</span><span class="p">,</span>        <span class="c1"># url for the web socket endpoints</span>
     <span class="bp">None</span><span class="p">,</span>                                   <span class="c1"># andesite password. None means there&#39;s no password</span>
@@ -63,10 +63,10 @@ If you are using <code class="xref py py-obj docutils literal notranslate"><span
 </div>
 <div class="section" id="using-pools">
 <h2>Using pools<a class="headerlink" href="#using-pools" title="Permalink to this headline">¶</a></h2>
-<p>To create a pool you can just use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteHTTPPool</span></code> and
-<code class="xref py py-obj docutils literal notranslate"><span class="pre">AndesiteWebSocketPool</span></code> classes which both take an iterable of their respective
+<p>To create a pool you can just use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPPool</span></code> and
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketPool</span></code> classes which both take an iterable of their respective
 clients. However, if you want to create a combined Andesite client with the
-default implementation you can use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">create_andesite_pool</span></code> function.</p>
+default implementation you can use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">create_pool</span></code> function.</p>
 <p>The great thing is that you can use the pools just like any other client.
 The http client pool uses a round-robin to delegate each request to a separate
 client and the WebSocket pool assigns the best client for each guild and
@@ -84,7 +84,7 @@ migrates the state to another client if a node goes down.</p>
     <span class="p">(</span><span class="s2">&quot;ws://example2.com:5000/websocket&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
 <span class="p">]</span>
 
-<span class="n">client</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">create_andesite_pool</span><span class="p">(</span><span class="n">http_nodes</span><span class="p">,</span> <span class="n">web_socket_nodes</span><span class="p">,</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">create_pool</span><span class="p">(</span><span class="n">http_nodes</span><span class="p">,</span> <span class="n">web_socket_nodes</span><span class="p">,</span>
     <span class="n">user_id</span><span class="o">=</span><span class="mi">549905730099216384</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -155,6 +155,7 @@ you connect to a voice channel and also disconnect.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -192,7 +193,7 @@ you connect to a voice channel and also disconnect.</p>
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

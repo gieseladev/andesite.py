@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.models.debug &#8212; andesite.py 0.1.2 documentation</title>
+    <title>andesite.models.debug &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -35,7 +35,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;Debug models for Andesite.</span>
 
 <span class="sd">These models are used in either `Stats` which represents the Andesite</span>
-<span class="sd">stats returned by `AndesiteWebSocketInterface.get_stats` or `Error` which is</span>
+<span class="sd">stats returned by `WebSocketInterface.get_stats` or `Error` which is</span>
 <span class="sd">used to represent an Andesite error.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -178,7 +178,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">total</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">playing</span><span class="p">:</span> <span class="nb">int</span></div>
@@ -195,7 +195,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">vendor</span><span class="p">:</span> <span class="nb">str</span>
@@ -213,7 +213,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">vendor</span><span class="p">:</span> <span class="nb">str</span>
@@ -235,7 +235,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">feature</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">interim</span><span class="p">:</span> <span class="nb">int</span>
@@ -261,7 +261,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">uptime</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">pid</span><span class="p">:</span> <span class="nb">int</span>
@@ -288,7 +288,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">processors</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -306,7 +306,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">andesite</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">system</span><span class="p">:</span> <span class="nb">float</span></div>
@@ -338,7 +338,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">running</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">daemon</span><span class="p">:</span> <span class="nb">int</span>
@@ -356,7 +356,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">total_time</span><span class="p">:</span> <span class="nb">int</span></div>
@@ -374,7 +374,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">init</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">used</span><span class="p">:</span> <span class="nb">int</span>
@@ -393,7 +393,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pending_finalization</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">heap</span><span class="p">:</span> <span class="n">MemoryCommonUsageStats</span>
@@ -416,7 +416,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">collection_count</span><span class="p">:</span> <span class="nb">int</span>
@@ -442,7 +442,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
@@ -470,7 +470,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">pools</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
@@ -488,7 +488,7 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">        This statistic can be found in `Stats` which is retrieved from Andesite by</span>
-<span class="sd">        the clients. Both `AndesiteHTTP` and `AndesiteWebSocket` are able to get them.</span>
+<span class="sd">        the clients. Both `HTTP` and `WebSocket` are able to get them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">user</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">guild</span><span class="p">:</span> <span class="nb">int</span>
@@ -569,6 +569,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -606,7 +607,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

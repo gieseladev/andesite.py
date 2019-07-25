@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.web_socket_client &#8212; andesite.py 0.1.2 documentation</title>
+    <title>andesite.web_socket_client &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -34,43 +34,41 @@
   <h1>Source code for andesite.web_socket_client</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Web socket client for Andesite.</span>
 
-<span class="sd">Use `AndesiteWebSocket` if you just want a client which</span>
+<span class="sd">Use `WebSocket` if you just want a client which</span>
 <span class="sd">connects to a single Andesite node.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">suppress</span>
 <span class="kn">from</span> <span class="nn">json</span> <span class="k">import</span> <span class="n">JSONDecodeError</span><span class="p">,</span> <span class="n">JSONDecoder</span><span class="p">,</span> <span class="n">JSONEncoder</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Deque</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Deque</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">Awaitable</span>
 
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">aiobservable</span>
 <span class="kn">import</span> <span class="nn">websockets</span>
 <span class="kn">from</span> <span class="nn">websockets</span> <span class="k">import</span> <span class="n">ConnectionClosed</span><span class="p">,</span> <span class="n">InvalidHandshake</span><span class="p">,</span> <span class="n">WebSocketClientProtocol</span>
 <span class="kn">from</span> <span class="nn">websockets.http</span> <span class="k">import</span> <span class="n">Headers</span>
 <span class="kn">from</span> <span class="nn">yarl</span> <span class="k">import</span> <span class="n">URL</span>
 
-<span class="kn">from</span> <span class="nn">andesite.models.receive_operations</span> <span class="k">import</span> <span class="n">PongResponse</span>
-<span class="kn">from</span> <span class="nn">.event_target</span> <span class="k">import</span> <span class="n">EventFilter</span><span class="p">,</span> <span class="n">EventTarget</span><span class="p">,</span> <span class="n">NamedEvent</span>
-<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">AndesiteEvent</span><span class="p">,</span> <span class="n">BasePlayer</span><span class="p">,</span> <span class="n">ConnectionUpdate</span><span class="p">,</span> <span class="n">Equalizer</span><span class="p">,</span> <span class="n">FilterMap</span><span class="p">,</span> <span class="n">FilterMapLike</span><span class="p">,</span> <span class="n">FilterUpdate</span><span class="p">,</span> \
-    <span class="n">Karaoke</span><span class="p">,</span> <span class="n">Play</span><span class="p">,</span> <span class="n">Player</span><span class="p">,</span> <span class="n">PlayerUpdate</span><span class="p">,</span> <span class="n">ReceiveOperation</span><span class="p">,</span> <span class="n">SendOperation</span><span class="p">,</span> <span class="n">Stats</span><span class="p">,</span> <span class="n">StatsUpdate</span><span class="p">,</span> <span class="n">Timescale</span><span class="p">,</span> <span class="n">Tremolo</span><span class="p">,</span> \
-    <span class="n">Update</span><span class="p">,</span> <span class="n">Vibrato</span><span class="p">,</span> <span class="n">VolumeFilter</span><span class="p">,</span> <span class="n">get_update_model</span>
-<span class="kn">from</span> <span class="nn">.state</span> <span class="k">import</span> <span class="n">AbstractAndesiteState</span><span class="p">,</span> <span class="n">AbstractPlayerState</span><span class="p">,</span> <span class="n">StateArgumentType</span><span class="p">,</span> <span class="n">_get_state</span>
+<span class="kn">import</span> <span class="nn">andesite</span>
 <span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">convert_to_raw</span><span class="p">,</span> <span class="n">map_filter_none</span><span class="p">,</span> <span class="n">to_centi</span><span class="p">,</span> <span class="n">to_milli</span>
-<span class="kn">from</span> <span class="nn">.web_socket_client_events</span> <span class="k">import</span> <span class="n">MsgReceiveEvent</span><span class="p">,</span> <span class="n">RawMsgReceiveEvent</span><span class="p">,</span> <span class="n">RawMsgSendEvent</span><span class="p">,</span> <span class="n">WebSocketConnectEvent</span><span class="p">,</span> \
+<span class="kn">from</span> <span class="nn">.web_socket_client_events</span> <span class="k">import</span> <span class="n">RawMsgReceiveEvent</span><span class="p">,</span> <span class="n">RawMsgSendEvent</span><span class="p">,</span> <span class="n">WebSocketConnectEvent</span><span class="p">,</span> \
     <span class="n">WebSocketDisconnectEvent</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;try_connect&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AbstractAndesiteWebSocket&quot;</span><span class="p">,</span> <span class="s2">&quot;AbstractAndesiteWebSocketClient&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AndesiteWebSocketInterface&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AndesiteWebSocketBase&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AndesiteWebSocket&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;AbstractWebSocket&quot;</span><span class="p">,</span> <span class="s2">&quot;AbstractWebSocketClient&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;WebSocketInterface&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;WebSocketBase&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;WebSocket&quot;</span><span class="p">]</span>
 
-<span class="n">ROPT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ROPT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">ReceiveOperation</span><span class="p">)</span>
-<span class="n">ET</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ET&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">AndesiteEvent</span><span class="p">)</span>
+<span class="n">ROPT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ROPT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">andesite</span><span class="o">.</span><span class="n">ReceiveOperation</span><span class="p">)</span>
+<span class="n">ET</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ET&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">andesite</span><span class="o">.</span><span class="n">AndesiteEvent</span><span class="p">)</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -97,7 +95,7 @@
     <span class="k">return</span> <span class="n">client</span></div>
 
 
-<span class="k">def</span> <span class="nf">_get_ops_for_player</span><span class="p">(</span><span class="n">track</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">player</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BasePlayer</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Play</span><span class="p">,</span> <span class="n">Update</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">_get_ops_for_player</span><span class="p">(</span><span class="n">track</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">player</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">BasePlayer</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Get operations which apply the state from the given player.</span>
 
 <span class="sd">    Two operations are required to both play the track and set the filters.</span>
@@ -111,34 +109,34 @@
 <span class="sd">        state.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">player</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">play_op</span> <span class="o">=</span> <span class="n">Play</span><span class="p">(</span><span class="n">track</span><span class="p">,</span>
-                       <span class="n">start</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
-                       <span class="n">pause</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">paused</span><span class="p">,</span>
-                       <span class="n">volume</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">volume</span><span class="p">,</span>
-                       <span class="n">no_replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">play_op</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">(</span><span class="n">track</span><span class="p">,</span>
+                                <span class="n">start</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+                                <span class="n">pause</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">paused</span><span class="p">,</span>
+                                <span class="n">volume</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">volume</span><span class="p">,</span>
+                                <span class="n">no_replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">update_op</span> <span class="o">=</span> <span class="n">Update</span><span class="p">(</span>
+        <span class="n">update_op</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span><span class="p">(</span>
             <span class="n">pause</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">paused</span><span class="p">,</span>
             <span class="n">position</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
             <span class="n">volume</span><span class="o">=</span><span class="n">player</span><span class="o">.</span><span class="n">volume</span><span class="p">,</span>
-            <span class="n">filters</span><span class="o">=</span><span class="n">FilterUpdate</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">filters</span><span class="p">),</span>
+            <span class="n">filters</span><span class="o">=</span><span class="n">andesite</span><span class="o">.</span><span class="n">FilterUpdate</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">filters</span><span class="p">),</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">play_op</span> <span class="o">=</span> <span class="n">Play</span><span class="p">(</span><span class="n">track</span><span class="p">)</span>
-        <span class="n">update_op</span> <span class="o">=</span> <span class="n">Update</span><span class="p">()</span>
+        <span class="n">play_op</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">(</span><span class="n">track</span><span class="p">)</span>
+        <span class="n">update_op</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">play_op</span><span class="p">,</span> <span class="n">update_op</span>
 
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocket"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocket">[docs]</a><span class="k">class</span> <span class="nc">AbstractAndesiteWebSocket</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractWebSocket"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocket">[docs]</a><span class="k">class</span> <span class="nc">AbstractWebSocket</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class for an Andesite web socket client.</span>
 
-<span class="sd">    This class is separate from `AbstractAndesiteWebSocketClient` to</span>
+<span class="sd">    This class is separate from `AbstractWebSocketClient` to</span>
 <span class="sd">    support more complex clients which use more than one web socket</span>
 <span class="sd">    connection (ex: Pools).</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        `AbstractAndesiteWebSocketClient` for the abstract base class</span>
+<span class="sd">        `AbstractWebSocketClient` for the abstract base class</span>
 <span class="sd">        for actual web socket clients.</span>
 
 
@@ -150,8 +148,6 @@
 <span class="sd">        - **raw_msg_receive** (`RawMsgReceiveEvent`): Whenever a message body is</span>
 <span class="sd">          received. For this event to be dispatched, the received message needs</span>
 <span class="sd">          to be valid JSON and an object.</span>
-<span class="sd">        - **msg_receive** (`MsgReceiveEvent`): After a message has been parsed</span>
-<span class="sd">          into its python representation</span>
 <span class="sd">        - **raw_msg_send** (`RawMsgSendEvent`): When sending a message.</span>
 <span class="sd">          This event is dispatched regardless of whether the message</span>
 <span class="sd">          was actually sent.</span>
@@ -165,58 +161,56 @@
 <span class="sd">        - **unknown_andesite_event** (`UnknownAndesiteEvent`): When an unknown</span>
 <span class="sd">          event is received.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">]</span>
 
-    <span class="n">_event_target</span><span class="p">:</span> <span class="n">EventTarget</span>
-    <span class="n">_state_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractAndesiteState</span><span class="p">]</span>
+    <span class="n">__event_target</span><span class="p">:</span> <span class="n">aiobservable</span><span class="o">.</span><span class="n">Observable</span>
+    <span class="n">__state_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractState</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">event_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventTarget</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">event_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">aiobservable</span><span class="o">.</span><span class="n">Observable</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Event target to send events to.</span>
 
 <span class="sd">        If no event target is set, but the instance is itself an event target,</span>
 <span class="sd">        self is set as the new event target and returned, otherwise a new event</span>
 <span class="sd">        target is created.</span>
-
-<span class="sd">        Notes:</span>
-<span class="sd">            Value is stored in the instance attribute &quot;_event_target&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_target</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__event_target</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">EventTarget</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_event_target</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aiobservable</span><span class="o">.</span><span class="n">Observable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__event_target</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_event_target</span> <span class="o">=</span> <span class="n">EventTarget</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__event_target</span> <span class="o">=</span> <span class="n">aiobservable</span><span class="o">.</span><span class="n">Observable</span><span class="p">()</span>
 
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_target</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__event_target</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractAndesiteState</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractState</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;State handler for the client.</span>
 
 <span class="sd">        You may manually set this value to a different state handler which</span>
-<span class="sd">        implements the `AbstractAndesiteState`. You can also set the state back</span>
-<span class="sd">        to `None`.</span>
+<span class="sd">        implements the `AbstractState`. You can also disable state handling</span>
+<span class="sd">        by setting it to `False`.</span>
 <span class="sd">        Note that this won&#39;t apply the state to the client! You can use the</span>
 <span class="sd">        `load_player_state` method do load individual player states.</span>
 
 <span class="sd">        If not state is set the getter either returns the current instance, if</span>
-<span class="sd">        it happens to implement `AbstractAndesiteState`, otherwise it returns</span>
+<span class="sd">        it happens to implement `AbstractState`, otherwise it returns</span>
 <span class="sd">        `None`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_handler</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__state_handler</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">AbstractAndesiteState</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_state_handler</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">AbstractState</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__state_handler</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_state_handler</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__state_handler</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_handler</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__state_handler</span>
 
     <span class="nd">@state</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateArgumentType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state_handler</span> <span class="o">=</span> <span class="n">_get_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">StateArgumentType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__state_handler</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">_get_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
@@ -227,7 +221,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocket.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocket.close">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractWebSocket.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocket.close">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Close the underlying connections and clean up.</span>
 
@@ -235,7 +229,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocket.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocket.reset">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractWebSocket.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocket.reset">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Reset the client so it may be used again.</span>
 
@@ -244,7 +238,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocket.send"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocket.send">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractWebSocket.send"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocket.send">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send a payload.</span>
 
@@ -264,7 +258,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocket.send_operation"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocket.send_operation">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="n">SendOperation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbstractWebSocket.send_operation"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocket.send_operation">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">SendOperation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send a `SendOperation`.</span>
 
 <span class="sd">        Args:</span>
@@ -273,18 +267,16 @@
 
 <span class="sd">        Notes:</span>
 <span class="sd">            Using `SendOperation` instances to send messages is slightly</span>
-<span class="sd">            less efficient than calling the respective `AndesiteWebSocket` methods</span>
+<span class="sd">            less efficient than calling the respective `WebSocket` methods</span>
 <span class="sd">            directly.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">operation</span><span class="o">.</span><span class="n">__op__</span><span class="p">,</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">operation</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocket.load_player_state"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocket.load_player_state">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_player_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player_state</span><span class="p">:</span> <span class="n">AbstractPlayerState</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                                <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbstractWebSocket.load_player_state"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocket.load_player_state">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_player_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player_state</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">AbstractPlayerState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Load a player state.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            player_state: State to load.</span>
-<span class="sd">            loop: Event loop to use.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">guild_id</span> <span class="o">=</span> <span class="n">player_state</span><span class="o">.</span><span class="n">guild_id</span>
 
@@ -297,7 +289,7 @@
         <span class="n">track</span><span class="p">,</span> <span class="n">player</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="n">player_state</span><span class="o">.</span><span class="n">get_track</span><span class="p">(),</span>
             <span class="n">player_state</span><span class="o">.</span><span class="n">get_player</span><span class="p">(),</span>
-            <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span>
+            <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">track</span><span class="p">:</span>
@@ -311,18 +303,18 @@
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">send_operation</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">play_op</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">send_operation</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">update_op</span><span class="p">),</span>
-                <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span>
+                <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
             <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocketClient"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocketClient">[docs]</a><span class="k">class</span> <span class="nc">AbstractAndesiteWebSocketClient</span><span class="p">(</span><span class="n">AbstractAndesiteWebSocket</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractWebSocketClient"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocketClient">[docs]</a><span class="k">class</span> <span class="nc">AbstractWebSocketClient</span><span class="p">(</span><span class="n">AbstractWebSocket</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class for a singular web socket connection to Andesite.</span>
 
 <span class="sd">    If you&#39;re creating a new client and it doesn&#39;t use only one Andesite node,</span>
-<span class="sd">    you should implement `AbstractAndesiteWebSocket` instead.</span>
+<span class="sd">    you should implement `AbstractWebSocket` instead.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        `AbstractAndesiteWebSocket` for more details.</span>
+<span class="sd">        `AbstractWebSocket` for more details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
@@ -365,7 +357,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocketClient.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocketClient.connect">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractWebSocketClient.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocketClient.connect">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Connect to the web socket server.</span>
 
@@ -389,7 +381,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteWebSocketClient.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteWebSocketClient.disconnect">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractWebSocketClient.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractWebSocketClient.disconnect">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Disconnect the web socket.</span>
 
@@ -407,94 +399,30 @@
         <span class="o">...</span></div></div>
 
 
-<span class="c1"># TODO find a way to pass the event loop to the interface methods</span>
-
-<div class="viewcode-block" id="AndesiteWebSocketInterface"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface">[docs]</a><span class="k">class</span> <span class="nc">AndesiteWebSocketInterface</span><span class="p">(</span><span class="n">AbstractAndesiteWebSocket</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketInterface"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface">[docs]</a><span class="k">class</span> <span class="nc">WebSocketInterface</span><span class="p">(</span><span class="n">AbstractWebSocket</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implementation of the web socket endpoints.&quot;&quot;&quot;</span>
 
-    <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ROPT</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
-                              <span class="n">check</span><span class="p">:</span> <span class="n">EventFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROPT</span><span class="p">:</span>
-        <span class="o">...</span>
-
-    <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ROPT</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
-                              <span class="n">check</span><span class="p">:</span> <span class="n">EventFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ROPT</span><span class="p">]:</span>
-        <span class="o">...</span>
-
-    <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                              <span class="n">check</span><span class="p">:</span> <span class="n">EventFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReceiveOperation</span><span class="p">:</span>
-        <span class="o">...</span>
-
-    <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                              <span class="n">check</span><span class="p">:</span> <span class="n">EventFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReceiveOperation</span><span class="p">]:</span>
-        <span class="o">...</span>
-
-<div class="viewcode-block" id="AndesiteWebSocketInterface.wait_for_update"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.wait_for_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">wait_for_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">ReceiveOperation</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
-                              <span class="n">check</span><span class="p">:</span> <span class="n">EventFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ReceiveOperation</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Wait for an Andesite update which meets the requirements.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            op: Operation to wait for.</span>
-<span class="sd">                You can also pass a `ReceiveOperation` class which provides</span>
-<span class="sd">                better type constraints.</span>
-<span class="sd">            check: Additional checks to perform before accepting an Event.</span>
-<span class="sd">                The function is called with the `MsgReceiveEvent` and should</span>
-<span class="sd">                return a `bool`. If not set, all events with the correct op are</span>
-<span class="sd">                accepted.</span>
-<span class="sd">            guild_id: Guild id to check against.</span>
-<span class="sd">                If `None`, the guild id isn&#39;t checked.</span>
-<span class="sd">            timeout: Timeout in seconds to wait before aborting.</span>
-<span class="sd">                If you don&#39;t set this, the method will wait forever.</span>
-
-<span class="sd">        Events that were emitted by another client are ignored entirely.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            `ReceiveOperation` that was accepted.</span>
-<span class="sd">            `None` if it timed-out.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">ReceiveOperation</span><span class="p">):</span>
-            <span class="n">op</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">__op__</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Op must be a string, not {type(op)}!&quot;</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">_check</span><span class="p">(</span><span class="n">_event</span><span class="p">:</span> <span class="n">MsgReceiveEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">_event</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="n">op</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">guild_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">guild_id</span> <span class="o">!=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_event</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;guild_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wait_for_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ROPT</span><span class="p">],</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">ROPT</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">guild_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">predicate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">predicate</span><span class="p">(</span><span class="n">op</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">ReceiveOperation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># noinspection PyUnresolvedReferences</span>
+                    <span class="n">gid</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">guild_id</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
                     <span class="k">return</span> <span class="kc">False</span>
 
-                <span class="k">if</span> <span class="n">check</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="kc">True</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">check</span><span class="p">(</span><span class="n">_event</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="n">gid</span> <span class="o">==</span> <span class="n">guild_id</span>
 
-        <span class="n">event</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MsgReceiveEvent</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
-            <span class="n">MsgReceiveEvent</span><span class="p">,</span>
-            <span class="n">check</span><span class="o">=</span><span class="n">_check</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="n">loop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="ow">or</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+        <span class="n">fut</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_future</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">once</span><span class="p">(</span><span class="n">op_type</span><span class="p">,</span> <span class="n">fut</span><span class="o">.</span><span class="n">set_result</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">predicate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fut</span>
 
     <span class="c1"># noinspection PyOverloads</span>
     <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="n">Play</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
 
     <span class="nd">@overload</span>
@@ -506,7 +434,7 @@
                    <span class="n">no_replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.play"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.play">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Play</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+<div class="viewcode-block" id="WebSocketInterface.play"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.play">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
                    <span class="n">start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                    <span class="n">end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                    <span class="n">pause</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -529,7 +457,7 @@
 <span class="sd">            no_replace: if True and a track is already playing/paused,</span>
 <span class="sd">                this command is ignored (Default: False)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">Play</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">track</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">):</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">track</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">to_milli</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="n">to_milli</span><span class="p">(</span><span class="n">end</span><span class="p">),</span> <span class="n">pause</span><span class="o">=</span><span class="n">pause</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">(</span><span class="n">volume</span><span class="p">),</span>
@@ -538,7 +466,7 @@
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.pause"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.pause">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pause</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.pause"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.pause">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pause</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Pause a player.</span>
 
 <span class="sd">        If the player is already paused or unpaused,</span>
@@ -550,7 +478,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;pause&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pause</span><span class="o">=</span><span class="n">pause</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.stop"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.stop">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.stop"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.stop">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Stop a player.</span>
 
 <span class="sd">        Args:</span>
@@ -558,7 +486,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.seek"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.seek">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.seek"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.seek">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Seek to a position.</span>
 
 <span class="sd">        Args:</span>
@@ -568,7 +496,7 @@
         <span class="n">payload</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="n">to_milli</span><span class="p">(</span><span class="n">position</span><span class="p">))</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;seek&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.volume"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.volume">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.volume"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.volume">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Set a player&#39;s volume.</span>
 
 <span class="sd">        Args:</span>
@@ -579,7 +507,7 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
     <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Update</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
 
     <span class="nd">@overload</span>
@@ -587,14 +515,14 @@
                      <span class="n">pause</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                      <span class="n">position</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                      <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">filters</span><span class="p">:</span> <span class="n">FilterMapLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                     <span class="n">filters</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">FilterMapLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.update"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Update</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+<div class="viewcode-block" id="WebSocketInterface.update"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                      <span class="n">pause</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                      <span class="n">position</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                      <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">filters</span><span class="p">:</span> <span class="n">FilterMapLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                     <span class="n">filters</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">FilterMapLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send an update.</span>
 
 <span class="sd">        You may either provide the given keyword arguments,</span>
@@ -610,7 +538,7 @@
 <span class="sd">            volume: volume to set on the player</span>
 <span class="sd">            filters: configuration for the filters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">Update</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span><span class="p">):</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">filters</span><span class="p">:</span>
@@ -621,7 +549,7 @@
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;update&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.destroy"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.destroy">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.destroy"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.destroy">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Destroy a player.</span>
 
 <span class="sd">        Args:</span>
@@ -629,7 +557,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;destroy&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.mixer"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.mixer">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">mixer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">players</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Play</span><span class="p">,</span> <span class="n">Update</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.mixer"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.mixer">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">mixer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">players</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">Play</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Update</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Configure the mixer player.</span>
 
 <span class="sd">        Args:</span>
@@ -643,26 +571,26 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;mixer&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
     <span class="nd">@overload</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">filter_update</span><span class="p">:</span> <span class="n">FilterMap</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">filter_update</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">FilterMap</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
 
     <span class="nd">@overload</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                      <span class="n">equalizer</span><span class="p">:</span> <span class="n">Equalizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">karaoke</span><span class="p">:</span> <span class="n">Karaoke</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">timescale</span><span class="p">:</span> <span class="n">Timescale</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">tremolo</span><span class="p">:</span> <span class="n">Tremolo</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">vibrato</span><span class="p">:</span> <span class="n">Vibrato</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">volume</span><span class="p">:</span> <span class="n">VolumeFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                      <span class="n">equalizer</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Equalizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">karaoke</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Karaoke</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">timescale</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Timescale</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">tremolo</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Tremolo</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">vibrato</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Vibrato</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">volume</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">VolumeFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.filters"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.filters">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">filter_update</span><span class="p">:</span> <span class="n">FilterMap</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                      <span class="n">equalizer</span><span class="p">:</span> <span class="n">Equalizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">karaoke</span><span class="p">:</span> <span class="n">Karaoke</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">timescale</span><span class="p">:</span> <span class="n">Timescale</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">tremolo</span><span class="p">:</span> <span class="n">Tremolo</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">vibrato</span><span class="p">:</span> <span class="n">Vibrato</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">volume</span><span class="p">:</span> <span class="n">VolumeFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="WebSocketInterface.filters"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.filters">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">filter_update</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">FilterMap</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                      <span class="n">equalizer</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Equalizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">karaoke</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Karaoke</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">timescale</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Timescale</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">tremolo</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Tremolo</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">vibrato</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Vibrato</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">volume</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">VolumeFilter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                       <span class="o">**</span><span class="n">custom_filters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Configure the filters of a player.</span>
 
@@ -680,7 +608,7 @@
 <span class="sd">            **custom_filters: Ability to specify additional filters</span>
 <span class="sd">                that aren&#39;t supported by the library.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_update</span><span class="p">,</span> <span class="n">FilterUpdate</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_update</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">FilterUpdate</span><span class="p">):</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="n">filter_update</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span>
@@ -695,7 +623,7 @@
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;filters&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.get_player"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.get_player">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Player</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.get_player"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.get_player">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Player</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the player.</span>
 
 <span class="sd">        Args:</span>
@@ -705,13 +633,11 @@
 <span class="sd">            Player for the guild</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">player_update</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_update</span><span class="p">(</span><span class="n">PlayerUpdate</span><span class="p">,</span> <span class="n">guild_id</span><span class="o">=</span><span class="n">guild_id</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;get-player&quot;</span><span class="p">,</span> <span class="p">{}),</span>
-        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;get-player&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">player_update</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_receive</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">PlayerUpdate</span><span class="p">,</span> <span class="n">guild_id</span><span class="o">=</span><span class="n">guild_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">player_update</span><span class="o">.</span><span class="n">state</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.get_stats"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.get_stats">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Stats</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.get_stats"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.get_stats">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Stats</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the Andesite stats.</span>
 
 <span class="sd">        Args:</span>
@@ -721,10 +647,10 @@
 <span class="sd">            Statistics for the node</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;get-stats&quot;</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">stats_update</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_update</span><span class="p">(</span><span class="n">StatsUpdate</span><span class="p">)</span>
+        <span class="n">stats_update</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_receive</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">StatsUpdate</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">stats_update</span><span class="o">.</span><span class="n">stats</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.ping"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.ping">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.ping"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.ping">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ping the Andesite server.</span>
 
 <span class="sd">        Args:</span>
@@ -737,13 +663,14 @@
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_update</span><span class="p">(</span><span class="n">PongResponse</span><span class="p">,</span> <span class="n">guild_id</span><span class="o">=</span><span class="n">guild_id</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;ping&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_receive</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">PongResponse</span><span class="p">,</span> <span class="n">guild_id</span><span class="o">=</span><span class="n">guild_id</span><span class="p">),</span>
+            <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketInterface.voice_server_update"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketInterface.voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketInterface.voice_server_update"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketInterface.voice_server_update">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">voice_server_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Provide a voice server update.</span>
 
 <span class="sd">        Args:</span>
@@ -759,7 +686,7 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="s2">&quot;voice-server-update&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="AndesiteWebSocketBase"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketBase">[docs]</a><span class="k">class</span> <span class="nc">AndesiteWebSocketBase</span><span class="p">(</span><span class="n">AbstractAndesiteWebSocketClient</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketBase"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase">[docs]</a><span class="k">class</span> <span class="nc">WebSocketBase</span><span class="p">(</span><span class="n">AbstractWebSocketClient</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Client for the Andesite WebSocket handler.</span>
 
 <span class="sd">    Args:</span>
@@ -770,7 +697,7 @@
 <span class="sd">        password: Authorization for the Andesite node.</span>
 <span class="sd">            Set to `None` if the node doesn&#39;t have a password.</span>
 <span class="sd">        state: State handler to use. If `False` state handling is disabled.</span>
-<span class="sd">            `None` to use the default state handler (`AndesiteState`).</span>
+<span class="sd">            `None` to use the default state handler (`State`).</span>
 <span class="sd">        max_connect_attempts: See the `max_connect_attempts` attribute.</span>
 <span class="sd">        loop: Event loop to use for asynchronous operations.</span>
 <span class="sd">            If no loop is provided it is dynamically retrieved when</span>
@@ -781,7 +708,7 @@
 <span class="sd">    You can delete the `connection_id` property to disable this.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        `AbstractAndesiteWebSocketClient` for more details including a list</span>
+<span class="sd">        `AbstractWebSocketClient` for more details including a list</span>
 <span class="sd">        of events that are dispatched.</span>
 
 <span class="sd">    Attributes:</span>
@@ -798,50 +725,48 @@
 
     <span class="n">web_socket_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WebSocketClientProtocol</span><span class="p">]</span>
 
-    <span class="n">_closed</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">__closed</span><span class="p">:</span> <span class="nb">bool</span>
 
-    <span class="n">_ws_uri</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">_headers</span><span class="p">:</span> <span class="n">Headers</span>
-    <span class="n">_last_connection_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">__ws_uri</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">__headers</span><span class="p">:</span> <span class="n">Headers</span>
+    <span class="n">__last_connection_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
-    <span class="n">_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span>
+    <span class="n">__connect_lock</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span>
+    <span class="n">__message_queue</span><span class="p">:</span> <span class="n">Deque</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
-    <span class="n">_connect_lock</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span>
-    <span class="n">_message_queue</span><span class="p">:</span> <span class="n">Deque</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-
-    <span class="n">_read_loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span>
+    <span class="n">__read_loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span>
 
     <span class="n">_json_encoder</span><span class="p">:</span> <span class="n">JSONEncoder</span>
     <span class="n">_json_decoder</span><span class="p">:</span> <span class="n">JSONDecoder</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ws_uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URL</span><span class="p">],</span> <span class="n">user_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
-                 <span class="n">state</span><span class="p">:</span> <span class="n">StateArgumentType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">state</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">StateArgumentType</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">max_connect_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">EventTarget</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aiobservable</span><span class="o">.</span><span class="n">Observable</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span> <span class="o">=</span> <span class="n">loop</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="o">=</span> <span class="n">loop</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ws_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ws_uri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ws_uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ws_uri</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span> <span class="o">=</span> <span class="n">Headers</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__headers</span> <span class="o">=</span> <span class="n">Headers</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
         <span class="k">if</span> <span class="n">user_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">user_id</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_connection_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">max_connect_attempts</span> <span class="o">=</span> <span class="n">max_connect_attempts</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_message_queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__connect_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__message_queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__closed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__read_loop</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_json_encoder</span> <span class="o">=</span> <span class="n">JSONEncoder</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_json_decoder</span> <span class="o">=</span> <span class="n">JSONDecoder</span><span class="p">()</span>
@@ -849,11 +774,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(ws_uri=</span><span class="si">{self._ws_uri!r}</span><span class="s2">, user_id=</span><span class="si">{self.user_id!r}</span><span class="s2">, &quot;</span> \
-            <span class="n">f</span><span class="s2">&quot;password=[HIDDEN], state=</span><span class="si">{self.state!r}</span><span class="s2">, max_connect_attempts=</span><span class="si">{self.max_connect_attempts!r}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(ws_uri=</span><span class="si">{self.__ws_uri!r}</span><span class="s2">, user_id=</span><span class="si">{self.user_id!r}</span><span class="s2">, &quot;</span> \
+               <span class="n">f</span><span class="s2">&quot;password=[HIDDEN], state=</span><span class="si">{self.state!r}</span><span class="s2">, max_connect_attempts=</span><span class="si">{self.max_connect_attempts!r}</span><span class="s2">)&quot;</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(</span><span class="si">{self._ws_uri}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(</span><span class="si">{self.__ws_uri}</span><span class="s2">)&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">user_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
@@ -863,27 +788,30 @@
 
 <span class="sd">        You can set this property to a new user id.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;User-Id&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;User-Id&quot;</span><span class="p">)</span>
 
     <span class="nd">@user_id</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">user_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span><span class="p">[</span><span class="s2">&quot;User-Id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__headers</span><span class="p">[</span><span class="s2">&quot;User-Id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__closed</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">open</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">open</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connection_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_connection_id</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span>
 
     <span class="nd">@connection_id</span><span class="o">.</span><span class="n">deleter</span>
     <span class="k">def</span> <span class="nf">connection_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_connection_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">node_region</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -918,7 +846,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Already connected!&quot;</span><span class="p">)</span>
 
-        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__headers</span>
 
         <span class="k">if</span> <span class="s2">&quot;User-Id&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Trying to connect but user id unknown.</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -927,8 +855,8 @@
                            <span class="s2">&quot;set it before connecting!&quot;</span><span class="p">)</span>
 
         <span class="c1"># inject the connection id to resume previous connection</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_connection_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Andesite-Resume-Id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_connection_id</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Andesite-Resume-Id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
                 <span class="k">del</span> <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Andesite-Resume-Id&quot;</span><span class="p">]</span>
@@ -937,64 +865,64 @@
         <span class="n">max_attempts</span> <span class="o">=</span> <span class="n">max_attempts</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_connect_attempts</span>
 
         <span class="k">while</span> <span class="n">max_attempts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">attempt</span> <span class="o">&lt;=</span> <span class="n">max_attempts</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="k">await</span> <span class="n">try_connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ws_uri</span><span class="p">,</span> <span class="n">extra_headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="k">await</span> <span class="n">try_connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__ws_uri</span><span class="p">,</span> <span class="n">extra_headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">client</span><span class="p">:</span>
                 <span class="k">break</span>
 
             <span class="n">timeout</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">attempt</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Connection unsuccessful, trying again in </span><span class="si">{timeout}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
 
             <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t connect to </span><span class="si">{self._ws_uri}</span><span class="s2"> after </span><span class="si">{attempt}</span><span class="s2"> attempts&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__closed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t connect to </span><span class="si">{self.__ws_uri}</span><span class="s2"> after </span><span class="si">{attempt}</span><span class="s2"> attempts&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span> <span class="o">=</span> <span class="n">client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start_read_loop</span><span class="p">()</span>
 
-        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">WebSocketConnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">WebSocketConnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replay_message_queue</span><span class="p">()</span>
 
-<div class="viewcode-block" id="AndesiteWebSocketBase.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketBase.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketBase.connect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.connect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Client is closed and cannot be reused.&quot;</span><span class="p">)</span>
 
-        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_lock</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect_lock</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketBase.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketBase.disconnect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketBase.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.disconnect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop_read_loop</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;disconnect&quot;</span><span class="p">)</span>
-            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">WebSocketDisconnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span></div>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">WebSocketDisconnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketBase.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketBase.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketBase.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_message_queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__message_queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_id</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__closed</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="AndesiteWebSocketBase.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketBase.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketBase.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">True</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__closed</span> <span class="o">=</span> <span class="kc">True</span></div>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_replay_message_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Send all messages in the message queue.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_message_queue</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__message_queue</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Sending {len(self._message_queue)} queued messages&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Sending {len(self.__message_queue)} queued messages&quot;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_message_queue</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__message_queue</span><span class="p">:</span>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_message_queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__message_queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">_web_socket_reader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Internal web socket read loop.</span>
@@ -1003,12 +931,12 @@
 <span class="sd">        methods for controlling the reader.</span>
 
 <span class="sd">        See Also:</span>
-<span class="sd">            `AndesiteWebSocket._start_read_loop` to start the read loop.</span>
-<span class="sd">            `AndesiteWebSocket._stop_read_loop` to stop the read loop.</span>
+<span class="sd">            `WebSocket._start_read_loop` to start the read loop.</span>
+<span class="sd">            `WebSocket._stop_read_loop` to stop the read loop.</span>
 
 <span class="sd">        Notes:</span>
-<span class="sd">            The read loop is automatically managed by the `AndesiteWebSocket.connect`</span>
-<span class="sd">            and `AndesiteWebSocket.disconnect` methods.</span>
+<span class="sd">            The read loop is automatically managed by the `WebSocket.connect`</span>
+<span class="sd">            and `WebSocket.disconnect` methods.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -1017,7 +945,7 @@
                 <span class="k">break</span>
             <span class="k">except</span> <span class="n">ConnectionClosed</span><span class="p">:</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Disconnected from websocket, trying to reconnect </span><span class="si">{self}</span><span class="s2">!&quot;</span><span class="p">)</span>
-                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">WebSocketDisconnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">WebSocketDisconnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
                 <span class="k">continue</span>
 
@@ -1035,7 +963,7 @@
                             <span class="n">f</span><span class="s2">&quot;Expecting object, received type {type(data).__name__}: </span><span class="si">{data}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
 
-            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">RawMsgReceiveEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">RawMsgReceiveEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">op</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;op&quot;</span><span class="p">)</span>
@@ -1044,54 +972,52 @@
                 <span class="k">continue</span>
 
             <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
-            <span class="bp">cls</span> <span class="o">=</span> <span class="n">get_update_model</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">event_type</span><span class="p">)</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">get_update_model</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">event_type</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Ignoring message with unknown op </span><span class="se">\&quot;</span><span class="si">{op}</span><span class="se">\&quot;</span><span class="s2"> in </span><span class="si">{self}</span><span class="s2">: </span><span class="si">{data}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">message</span><span class="p">:</span> <span class="n">ReceiveOperation</span> <span class="o">=</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="n">message</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">ReceiveOperation</span> <span class="o">=</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t parse message in </span><span class="si">{self}</span><span class="s2"> from Andesite node to </span><span class="si">{cls}</span><span class="s2"> (</span><span class="si">{e}</span><span class="s2">): </span><span class="si">{data}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
 
             <span class="n">message</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="bp">self</span>
 
-            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">MsgReceiveEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
-
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">ConnectionUpdate</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">ConnectionUpdate</span><span class="p">):</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;received connection update, setting last connection id in </span><span class="si">{self}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_last_connection_id</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">id</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">NamedEvent</span><span class="p">):</span>
-                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">id</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">_handle_andesite_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">_handle_andesite_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_start_read_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Start the web socket reader.</span>
 
 <span class="sd">        If the reader is already running, this is a no-op.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_loop</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_loop</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_web_socket_reader</span><span class="p">(),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__read_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_web_socket_reader</span><span class="p">(),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_stop_read_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Stop the web socket reader.</span>
 
 <span class="sd">        If the reader is already stopped, this is a no-op.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_loop</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_loop</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__read_loop</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
 
-<div class="viewcode-block" id="AndesiteWebSocketBase.send"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocketBase.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebSocketBase.send"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.send">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">guildId</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">guild_id</span><span class="p">),</span> <span class="n">op</span><span class="o">=</span><span class="n">op</span><span class="p">)</span>
 
-        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">RawMsgSendEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">payload</span><span class="p">))</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">RawMsgSendEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">payload</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;sending payload: </span><span class="si">{payload}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1112,16 +1038,12 @@
                 <span class="k">return</span>
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Not connected, adding message to queue.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_message_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__message_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="AndesiteWebSocket"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteWebSocket">[docs]</a><span class="k">class</span> <span class="nc">AndesiteWebSocket</span><span class="p">(</span><span class="n">AndesiteWebSocketBase</span><span class="p">,</span> <span class="n">EventTarget</span><span class="p">,</span> <span class="n">AndesiteWebSocketInterface</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Client for the Andesite WebSocket endpoints.</span>
-
-<span class="sd">    See Also:</span>
-<span class="sd">        `AndesiteWebSocketBase` for details on the constructor and implementation.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="WebSocket"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocket">[docs]</a><span class="k">class</span> <span class="nc">WebSocket</span><span class="p">(</span><span class="n">WebSocketBase</span><span class="p">,</span> <span class="n">aiobservable</span><span class="o">.</span><span class="n">Observable</span><span class="p">,</span> <span class="n">WebSocketInterface</span><span class="p">):</span>
+    <span class="o">...</span></div>
 </pre></div>
 
           </div>
@@ -1145,6 +1067,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -1182,7 +1105,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

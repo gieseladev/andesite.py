@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>lettercase.tools &#8212; andesite.py 0.1.2 documentation</title>
+    <title>lettercase.tools &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -34,123 +34,107 @@
   <h1>Source code for lettercase.tools</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Utilities for making conversion easier.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">UserDict</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">suppress</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">,</span> \
+    <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">.converters</span> <span class="k">import</span> <span class="n">ConverterType</span><span class="p">,</span> <span class="n">get_converter</span>
-<span class="kn">from</span> <span class="nn">.letter_case</span> <span class="k">import</span> <span class="n">LetterCaseType</span><span class="p">,</span> <span class="n">get_letter_case</span>
+<span class="kn">from</span> <span class="nn">.letter_case</span> <span class="k">import</span> <span class="n">LetterCase</span><span class="p">,</span> <span class="n">LetterCaseType</span><span class="p">,</span> <span class="n">get_letter_case</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ConversionMemo&quot;</span><span class="p">,</span> <span class="s2">&quot;memo_converter&quot;</span><span class="p">,</span> <span class="s2">&quot;is_memo_converter&quot;</span><span class="p">,</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ConversionMemo&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;MemoType&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;memo_converter&quot;</span><span class="p">,</span> <span class="s2">&quot;is_memo_converter&quot;</span><span class="p">,</span>
            <span class="s2">&quot;convert_iter_items&quot;</span><span class="p">,</span>
            <span class="s2">&quot;mut_convert_items&quot;</span><span class="p">,</span> <span class="s2">&quot;mut_convert_keys&quot;</span><span class="p">]</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;K&quot;</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">ConversionMemo</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Mapping specialised for converter memoization.</span>
+<span class="k">class</span> <span class="nc">_InverseMappingWrapper</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">]):</span>
+    <span class="n">_forward</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">]</span>
+    <span class="n">_backward</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">V</span><span class="p">,</span> <span class="n">K</span><span class="p">]</span>
 
-<span class="sd">    This is a two-way mapping so adding key: value will also add value: key.</span>
-<span class="sd">    The consequence of this is that the `keys` and `values` methods will return</span>
-<span class="sd">    identical sets.</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">],</span> <span class="n">backward</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">V</span><span class="p">,</span> <span class="n">K</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">forward</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">backward</span><span class="p">),</span> <span class="s2">&quot;lengths need to match&quot;</span>
 
-<span class="sd">    The getitem method is the same as with any normal dictionary, apart from it being two-way, but</span>
-<span class="sd">    the `get` method automatically converts the text if it doesn&#39;t already exist.</span>
-<span class="sd">    This can also be achieved manually using the `convert` method.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span> <span class="o">=</span> <span class="n">forward</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backward</span> <span class="o">=</span> <span class="n">backward</span>
 
-<span class="sd">    Since this is a two-way mapping, setting a key to a value will also set the value to the key</span>
-<span class="sd">    and deleting a key will also remove the converted key.</span>
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backward</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
 
-<span class="sd">    Attributes:</span>
-<span class="sd">        from_case (LetterCase): First letter case</span>
-<span class="sd">        to_case (LetterCase): Second letter case</span>
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backward</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        from_case (LetterCaseType): First letter case</span>
-<span class="sd">        to_case (LetterCaseType): Second letter case</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">V</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 
-<span class="sd">    Notes:</span>
-<span class="sd">        The cases need to be specified because the memo cannot handle more than two cases</span>
-<span class="sd">        at once.</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">)</span>
 
-<span class="sd">        The order of the cases in the constructor matters! The order determines how</span>
-<span class="sd">        the `direction` parameter is interpreted.</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">K</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">)</span>
+
+
+<span class="n">TwoWayMemoTuple</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+
+
+<span class="k">class</span> <span class="nc">ConversionMemo</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Specialised memoization class which keeps memo maps.</span>
+
+<span class="sd">    The advantage of using this over a normal `dict` is that it automatically</span>
+<span class="sd">    &quot;learns&quot; the reverse operation of a conversion (ex: &quot;a_b&quot; -&gt; &quot;aB&quot; also</span>
+<span class="sd">    learns &quot;aB&quot; -&gt; &quot;a_b&quot;).</span>
+
+<span class="sd">    These results are stored completely separate though, to avoid accidentally</span>
+<span class="sd">    converting the wrong way (if a text is already in the right case but because</span>
+<span class="sd">    of the map it&#39;s flipped).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">,</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">from_case</span> <span class="o">=</span> <span class="n">get_letter_case</span><span class="p">(</span><span class="n">from_case</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_case</span> <span class="o">=</span> <span class="n">get_letter_case</span><span class="p">(</span><span class="n">to_case</span><span class="p">)</span>
+    <span class="n">_memos</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="n">LetterCase</span><span class="p">],</span> <span class="n">TwoWayMemoTuple</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">converted_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">setter</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span>
-        <span class="n">setter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">converted_text</span><span class="p">)</span>
-        <span class="n">setter</span><span class="p">(</span><span class="n">converted_text</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memos</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">converted_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="n">deleter</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__delitem__</span>
-        <span class="n">deleter</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="n">deleter</span><span class="p">(</span><span class="n">converted_text</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_get_memo_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_case</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LetterCase</span><span class="p">],</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TwoWayMemoTuple</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">((</span><span class="n">from_case</span><span class="p">,</span> <span class="n">to_case</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">memo_tuple</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memos</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">memo_tuple</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memos</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">({},</span> <span class="p">{})</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">forward_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConverterType</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get the converter which converts from `from_case` to `to_case`.</span>
+        <span class="n">first_case</span><span class="p">,</span> <span class="n">second_case</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">if</span> <span class="n">first_case</span> <span class="ow">is</span> <span class="n">from_case</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">memo_tuple</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">memo_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">memo_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="sd">        See Also:</span>
-<span class="sd">            `forward_converter`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get_converter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_case</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_case</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">backward_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConverterType</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Get the converter which converts from `to_case` to `from_case`.</span>
-
-<span class="sd">        See Also:</span>
-<span class="sd">            `forward_converter`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">get_converter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_case</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_case</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Convert a text and add it to the memo.</span>
+    <span class="k">def</span> <span class="nf">get_memo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_case</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LetterCaseType</span><span class="p">],</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the memo map which maps texts from `from_case` to the converted text in `to_case`</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            text: Text to convert</span>
-<span class="sd">            direction: `True` to use `forward_converter`,</span>
-<span class="sd">                `False` for `backward_converter`</span>
+<span class="sd">            from_case: Case to convert from. Can be `None`.</span>
+<span class="sd">            to_case: Case to convert to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A mutable mapping which is used to store `from_case` -&gt; `to_case`</span>
+<span class="sd">            conversions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">text</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">converter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_converter</span> <span class="k">if</span> <span class="n">direction</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">backward_converter</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">text</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">from_case</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">from_case</span> <span class="o">=</span> <span class="n">get_letter_case</span><span class="p">(</span><span class="n">from_case</span><span class="p">)</span>
+        <span class="n">to_case</span> <span class="o">=</span> <span class="n">get_letter_case</span><span class="p">(</span><span class="n">to_case</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">value</span>
+        <span class="n">forward</span><span class="p">,</span> <span class="n">backward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_memo_tuple</span><span class="p">(</span><span class="n">from_case</span><span class="p">,</span> <span class="n">to_case</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_InverseMappingWrapper</span><span class="p">(</span><span class="n">forward</span><span class="p">,</span> <span class="n">backward</span><span class="p">)</span>
 
-    <span class="c1"># noinspection PyMethodOverriding</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;Get the converted text.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            text: Text to get the converted text for.</span>
-<span class="sd">            direction: See `convert` for an explanation of this keyword argument.</span>
-<span class="sd">                If you pass `None` instead of a `bool`, the text will not be converted</span>
-<span class="sd">                if it does not exist and the `default` value is used.</span>
-<span class="sd">            default: Value to return when the text is not</span>
-<span class="sd">                in the memo and `convert` is `False`.</span>
-<span class="sd">                If `convert` is `True`, this value will never</span>
-<span class="sd">                be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">text</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">direction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">default</span>
-
+<span class="n">MemoType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ConversionMemo</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
 
 <span class="n">MEMO_CONVERTER_FLAG</span> <span class="o">=</span> <span class="s2">&quot;__memoized__&quot;</span>
 
@@ -203,7 +187,7 @@
 
 
 <span class="k">def</span> <span class="nf">_get_converter</span><span class="p">(</span><span class="n">from_case</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LetterCaseType</span><span class="p">],</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">,</span>
-                   <span class="n">memo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">ConverterType</span><span class="p">:</span>
+                   <span class="n">memo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MemoType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ConverterType</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Internal utility function to get a patched converter.</span>
 
 <span class="sd">    Raises:</span>
@@ -219,13 +203,16 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">memo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">memo</span><span class="p">,</span> <span class="n">ConversionMemo</span><span class="p">):</span>
+            <span class="n">memo</span> <span class="o">=</span> <span class="n">memo</span><span class="o">.</span><span class="n">get_memo</span><span class="p">(</span><span class="n">from_case</span><span class="p">,</span> <span class="n">to_case</span><span class="p">)</span>
+
         <span class="n">converter</span> <span class="o">=</span> <span class="n">memo_converter</span><span class="p">(</span><span class="n">converter</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">converter</span>
 
 
 <span class="k">def</span> <span class="nf">convert_iter_items</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">from_case</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LetterCaseType</span><span class="p">],</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                       <span class="n">memo</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+                       <span class="n">memo</span><span class="p">:</span> <span class="n">MemoType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Patch an iterable so that all items are converted to the case.</span>
 
 <span class="sd">    Args:</span>
@@ -239,7 +226,7 @@
 
 
 <span class="k">def</span> <span class="nf">mut_convert_items</span><span class="p">(</span><span class="n">seq</span><span class="p">:</span> <span class="n">MutableSequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">from_case</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LetterCaseType</span><span class="p">],</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                      <span class="n">memo</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                      <span class="n">memo</span><span class="p">:</span> <span class="n">MemoType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Convert all items in a mutable sequence to the given case.&quot;&quot;&quot;</span>
     <span class="n">converter</span> <span class="o">=</span> <span class="n">_get_converter</span><span class="p">(</span><span class="n">from_case</span><span class="p">,</span> <span class="n">to_case</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
 
@@ -250,7 +237,7 @@
 
 
 <span class="k">def</span> <span class="nf">mut_convert_keys</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">from_case</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LetterCaseType</span><span class="p">],</span> <span class="n">to_case</span><span class="p">:</span> <span class="n">LetterCaseType</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                     <span class="n">memo</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                     <span class="n">memo</span><span class="p">:</span> <span class="n">MemoType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Convert all keys in a mutable mapping to the given case.</span>
 
 <span class="sd">    Args:</span>
@@ -290,6 +277,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -327,7 +315,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

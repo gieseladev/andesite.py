@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.models.send_operations &#8212; andesite.py 0.1.2 documentation</title>
+    <title>andesite.models.send_operations &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -34,7 +34,7 @@
   <h1>Source code for andesite.models.send_operations</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Sendable operations to Andesite.</span>
 
-<span class="sd">These operations can be sent using `AbstractAndesiteWebSocket.send_operation`.</span>
+<span class="sd">These operations can be sent using `AbstractWebSocket.send_operation`.</span>
 
 <span class="sd">See Also:</span>
 <span class="sd">    `andesite.models.receive_operations` for operations sent by Andesite.</span>
@@ -51,20 +51,22 @@
     <span class="n">map_convert_values</span><span class="p">,</span> <span class="n">map_convert_values_from_milli</span><span class="p">,</span> <span class="n">map_convert_values_to_milli</span><span class="p">,</span> <span class="n">to_centi</span><span class="p">,</span> <span class="n">to_milli</span>
 <span class="kn">from</span> <span class="nn">.filters</span> <span class="k">import</span> <span class="n">FilterMap</span><span class="p">,</span> <span class="n">FilterMapLike</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SendOperation&quot;</span><span class="p">,</span> <span class="s2">&quot;VoiceServerUpdate&quot;</span><span class="p">,</span> <span class="s2">&quot;Play&quot;</span><span class="p">,</span> <span class="s2">&quot;Pause&quot;</span><span class="p">,</span> <span class="s2">&quot;Seek&quot;</span><span class="p">,</span> <span class="s2">&quot;Volume&quot;</span><span class="p">,</span> <span class="s2">&quot;FilterUpdate&quot;</span><span class="p">,</span> <span class="s2">&quot;Update&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerUpdate&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SendOperation&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;VoiceServerUpdate&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Play&quot;</span><span class="p">,</span> <span class="s2">&quot;Pause&quot;</span><span class="p">,</span> <span class="s2">&quot;Seek&quot;</span><span class="p">,</span> <span class="s2">&quot;Volume&quot;</span><span class="p">,</span> <span class="s2">&quot;FilterUpdate&quot;</span><span class="p">,</span> <span class="s2">&quot;Update&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerUpdate&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="SendOperation"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.SendOperation">[docs]</a><span class="k">class</span> <span class="nc">SendOperation</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="SendOperation"><a class="viewcode-back" href="../../../reference/models.html#andesite.SendOperation">[docs]</a><span class="k">class</span> <span class="nc">SendOperation</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;SendOperation is a model that can be passed as a payload to the</span>
-<span class="sd">    `AndesiteWebSocket` client.</span>
+<span class="sd">    `WebSocket` client.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        `AndesiteWebSocket.send_operation`</span>
+<span class="sd">        `WebSocket.send_operation`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__op__</span><span class="p">:</span> <span class="nb">str</span></div>
 
 
-<div class="viewcode-block" id="VoiceServerUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.VoiceServerUpdate">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="VoiceServerUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.VoiceServerUpdate">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">VoiceServerUpdate</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation providing a voice server update.</span>
 
@@ -78,7 +80,7 @@
     <span class="n">event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="Play"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.Play">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Play"><a class="viewcode-back" href="../../../reference/models.html#andesite.Play">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Play</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation playing a track.</span>
 
@@ -110,7 +112,7 @@
         <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Pause"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.Pause">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Pause"><a class="viewcode-back" href="../../../reference/models.html#andesite.Pause">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Pause</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation pausing the player.</span>
 
@@ -122,7 +124,7 @@
     <span class="n">pause</span><span class="p">:</span> <span class="nb">bool</span></div>
 
 
-<div class="viewcode-block" id="Seek"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.Seek">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Seek"><a class="viewcode-back" href="../../../reference/models.html#andesite.Seek">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Seek</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation seeking the current track.</span>
 
@@ -142,7 +144,7 @@
         <span class="n">map_convert_values_to_milli</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Volume"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.Volume">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Volume"><a class="viewcode-back" href="../../../reference/models.html#andesite.Volume">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Volume</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation adjusting the volume.</span>
 
@@ -162,7 +164,7 @@
         <span class="n">map_convert_values</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">to_centi</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="FilterUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.FilterUpdate">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="FilterUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.FilterUpdate">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">FilterUpdate</span><span class="p">(</span><span class="n">FilterMap</span><span class="p">,</span> <span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation adjusting the filter settings.</span>
 
@@ -175,7 +177,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Update"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.Update">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Update"><a class="viewcode-back" href="../../../reference/models.html#andesite.Update">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Update</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation providing an update for the current track.</span>
 
@@ -205,7 +207,7 @@
 <span class="n">MixerPlayerUpdateMap</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Play</span><span class="p">,</span> <span class="n">Update</span><span class="p">]]</span>
 
 
-<div class="viewcode-block" id="MixerUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.send_operations.MixerUpdate">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="MixerUpdate"><a class="viewcode-back" href="../../../reference/models.html#andesite.MixerUpdate">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">MixerUpdate</span><span class="p">(</span><span class="n">SendOperation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Operation adjusting the mixer players.</span>
 
@@ -251,6 +253,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -288,7 +291,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

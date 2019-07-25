@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.models.filters &#8212; andesite.py 0.1.2 documentation</title>
+    <title>andesite.models.filters &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -107,7 +107,7 @@
     <span class="n">__filter_name__</span><span class="p">:</span> <span class="nb">str</span>
 
 
-<div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Filter">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.Filter">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">_Filter</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Audio filter for Andesite.</span>
 
@@ -123,7 +123,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="Filter.reset"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Filter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Filter.reset"><a class="viewcode-back" href="../../../reference/models.html#andesite.Filter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Reset the filter settings back to their default values.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
@@ -137,7 +137,7 @@
             <span class="k">return</span> <span class="n">convert_to_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="EqualizerBand"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="EqualizerBand"><a class="viewcode-back" href="../../../reference/models.html#andesite.EqualizerBand">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">EqualizerBand</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -148,7 +148,7 @@
     <span class="n">band</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-<div class="viewcode-block" id="EqualizerBand.set_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_band">[docs]</a>    <span class="k">def</span> <span class="nf">set_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="EqualizerBand.set_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.EqualizerBand.set_band">[docs]</a>    <span class="k">def</span> <span class="nf">set_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`band` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -160,7 +160,7 @@
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low_inc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">band</span> <span class="o">=</span> <span class="n">value</span></div>
 
-<div class="viewcode-block" id="EqualizerBand.set_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.EqualizerBand.set_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="EqualizerBand.set_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.EqualizerBand.set_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`gain` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -173,7 +173,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
-<div class="viewcode-block" id="Equalizer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Equalizer"><a class="viewcode-back" href="../../../reference/models.html#andesite.Equalizer">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Equalizer</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -207,7 +207,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gain</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bands</span><span class="p">):</span>
             <span class="n">bands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">EqualizerBand</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">gain</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Equalizer.from_gains"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.from_gains">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Equalizer.from_gains"><a class="viewcode-back" href="../../../reference/models.html#andesite.Equalizer.from_gains">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_gains</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gains</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Equalizer&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Create an `Equalizer` filter from a list of gains.</span>
 
@@ -230,7 +230,7 @@
     <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]:</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="Equalizer.get_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.get_band">[docs]</a>    <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]:</span>
+<div class="viewcode-block" id="Equalizer.get_band"><a class="viewcode-back" href="../../../reference/models.html#andesite.Equalizer.get_band">[docs]</a>    <span class="k">def</span> <span class="nf">get_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EqualizerBand</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the specified band from the bands list.</span>
 
 <span class="sd">        If the band doesn&#39;t exist it is created.</span>
@@ -253,7 +253,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">band</span></div>
 
-<div class="viewcode-block" id="Equalizer.get_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.get_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="Equalizer.get_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.Equalizer.get_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the gain of a band.</span>
 
 <span class="sd">        Returns:</span>
@@ -265,7 +265,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Equalizer.set_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.set_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Equalizer.set_band_gain"><a class="viewcode-back" href="../../../reference/models.html#andesite.Equalizer.set_band_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_band_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Set the gain of a band to the specified value.</span>
 
 <span class="sd">        If the band does not exist it is created.</span>
@@ -287,7 +287,7 @@
     <span class="k">def</span> <span class="nf">iter_band_gains</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="Equalizer.iter_band_gains"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Equalizer.iter_band_gains">[docs]</a>    <span class="k">def</span> <span class="nf">iter_band_gains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<div class="viewcode-block" id="Equalizer.iter_band_gains"><a class="viewcode-back" href="../../../reference/models.html#andesite.Equalizer.iter_band_gains">[docs]</a>    <span class="k">def</span> <span class="nf">iter_band_gains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;Get a list of all the bands&#39; gains in order.</span>
 
 <span class="sd">        Args:</span>
@@ -309,7 +309,7 @@
         <span class="k">return</span> <span class="n">gains</span></div></div>
 
 
-<div class="viewcode-block" id="Karaoke"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Karaoke">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Karaoke"><a class="viewcode-back" href="../../../reference/models.html#andesite.Karaoke">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Karaoke</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -327,7 +327,7 @@
     <span class="n">filter_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">220.0</span></div>
 
 
-<div class="viewcode-block" id="Timescale"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Timescale"><a class="viewcode-back" href="../../../reference/models.html#andesite.Timescale">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Timescale</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -342,7 +342,7 @@
     <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="n">rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
 
-<div class="viewcode-block" id="Timescale.set_speed"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Timescale.set_speed"><a class="viewcode-back" href="../../../reference/models.html#andesite.Timescale.set_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`speed` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -354,7 +354,7 @@
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="n">value</span></div>
 
-<div class="viewcode-block" id="Timescale.set_pitch"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_pitch">[docs]</a>    <span class="k">def</span> <span class="nf">set_pitch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Timescale.set_pitch"><a class="viewcode-back" href="../../../reference/models.html#andesite.Timescale.set_pitch">[docs]</a>    <span class="k">def</span> <span class="nf">set_pitch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`pitch` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -366,7 +366,7 @@
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pitch</span> <span class="o">=</span> <span class="n">value</span></div>
 
-<div class="viewcode-block" id="Timescale.set_rate"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Timescale.set_rate">[docs]</a>    <span class="k">def</span> <span class="nf">set_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Timescale.set_rate"><a class="viewcode-back" href="../../../reference/models.html#andesite.Timescale.set_rate">[docs]</a>    <span class="k">def</span> <span class="nf">set_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`rate` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -379,7 +379,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rate</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
-<div class="viewcode-block" id="Tremolo"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Tremolo"><a class="viewcode-back" href="../../../reference/models.html#andesite.Tremolo">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Tremolo</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -392,7 +392,7 @@
     <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
 
-<div class="viewcode-block" id="Tremolo.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Tremolo.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.Tremolo.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`frequency` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -404,7 +404,7 @@
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
 
-<div class="viewcode-block" id="Tremolo.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Tremolo.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Tremolo.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.Tremolo.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`depth` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -417,7 +417,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
-<div class="viewcode-block" id="Vibrato"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Vibrato"><a class="viewcode-back" href="../../../reference/models.html#andesite.Vibrato">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Vibrato</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -430,7 +430,7 @@
     <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
 
-<div class="viewcode-block" id="Vibrato.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Vibrato.set_frequency"><a class="viewcode-back" href="../../../reference/models.html#andesite.Vibrato.set_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">set_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`frequency` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -442,7 +442,7 @@
         <span class="n">_ensure_in_interval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_inc</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">value</span></div>
 
-<div class="viewcode-block" id="Vibrato.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.Vibrato.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Vibrato.set_depth"><a class="viewcode-back" href="../../../reference/models.html#andesite.Vibrato.set_depth">[docs]</a>    <span class="k">def</span> <span class="nf">set_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Setter for :py:attr:`depth` which performs a value check.</span>
 
 <span class="sd">        Args:</span>
@@ -455,7 +455,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">value</span></div></div>
 
 
-<div class="viewcode-block" id="VolumeFilter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.VolumeFilter">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="VolumeFilter"><a class="viewcode-back" href="../../../reference/models.html#andesite.VolumeFilter">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">VolumeFilter</span><span class="p">(</span><span class="n">Filter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Volume filter settings.</span>
 
@@ -472,7 +472,7 @@
                                           <span class="n">_FILTERS</span><span class="p">}</span>
 
 
-<div class="viewcode-block" id="get_filter_model"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.get_filter_model">[docs]</a><span class="k">def</span> <span class="nf">get_filter_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]:</span>
+<div class="viewcode-block" id="get_filter_model"><a class="viewcode-back" href="../../../reference/models.html#andesite.get_filter_model">[docs]</a><span class="k">def</span> <span class="nf">get_filter_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Filter</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;Get the corresponding filter model for the given name.</span>
 
 <span class="sd">    If no model for the name exists, `None` is returned.</span>
@@ -486,7 +486,7 @@
 <span class="n">FT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;FT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Filter</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="FilterMap"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="FilterMap"><a class="viewcode-back" href="../../../reference/models.html#andesite.FilterMap">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">FilterMap</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Custom mapping type for filters.</span>
 
@@ -535,7 +535,7 @@
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-<div class="viewcode-block" id="FilterMap.get_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap.get_filter">[docs]</a>    <span class="k">def</span> <span class="nf">get_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">FT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">FT</span><span class="p">:</span>
+<div class="viewcode-block" id="FilterMap.get_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.FilterMap.get_filter">[docs]</a>    <span class="k">def</span> <span class="nf">get_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">FT</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">FT</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the filter with the name.</span>
 
 <span class="sd">        Args:</span>
@@ -549,7 +549,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Expected </span><span class="si">{cls}</span><span class="s2">, found {type(value)!r}: </span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -585,7 +585,7 @@
         <span class="sd">&quot;&quot;&quot;Volume filter settings&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">(</span><span class="s2">&quot;equalizer&quot;</span><span class="p">,</span> <span class="n">VolumeFilter</span><span class="p">)</span>
 
-<div class="viewcode-block" id="FilterMap.set_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.filters.FilterMap.set_filter">[docs]</a>    <span class="k">def</span> <span class="nf">set_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">andesite_filter</span><span class="p">:</span> <span class="n">Filter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="FilterMap.set_filter"><a class="viewcode-back" href="../../../reference/models.html#andesite.FilterMap.set_filter">[docs]</a>    <span class="k">def</span> <span class="nf">set_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">andesite_filter</span><span class="p">:</span> <span class="n">Filter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Set the value for a filter.</span>
 
 <span class="sd">        Args:</span>
@@ -636,6 +636,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -673,7 +674,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

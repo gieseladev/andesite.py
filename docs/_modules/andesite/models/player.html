@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.models.player &#8212; andesite.py 0.1.2 documentation</title>
+    <title>andesite.models.player &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -51,7 +51,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PlayerFrameStats&quot;</span><span class="p">,</span> <span class="s2">&quot;BasePlayer&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerPlayer&quot;</span><span class="p">,</span> <span class="s2">&quot;MixerMap&quot;</span><span class="p">,</span> <span class="s2">&quot;Player&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="PlayerFrameStats"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.PlayerFrameStats">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="PlayerFrameStats"><a class="viewcode-back" href="../../../reference/models.html#andesite.PlayerFrameStats">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">PlayerFrameStats</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Frame statistics of a player.&quot;&quot;&quot;</span>
     <span class="n">loss</span><span class="p">:</span> <span class="nb">int</span>
@@ -59,7 +59,7 @@
     <span class="n">usable</span><span class="p">:</span> <span class="nb">bool</span></div>
 
 
-<div class="viewcode-block" id="BasePlayer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.BasePlayer">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="BasePlayer"><a class="viewcode-back" href="../../../reference/models.html#andesite.BasePlayer">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">BasePlayer</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract class for Andesite players.</span>
 
@@ -116,7 +116,7 @@
         <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_milli</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="MixerPlayer"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.MixerPlayer">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="MixerPlayer"><a class="viewcode-back" href="../../../reference/models.html#andesite.MixerPlayer">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">MixerPlayer</span><span class="p">(</span><span class="n">BasePlayer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Player used by `Player` as a mixer player.</span>
 
@@ -129,7 +129,7 @@
 <span class="n">MixerMap</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MixerPlayer</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="Player"><a class="viewcode-back" href="../../../reference/models.html#andesite.models.player.Player">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Player"><a class="viewcode-back" href="../../../reference/models.html#andesite.Player">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Player</span><span class="p">(</span><span class="n">BasePlayer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -168,6 +168,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -205,7 +206,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

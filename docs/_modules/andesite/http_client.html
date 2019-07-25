@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.http_client &#8212; andesite.py 0.1.2 documentation</title>
+    <title>andesite.http_client &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -36,22 +36,23 @@
 
 <span class="sd">There are multiple client classes in this module.</span>
 <span class="sd">If you just want to use Andesite&#39;s HTTP endpoints,</span>
-<span class="sd">use `AndesiteHTTP`.</span>
+<span class="sd">use `HTTP`.</span>
 
-<span class="sd">`AndesiteHTTPInterface` contains the implementation</span>
+<span class="sd">`HTTPInterface` contains the implementation</span>
 <span class="sd">of the endpoint methods. It&#39;s an abstract base class,</span>
 <span class="sd">if you want to inherit its methods you need to implement</span>
-<span class="sd">`AbstractAndesiteHTTP`.</span>
+<span class="sd">`AbstractHTTP`.</span>
 
-<span class="sd">Finally there is `AndesiteHTTPBase` which is just the default</span>
-<span class="sd">implementation of `AbstractAndesiteHTTP`. `AndesiteHTTP` is</span>
-<span class="sd">just a combination of `AndesiteHTTPBase` and `AndesiteHTTPInterface`.</span>
+<span class="sd">Finally there is `HTTPBase` which is just the default</span>
+<span class="sd">implementation of `AbstractHTTP`. `HTTP` is</span>
+<span class="sd">just a combination of `HTTPBase` and `HTTPInterface`.</span>
 
 
 <span class="sd">Attributes:</span>
-<span class="sd">    USER_AGENT (str): User agent used by the `AndesiteHTTP` client.</span>
-<span class="sd">    AndesiteSearcherType (Union[AndesiteSearcher, str]): (Type alias) Types supported by `get_andesite_searcher`</span>
+<span class="sd">    USER_AGENT (str): User agent used by the `HTTP` client.</span>
+<span class="sd">    SearcherType (Union[Searcher, str]): (Type alias) Types supported by `get_searcher`</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -61,21 +62,20 @@
 <span class="kn">from</span> <span class="nn">aiohttp</span> <span class="k">import</span> <span class="n">ClientSession</span>
 <span class="kn">from</span> <span class="nn">yarl</span> <span class="k">import</span> <span class="n">URL</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">__version__</span>
-<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="n">LoadedTrack</span><span class="p">,</span> <span class="n">Stats</span><span class="p">,</span> <span class="n">TrackInfo</span>
+<span class="kn">import</span> <span class="nn">andesite</span>
 <span class="kn">from</span> <span class="nn">.transform</span> <span class="k">import</span> <span class="n">build_from_raw</span><span class="p">,</span> <span class="n">seq_build_all_items_from_raw</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USER_AGENT&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteHTTPError&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AndesiteSearcher&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteSearcherType&quot;</span><span class="p">,</span> <span class="s2">&quot;get_andesite_searcher&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AbstractAndesiteHTTP&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteHTTPInterface&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;AndesiteHTTPBase&quot;</span><span class="p">,</span> <span class="s2">&quot;AndesiteHTTP&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USER_AGENT&quot;</span><span class="p">,</span> <span class="s2">&quot;HTTPError&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Searcher&quot;</span><span class="p">,</span> <span class="s2">&quot;SearcherType&quot;</span><span class="p">,</span> <span class="s2">&quot;get_searcher&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;AbstractHTTP&quot;</span><span class="p">,</span> <span class="s2">&quot;HTTPInterface&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;HTTPBase&quot;</span><span class="p">,</span> <span class="s2">&quot;HTTP&quot;</span><span class="p">]</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">USER_AGENT</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;andesite.py/</span><span class="si">{__version__}</span><span class="s2"> (https://github.com/gieseladev/andesite.py)&quot;</span>
+<span class="n">USER_AGENT</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;andesite.py/</span><span class="si">{andesite.__version__}</span><span class="s2"> (https://github.com/gieseladev/andesite.py)&quot;</span>
 
 
-<div class="viewcode-block" id="AndesiteHTTPError"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPError">[docs]</a><span class="k">class</span> <span class="nc">AndesiteHTTPError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="HTTPError"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPError">[docs]</a><span class="k">class</span> <span class="nc">HTTPError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Andesite error.</span>
 
 <span class="sd">    Attributes:</span>
@@ -94,25 +94,25 @@
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;AndesiteError (</span><span class="si">{self.code}</span><span class="s2">): </span><span class="si">{self.message}</span><span class="s2">&quot;</span></div>
 
 
-<div class="viewcode-block" id="AndesiteSearcher"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteSearcher">[docs]</a><span class="k">class</span> <span class="nc">AndesiteSearcher</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="Searcher"><a class="viewcode-back" href="../../reference/clients.html#andesite.Searcher">[docs]</a><span class="k">class</span> <span class="nc">Searcher</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Supported search engines for Andesite.&quot;&quot;&quot;</span>
     <span class="n">YOUTUBE</span> <span class="o">=</span> <span class="s2">&quot;ytsearch&quot;</span>
     <span class="n">SOUNDCLOUD</span> <span class="o">=</span> <span class="s2">&quot;scsearch&quot;</span></div>
 
 
-<span class="n">AndesiteSearcherType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AndesiteSearcher</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+<span class="n">SearcherType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Searcher</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="get_andesite_searcher"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.get_andesite_searcher">[docs]</a><span class="k">def</span> <span class="nf">get_andesite_searcher</span><span class="p">(</span><span class="n">searcher</span><span class="p">:</span> <span class="n">AndesiteSearcherType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AndesiteSearcher</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Get the `AndesiteSearcher` for the given `AndesiteSearcherType`.</span>
+<div class="viewcode-block" id="get_searcher"><a class="viewcode-back" href="../../reference/clients.html#andesite.get_searcher">[docs]</a><span class="k">def</span> <span class="nf">get_searcher</span><span class="p">(</span><span class="n">searcher</span><span class="p">:</span> <span class="n">SearcherType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Searcher</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the `Searcher` for the given `SearcherType`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        searcher: Searcher to resolve. If searcher happens to be</span>
-<span class="sd">            of type `AndesiteSearcher` already, it is simply returned.</span>
+<span class="sd">            of type `Searcher` already, it is simply returned.</span>
 
-<span class="sd">    This function can resolve the following `AndesiteSearcher` specifications:</span>
+<span class="sd">    This function can resolve the following `Searcher` specifications:</span>
 
-<span class="sd">    - `AndesiteSearcher` instance</span>
+<span class="sd">    - `Searcher` instance</span>
 <span class="sd">    - Searcher id (i.e. &quot;ytsearch&quot;, &quot;scsearch&quot;)</span>
 <span class="sd">    - Service name (i.e. &quot;youtube&quot;, &quot;soundcloud&quot;). Note that the casing doesn&#39;t</span>
 <span class="sd">      matter, as the provided names are converted to uppercase.</span>
@@ -122,19 +122,19 @@
 <span class="sd">        ValueError: If searcher is a string but doesn&#39;t resolve to a valid</span>
 <span class="sd">            searcher.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="n">AndesiteSearcher</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="n">Searcher</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">searcher</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">AndesiteSearcher</span><span class="p">[</span><span class="n">searcher</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+            <span class="k">return</span> <span class="n">Searcher</span><span class="p">[</span><span class="n">searcher</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="c1"># if this causes a ValueError, just let it raise</span>
-            <span class="k">return</span> <span class="n">AndesiteSearcher</span><span class="p">(</span><span class="n">searcher</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Searcher</span><span class="p">(</span><span class="n">searcher</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Can only resolve </span><span class="si">{AndesiteSearcherType}</span><span class="s2">, not {type(searcher)}: </span><span class="si">{searcher}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Can only resolve </span><span class="si">{SearcherType}</span><span class="s2">, not {type(searcher)}: </span><span class="si">{searcher}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="AbstractAndesiteHTTP"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteHTTP">[docs]</a><span class="k">class</span> <span class="nc">AbstractAndesiteHTTP</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractHTTP"><a class="viewcode-back" href="../../reference/clients.html#andesite.AbstractHTTP">[docs]</a><span class="k">class</span> <span class="nc">AbstractHTTP</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class which requires a request method and a close method.&quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
@@ -146,7 +146,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span>
 
-<div class="viewcode-block" id="AbstractAndesiteHTTP.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteHTTP.close">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractHTTP.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.AbstractHTTP.close">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Close the underlying connections and clean up.</span>
 
@@ -154,7 +154,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteHTTP.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteHTTP.reset">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractHTTP.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.AbstractHTTP.reset">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Reset the client so it may be used again.</span>
 
@@ -163,7 +163,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
-<div class="viewcode-block" id="AbstractAndesiteHTTP.request"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AbstractAndesiteHTTP.request">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractHTTP.request"><a class="viewcode-back" href="../../reference/clients.html#andesite.AbstractHTTP.request">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Perform a request and return the JSON response.</span>
 
@@ -176,28 +176,28 @@
 <span class="sd">        task. You should use the provided methods whenever possible.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AndesiteHTTPError: If Andesite returns an error.</span>
+<span class="sd">            HTTPError: If Andesite returns an error.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div></div>
 
 
-<div class="viewcode-block" id="AndesiteHTTPInterface"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface">[docs]</a><span class="k">class</span> <span class="nc">AndesiteHTTPInterface</span><span class="p">(</span><span class="n">AbstractAndesiteHTTP</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="HTTPInterface"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface">[docs]</a><span class="k">class</span> <span class="nc">HTTPInterface</span><span class="p">(</span><span class="n">AbstractHTTP</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract implementation of the endpoints.</span>
 
-<span class="sd">    This does not include the player routes, as they are already covered by the `AndesiteWebSocket`.</span>
+<span class="sd">    This does not include the player routes, as they are already covered by the `WebSocket`.</span>
 <span class="sd">    The client uses the user agent `USER_AGENT` for every request.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.get_stats"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.get_stats">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Stats</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPInterface.get_stats"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface.get_stats">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Stats</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get the node&#39;s statistics.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AndesiteHTTPError: If Andesite returns an error.</span>
+<span class="sd">            HTTPError: If Andesite returns an error.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;stats&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">Stats</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">Stats</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.load_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.load_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedTrack</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPInterface.load_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface.load_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">LoadedTrack</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Load tracks.</span>
 
 <span class="sd">        Args:</span>
@@ -205,15 +205,15 @@
 <span class="sd">                so it supports the search syntax for example.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AndesiteHTTPError: If Andesite returns an error.</span>
+<span class="sd">            HTTPError: If Andesite returns an error.</span>
 
 <span class="sd">        See Also:</span>
 <span class="sd">            `search_tracks` to search for a track using a query.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;loadtracks&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">LoadedTrack</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">LoadedTrack</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.load_tracks_safe"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.load_tracks_safe">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_tracks_safe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedTrack</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPInterface.load_tracks_safe"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface.load_tracks_safe">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">load_tracks_safe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">LoadedTrack</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Load tracks from url.</span>
 
 <span class="sd">        This is different from `load_tracks` insofar that it ignores</span>
@@ -224,7 +224,7 @@
 <span class="sd">            uri: URI to load</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AndesiteHTTPError: If Andesite returns an error.</span>
+<span class="sd">            HTTPError: If Andesite returns an error.</span>
 
 <span class="sd">        See Also:</span>
 <span class="sd">            `load_tracks` to load a track using an identifier.</span>
@@ -232,36 +232,41 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_tracks</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;raw:</span><span class="si">{uri}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.search_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.search_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">search_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                            <span class="n">searcher</span><span class="p">:</span> <span class="n">AndesiteSearcherType</span> <span class="o">=</span> <span class="n">AndesiteSearcher</span><span class="o">.</span><span class="n">YOUTUBE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedTrack</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPInterface.search_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface.search_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">search_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                            <span class="n">searcher</span><span class="p">:</span> <span class="n">SearcherType</span> <span class="o">=</span> <span class="n">Searcher</span><span class="o">.</span><span class="n">YOUTUBE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">LoadedTrack</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Search tracks.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            query: Search query to search for</span>
 <span class="sd">            searcher: Specify the searcher to use. Defaults to YouTube.</span>
-<span class="sd">                See `AndesiteSearcher` for the supported searchers.</span>
+<span class="sd">                See `Searcher` for the supported searchers.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AndesiteHTTPError: If Andesite returns an error.</span>
+<span class="sd">            HTTPError: If Andesite returns an error.</span>
 
 <span class="sd">        Notes:</span>
 <span class="sd">            This is a utility method for the `load_tracks` method.</span>
 <span class="sd">            A search query is just an identifier with the format</span>
 <span class="sd">            &quot;&lt;searcher&gt;:&lt;query&gt;&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">searcher_id</span> <span class="o">=</span> <span class="n">get_andesite_searcher</span><span class="p">(</span><span class="n">searcher</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">searcher_id</span> <span class="o">=</span> <span class="n">get_searcher</span><span class="p">(</span><span class="n">searcher</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_tracks</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{searcher_id}</span><span class="s2">:</span><span class="si">{query}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.decode_track"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.decode_track">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">decode_track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TrackInfo</span><span class="p">]:</span>
+<div class="viewcode-block" id="HTTPInterface.decode_track"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface.decode_track">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">decode_track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">TrackInfo</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the `TrackInfo` from the encoded track data.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            If you find yourself using this method a lot, you might want to use</span>
+<span class="sd">            `lptrack &lt;https://github.com/gieseladev/lptrack&gt;`_ which can decode</span>
+<span class="sd">            and encode the track data locally.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            track: base 64 encoded track data to decode.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            `TrackInfo` of the provided data, `None` if the data is invalid.</span>
-<span class="sd">            Note that this method doesn&#39;t raise `AndesiteHTTPError`!</span>
-<span class="sd">            If you need the `AndesiteHTTPError` to be raised, use `decode_tracks`.</span>
+<span class="sd">            Note that this method doesn&#39;t raise `HTTPError`!</span>
+<span class="sd">            If you need the `HTTPError` to be raised, use `decode_tracks`.</span>
 
 <span class="sd">        See Also:</span>
 <span class="sd">            Please use `decode_tracks` if you need to decode multiple</span>
@@ -269,14 +274,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;decodetrack&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">))</span>
-        <span class="k">except</span> <span class="n">AndesiteHTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t decode track: </span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">TrackInfo</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">build_from_raw</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">TrackInfo</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPInterface.decode_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPInterface.decode_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">decode_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tracks</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">TrackInfo</span><span class="p">]:</span>
+<div class="viewcode-block" id="HTTPInterface.decode_tracks"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPInterface.decode_tracks">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">decode_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tracks</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">TrackInfo</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the `TrackInfo` from multiple encoded track data strings.</span>
 
 <span class="sd">        Args:</span>
@@ -286,15 +291,15 @@
 <span class="sd">            List of `TrackInfo` in order of the provided tracks.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AndesiteHTTPError: If Andesite returns an error.</span>
+<span class="sd">            HTTPError: If Andesite returns an error.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;decodetracks&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">tracks</span><span class="p">))</span>
-        <span class="n">seq_build_all_items_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TrackInfo</span><span class="p">)</span>
+        <span class="n">seq_build_all_items_from_raw</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">TrackInfo</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span></div></div>
 
 
-<div class="viewcode-block" id="AndesiteHTTPBase"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPBase">[docs]</a><span class="k">class</span> <span class="nc">AndesiteHTTPBase</span><span class="p">(</span><span class="n">AbstractAndesiteHTTP</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Standard implementation of `AbstractAndesiteHTTP`.</span>
+<div class="viewcode-block" id="HTTPBase"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPBase">[docs]</a><span class="k">class</span> <span class="nc">HTTPBase</span><span class="p">(</span><span class="n">AbstractHTTP</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Standard implementation of `AbstractHTTP`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        password: Password to use for authorization. Use `None` if</span>
@@ -305,21 +310,21 @@
 <span class="sd">            for the underlying `aiohttp.ClientSession`.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        `AndesiteHTTP` for the client which includes the</span>
-<span class="sd">            `AndesiteHTTPInterface` methods.</span>
+<span class="sd">        `HTTP` for the client which includes the</span>
+<span class="sd">            `HTTPInterface` methods.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        aiohttp_session (aiohttp.ClientSession): Client session used to make</span>
 <span class="sd">            requests.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span>
     <span class="n">aiohttp_session</span><span class="p">:</span> <span class="n">ClientSession</span>
 
-    <span class="n">_loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span>
     <span class="n">_base_url</span><span class="p">:</span> <span class="n">URL</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">URL</span><span class="p">],</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
                  <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span> <span class="o">=</span> <span class="n">loop</span> <span class="k">if</span> <span class="n">loop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="o">=</span> <span class="n">loop</span> <span class="k">if</span> <span class="n">loop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_url</span> <span class="o">=</span> <span class="n">URL</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
 
         <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">USER_AGENT</span><span class="p">}</span>
@@ -327,7 +332,7 @@
         <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span> <span class="o">=</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span> <span class="o">=</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(uri=</span><span class="si">{self._base_url!r}</span><span class="s2">, password=[HIDDEN])&quot;</span>
@@ -339,14 +344,14 @@
     <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span><span class="o">.</span><span class="n">closed</span>
 
-<div class="viewcode-block" id="AndesiteHTTPBase.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPBase.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPBase.close"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPBase.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPBase.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPBase.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPBase.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPBase.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span> <span class="o">=</span> <span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aiohttp_session</span><span class="o">.</span><span class="n">_default_headers</span><span class="p">,</span>
-                                             <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span></div>
+                                             <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AndesiteHTTPBase.request"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTPBase.request">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<div class="viewcode-block" id="HTTPBase.request"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTPBase.request">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_url</span> <span class="o">/</span> <span class="n">path</span>
 
         <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
@@ -366,16 +371,16 @@
                     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t extract keys </span><span class="se">\&quot;</span><span class="s2">code</span><span class="se">\&quot;</span><span class="s2"> and </span><span class="se">\&quot;</span><span class="s2">message</span><span class="se">\&quot;</span><span class="s2"> from data, letting aiohttp raise!&quot;</span><span class="p">)</span>
                     <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">AndesiteHTTPError</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">HTTPError</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">data</span></div></div>
 
 
-<div class="viewcode-block" id="AndesiteHTTP"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.AndesiteHTTP">[docs]</a><span class="k">class</span> <span class="nc">AndesiteHTTP</span><span class="p">(</span><span class="n">AndesiteHTTPInterface</span><span class="p">,</span> <span class="n">AndesiteHTTPBase</span><span class="p">):</span>
+<div class="viewcode-block" id="HTTP"><a class="viewcode-back" href="../../reference/clients.html#andesite.HTTP">[docs]</a><span class="k">class</span> <span class="nc">HTTP</span><span class="p">(</span><span class="n">HTTPInterface</span><span class="p">,</span> <span class="n">HTTPBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Client for Andesite&#39;s HTTP endpoints.</span>
 
 <span class="sd">    See Also:</span>
-<span class="sd">        `AndesiteHTTPBase` for more details.</span>
+<span class="sd">        `HTTPBase` for more details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="o">...</span></div>
 </pre></div>
@@ -401,6 +406,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick-start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -438,7 +444,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Discord &#8212; andesite.py 0.1.2 documentation</title>
+    <title>Discord &#8212; andesite.py 0.2.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -35,6 +35,326 @@
             
   <div class="section" id="discord">
 <h1>Discord<a class="headerlink" href="#discord" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-andesite.discord"></span><p>Utilities for the discord.py library.</p>
+<p>If you’re using the discord.py library, you can use the functions provided by
+this module to your advantage. Instead of having to manually send the voice
+server updates, you can call <a class="reference internal" href="#andesite.discord.add_voice_server_update_handler" title="andesite.discord.add_voice_server_update_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_voice_server_update_handler</span></code></a> once and be done
+with it. All events received by discord.py will then automatically be forwarded
+to the Andesite client.
+Even further, you can use <a class="reference internal" href="#andesite.discord.connect_voice_channel" title="andesite.discord.connect_voice_channel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect_voice_channel</span></code></a> and <a class="reference internal" href="#andesite.discord.disconnect_voice_channel" title="andesite.discord.disconnect_voice_channel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect_voice_channel</span></code></a>
+to easily connect to and disconnect from voice channels.
+This works for both <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Bot" title="(in discord.py v1.2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.ext.commands.Bot</span></code></a> and normal <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/api.html#discord.Client" title="(in discord.py v1.2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.Client</span></code></a>
+instances without interfering.</p>
+<dl class="attribute">
+<dt id="andesite.discord.SOCKET_RESPONSE_HANDLERS_ATTR">
+<code class="sig-name descname">SOCKET_RESPONSE_HANDLERS_ATTR</code><a class="headerlink" href="#andesite.discord.SOCKET_RESPONSE_HANDLERS_ATTR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the attribute used to store the
+<a class="reference internal" href="#andesite.discord.SocketResponseHandler" title="andesite.discord.SocketResponseHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SocketResponseHandler</span></code></a> instances in discord clients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.get_discord_websocket">
+<code class="sig-name descname">get_discord_websocket</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">guild_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#get_discord_websocket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.get_discord_websocket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility method to get access to discord.py’s gateway websocket.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ConnectionState</span></code>]) – discord.py client.</p></li>
+<li><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Guild id whose websocket to get.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscordWebSocket</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.update_voice_state">
+<em class="property">async </em><code class="sig-name descname">update_voice_state</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">guild_id</em>, <em class="sig-param">channel_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#update_voice_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.update_voice_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the voice state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – discord.py client.</p></li>
+<li><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Guild id to target</p></li>
+<li><p><strong>channel_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – Channel id to connect to.
+If <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, disconnect from the current channel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.connect_voice_channel">
+<em class="property">async </em><code class="sig-name descname">connect_voice_channel</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#connect_voice_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.connect_voice_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to a voice channel.</p>
+<p>This function has two signatures, you can either call it with a <code class="xref py py-obj docutils literal notranslate"><span class="pre">VoiceChannel</span></code>,
+or provide a guild / guild id and the voice channel id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.disconnect_voice_channel">
+<em class="property">async </em><code class="sig-name descname">disconnect_voice_channel</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">guild</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#disconnect_voice_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.disconnect_voice_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect from the current voice channel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.discord.AsyncMethodGroup">
+<em class="property">class </em><code class="sig-name descname">AsyncMethodGroup</code><span class="sig-paren">(</span><em class="sig-param">methods</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#AsyncMethodGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.AsyncMethodGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group of async functions which act as a method.</p>
+<p>When called the instance calls all its functions.
+It doesn’t pass the “self” parameter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.get_async_method_group">
+<code class="sig-name descname">get_async_method_group</code><span class="sig-paren">(</span><em class="sig-param">obj</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#get_async_method_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.get_async_method_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a method group for a method.</p>
+<p>If the method exists and is not already an <a class="reference internal" href="#andesite.discord.AsyncMethodGroup" title="andesite.discord.AsyncMethodGroup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncMethodGroup</span></code></a>,
+a new group containing the previous method takes its place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#andesite.discord.AsyncMethodGroup" title="andesite.discord.AsyncMethodGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">AsyncMethodGroup</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.wrap_client_listener">
+<code class="sig-name descname">wrap_client_listener</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">func</em>, <em class="sig-param">*</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#wrap_client_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.wrap_client_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener method to the discord client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – Client to add the listener to</p></li>
+<li><p><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>) – Listener function to add</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Custom name to use. Defaults to the name of the function.
+Be sure to include “on_” if you set this.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This makes it possible to add a listener if the client isn’t a <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Bot" title="(in discord.py v1.2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.ext.commands.Bot</span></code></a>.
+This is achieved by adding the listener as a method to the client.
+If there already is a listener it is still called!</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#andesite.discord.unwrap_client_listener" title="andesite.discord.unwrap_client_listener"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unwrap_client_listener</span></code></a> to remove it again.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.unwrap_client_listener">
+<code class="sig-name descname">unwrap_client_listener</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">func</em>, <em class="sig-param">*</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#unwrap_client_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.unwrap_client_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a listener method from a discord client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – Client to remove listener from</p></li>
+<li><p><strong>func</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>) – Listener function to remove</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Custom name to use. Defaults to the name of the function.
+Be sure to include “on_” if you set this.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="andesite.discord.SocketResponseHandler">
+<em class="property">class </em><code class="sig-name descname">SocketResponseHandler</code><span class="sig-paren">(</span><em class="sig-param">discord_client</em>, <em class="sig-param">andesite_client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#SocketResponseHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.SocketResponseHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Socket response listener.</p>
+<p>An interface between discord.py clients and andesite clients to automatically
+send voice server updates.</p>
+<dl class="attribute">
+<dt id="andesite.discord.SocketResponseHandler.discord_client">
+<code class="sig-name descname">discord_client</code><a class="headerlink" href="#andesite.discord.SocketResponseHandler.discord_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>discord.py client that is listened to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://discordpy.readthedocs.io/en/latest/api.html#discord.Client" title="(in discord.py v1.2.3)">discord.Client</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="andesite.discord.SocketResponseHandler.andesite_client">
+<code class="sig-name descname">andesite_client</code><a class="headerlink" href="#andesite.discord.SocketResponseHandler.andesite_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Andesite client to send
+the voice server update.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="clients.html#andesite.web_socket_client.WebSocketInterface" title="andesite.web_socket_client.WebSocketInterface">WebSocketInterface</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.discord.SocketResponseHandler.add_listener">
+<code class="sig-name descname">add_listener</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#SocketResponseHandler.add_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.SocketResponseHandler.add_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the on_socket_response listener.</p>
+<p>If the handler is attached to a <code class="xref py py-obj docutils literal notranslate"><span class="pre">Bot</span></code>, it uses the listener framework,
+otherwise it safely wraps the client handler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.discord.SocketResponseHandler.remove_listener">
+<code class="sig-name descname">remove_listener</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#SocketResponseHandler.remove_listener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.SocketResponseHandler.remove_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the on_socket_response listener.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.discord.SocketResponseHandler.on_socket_response">
+<em class="property">async </em><code class="sig-name descname">on_socket_response</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#SocketResponseHandler.on_socket_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.SocketResponseHandler.on_socket_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intercept voice server updates and send them to Andesite.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.get_andesite_socket_response_handlers">
+<code class="sig-name descname">get_andesite_socket_response_handlers</code><span class="sig-paren">(</span><em class="sig-param">obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#get_andesite_socket_response_handlers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.get_andesite_socket_response_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the socket response handlers added to the discord client.</p>
+<p>If it doesn’t exist, a new one is created and added to the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference internal" href="clients.html#andesite.web_socket_client.WebSocketInterface" title="andesite.web_socket_client.WebSocketInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">WebSocketInterface</span></code></a>, <a class="reference internal" href="#andesite.discord.SocketResponseHandler" title="andesite.discord.SocketResponseHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">SocketResponseHandler</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.add_voice_server_update_handler">
+<code class="sig-name descname">add_voice_server_update_handler</code><span class="sig-paren">(</span><em class="sig-param">discord_client</em>, <em class="sig-param">andesite_client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#add_voice_server_update_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.add_voice_server_update_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a voice server update listener to the discord client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>discord_client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – Discord client to add the listener to.</p></li>
+<li><p><strong>andesite_client</strong> (<a class="reference internal" href="clients.html#andesite.web_socket_client.WebSocketInterface" title="andesite.web_socket_client.WebSocketInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">WebSocketInterface</span></code></a>) – Andesite web socket client to use to send the voice server update.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This will listen to socket responses using the discord client
+and trigger <code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketInterface.voice_server_update</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.remove_voice_server_update_handler">
+<code class="sig-name descname">remove_voice_server_update_handler</code><span class="sig-paren">(</span><em class="sig-param">discord_client</em>, <em class="sig-param">andesite_client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#remove_voice_server_update_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.remove_voice_server_update_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the socket response handler added by <a class="reference internal" href="#andesite.discord.add_voice_server_update_handler" title="andesite.discord.add_voice_server_update_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_voice_server_update_handler</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>discord_client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – Discord client to remove listener from.</p></li>
+<li><p><strong>andesite_client</strong> (<a class="reference internal" href="clients.html#andesite.web_socket_client.WebSocketInterface" title="andesite.web_socket_client.WebSocketInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">WebSocketInterface</span></code></a>) – Andesite web socket client to use to send the voice server update.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.compare_regions">
+<code class="sig-name descname">compare_regions</code><span class="sig-paren">(</span><em class="sig-param">a_region</em>, <em class="sig-param">b_region</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#compare_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.compare_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two region names.</p>
+<p>The order of the provided regions is irrelevant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a_region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – First region name</p></li>
+<li><p><strong>b_region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Second region name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>0 if the regions can’t be properly compared
+(ex: Node region unknown or guild id unknown).
+If the regions can be compared
+the result is the sum of the following points:</p>
+<ul class="simple">
+<li><p>2 points if both regions are in the same country</p></li>
+<li><p>1 point if both regions are in
+the same part of a country (ex: us_west)
+(This point is also awarded if both regions
+don’t specify a country part)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="andesite.discord.create_region_comparator">
+<code class="sig-name descname">create_region_comparator</code><span class="sig-paren">(</span><em class="sig-param">discord_client</em>, <em class="sig-param">*</em>, <em class="sig-param">region_comp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/discord.html#create_region_comparator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.discord.create_region_comparator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a region comparator which compares the guild region with the node region.</p>
+<p>You can use the created comparator for the <code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketPool</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>discord_client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – Client to use to determine the guild region.</p></li>
+<li><p><strong>region_comp</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – Specify the actual function which compares the guild region
+and the Andesite node region. Defaults to <a class="reference internal" href="#andesite.discord.compare_regions" title="andesite.discord.compare_regions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare_regions</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Region comparator which uses region_comp to compare guild region with node region.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -68,6 +388,7 @@
 <li class="toctree-l2"><a class="reference internal" href="transform.html">Transform</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Overview</a></li>
 </ul>
 
 <div class="relations">
@@ -107,7 +428,7 @@
       &copy;2019, Giesela Inc..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

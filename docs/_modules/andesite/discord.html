@@ -1,0 +1,505 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>andesite.discord &#8212; andesite.py 0.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="canonical" href="/andesite.py/docs/_modules/andesite/discord.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for andesite.discord</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utilities for the discord.py library.</span>
+
+<span class="sd">If you&#39;re using the discord.py library, you can use the functions provided by</span>
+<span class="sd">this module to your advantage. Instead of having to manually send the voice</span>
+<span class="sd">server updates, you can call `add_voice_server_update_handler` once and be done</span>
+<span class="sd">with it. All events received by discord.py will then automatically be forwarded</span>
+<span class="sd">to the Andesite client.</span>
+<span class="sd">Even further, you can use `connect_voice_channel` and `disconnect_voice_channel`</span>
+<span class="sd">to easily connect to and disconnect from voice channels.</span>
+<span class="sd">This works for both `discord.ext.commands.Bot` and normal `discord.Client`</span>
+<span class="sd">instances without interfering.</span>
+
+<span class="sd">Attributes:</span>
+<span class="sd">    SOCKET_RESPONSE_HANDLERS_ATTR (str): Name of the attribute used to store the</span>
+<span class="sd">        `SocketResponseHandler` instances in discord clients.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">asyncio</span> <span class="k">import</span> <span class="n">Future</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span> <span class="nn">andesite</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">discord</span> <span class="k">import</span> <span class="n">Client</span><span class="p">,</span> <span class="n">VoiceChannel</span><span class="p">,</span> <span class="n">Guild</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
+        <span class="kn">from</span> <span class="nn">discord.ext.commands</span> <span class="k">import</span> <span class="n">Bot</span>
+        <span class="kn">from</span> <span class="nn">discord.gateway</span> <span class="k">import</span> <span class="n">DiscordWebSocket</span>
+        <span class="kn">from</span> <span class="nn">discord.state</span> <span class="k">import</span> <span class="n">ConnectionState</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_discord_websocket&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;update_voice_state&quot;</span><span class="p">,</span> <span class="s2">&quot;connect_voice_channel&quot;</span><span class="p">,</span> <span class="s2">&quot;disconnect_voice_channel&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;AsyncMethodGroup&quot;</span><span class="p">,</span> <span class="s2">&quot;get_async_method_group&quot;</span><span class="p">,</span> <span class="s2">&quot;wrap_client_listener&quot;</span><span class="p">,</span> <span class="s2">&quot;unwrap_client_listener&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;SocketResponseHandler&quot;</span><span class="p">,</span> <span class="s2">&quot;get_andesite_socket_response_handlers&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;add_voice_server_update_handler&quot;</span><span class="p">,</span> <span class="s2">&quot;remove_voice_server_update_handler&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;compare_regions&quot;</span><span class="p">,</span> <span class="s2">&quot;create_region_comparator&quot;</span><span class="p">]</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_discord_websocket"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.get_discord_websocket">[docs]</a><span class="k">def</span> <span class="nf">get_discord_websocket</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="s2">&quot;ConnectionState&quot;</span><span class="p">],</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DiscordWebSocket&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Utility method to get access to discord.py&#39;s gateway websocket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        client: discord.py client.</span>
+<span class="sd">        guild_id: Guild id whose websocket to get.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># noinspection PyProtectedMember</span>
+        <span class="n">getter</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">_get_websocket</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="c1"># noinspection PyProtectedMember,PyUnresolvedReferences</span>
+        <span class="n">getter</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">_get_websocket</span>
+
+    <span class="k">return</span> <span class="n">getter</span><span class="p">(</span><span class="n">guild_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="update_voice_state"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.update_voice_state">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">update_voice_state</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">channel_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Update the voice state.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        client: discord.py client.</span>
+<span class="sd">        guild_id: Guild id to target</span>
+<span class="sd">        channel_id: Channel id to connect to.</span>
+<span class="sd">            If `None`, disconnect from the current channel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="n">get_discord_websocket</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">ws</span><span class="o">.</span><span class="n">voice_state</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">channel_id</span><span class="p">)</span></div>
+
+
+<span class="nd">@overload</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">connect_voice_channel</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="s2">&quot;VoiceChannel&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">connect_voice_channel</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">guild</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Guild&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">channel_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="connect_voice_channel"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.connect_voice_channel">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">connect_voice_channel</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Connect to a voice channel.</span>
+
+<span class="sd">    This function has two signatures, you can either call it with a `VoiceChannel`,</span>
+<span class="sd">    or provide a guild / guild id and the voice channel id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_args_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># use this rather peculiar method to allow **kwargs and *args interchangeably</span>
+    <span class="k">if</span> <span class="n">total_args_len</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">_connect_voice_channel_channel</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">_connect_voice_channel_guild_channel</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_connect_voice_channel_channel</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="s2">&quot;VoiceChannel&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">update_voice_state</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">channel</span><span class="o">.</span><span class="n">guild</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">channel</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_connect_voice_channel_guild_channel</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">guild</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Guild&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">channel_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">guild_id</span> <span class="o">=</span> <span class="n">guild</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">guild</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">guild</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">await</span> <span class="n">update_voice_state</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">,</span> <span class="n">channel_id</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="disconnect_voice_channel"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.disconnect_voice_channel">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect_voice_channel</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">guild</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Guild&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Disconnect from the current voice channel.&quot;&quot;&quot;</span>
+    <span class="n">guild_id</span> <span class="o">=</span> <span class="n">guild</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">guild</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">guild</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">await</span> <span class="n">update_voice_state</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsyncMethodGroup"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.AsyncMethodGroup">[docs]</a><span class="k">class</span> <span class="nc">AsyncMethodGroup</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Group of async functions which act as a method.</span>
+
+<span class="sd">    When called the instance calls all its functions.</span>
+<span class="sd">    It doesn&#39;t pass the &quot;self&quot; parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">methods</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">methods</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">methods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_async_method_group"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.get_async_method_group">[docs]</a><span class="k">def</span> <span class="nf">get_async_method_group</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMethodGroup</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get a method group for a method.</span>
+
+<span class="sd">    If the method exists and is not already an `AsyncMethodGroup`,</span>
+<span class="sd">    a new group containing the previous method takes its place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">AsyncMethodGroup</span><span class="p">([])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">AsyncMethodGroup</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">method</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">AsyncMethodGroup</span><span class="p">([</span><span class="n">method</span><span class="p">])</span>
+
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">method</span></div>
+
+
+<div class="viewcode-block" id="wrap_client_listener"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.wrap_client_listener">[docs]</a><span class="k">def</span> <span class="nf">wrap_client_listener</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Add a listener method to the discord client.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        client: Client to add the listener to</span>
+<span class="sd">        func: Listener function to add</span>
+<span class="sd">        name: Custom name to use. Defaults to the name of the function.</span>
+<span class="sd">            Be sure to include &quot;on\_&quot; if you set this.</span>
+
+<span class="sd">    This makes it possible to add a listener if the client isn&#39;t a `discord.ext.commands.Bot`.</span>
+<span class="sd">    This is achieved by adding the listener as a method to the client.</span>
+<span class="sd">    If there already is a listener it is still called!</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        `unwrap_client_listener` to remove it again.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="n">get_async_method_group</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">methods</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">func</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unwrap_client_listener"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.unwrap_client_listener">[docs]</a><span class="k">def</span> <span class="nf">unwrap_client_listener</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Remove a listener method from a discord client.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        client: Client to remove listener from</span>
+<span class="sd">        func: Listener function to remove</span>
+<span class="sd">        name: Custom name to use. Defaults to the name of the function.</span>
+<span class="sd">            Be sure to include &quot;on\_&quot; if you set this.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="n">get_async_method_group</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">methods</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">func</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SocketResponseHandler"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.SocketResponseHandler">[docs]</a><span class="k">class</span> <span class="nc">SocketResponseHandler</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Socket response listener.</span>
+
+<span class="sd">    An interface between discord.py clients and andesite clients to automatically</span>
+<span class="sd">    send voice server updates.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        discord_client (discord.Client): discord.py client that is listened to.</span>
+<span class="sd">        andesite_client (WebSocketInterface): Andesite client to send</span>
+<span class="sd">            the voice server update.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">discord_client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span>
+    <span class="n">andesite_client</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discord_client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">andesite_client</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discord_client</span> <span class="o">=</span> <span class="n">discord_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">andesite_client</span> <span class="o">=</span> <span class="n">andesite_client</span>
+
+<div class="viewcode-block" id="SocketResponseHandler.add_listener"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.SocketResponseHandler.add_listener">[docs]</a>    <span class="k">def</span> <span class="nf">add_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add the on_socket_response listener.</span>
+
+<span class="sd">        If the handler is attached to a `Bot`, it uses the listener framework,</span>
+<span class="sd">        otherwise it safely wraps the client handler.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discord_client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">add_listener</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Bot&quot;</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span><span class="o">.</span><span class="n">add_listener</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">wrap_client_listener</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discord_client</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_socket_response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Adding socket response listener to </span><span class="si">{client}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">add_listener</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_socket_response</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SocketResponseHandler.remove_listener"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.SocketResponseHandler.remove_listener">[docs]</a>    <span class="k">def</span> <span class="nf">remove_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Remove the on_socket_response listener.&quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discord_client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">remove_listener</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Bot&quot;</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span><span class="o">.</span><span class="n">remove_listener</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">unwrap_client_listener</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discord_client</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_socket_response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Removing socket response listener from </span><span class="si">{client}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">remove_listener</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_socket_response</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SocketResponseHandler.on_socket_response"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.SocketResponseHandler.on_socket_response">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">on_socket_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Intercept voice server updates and send them to Andesite.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s2">&quot;VOICE_SERVER_UPDATE&quot;</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">guild_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="s2">&quot;guild_id&quot;</span><span class="p">])</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">get_discord_websocket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discord_client</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">)</span>
+        <span class="n">session_id</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">session_id</span>
+
+        <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;sending voice server update for guild </span><span class="si">{guild_id}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">andesite_client</span><span class="o">.</span><span class="n">voice_server_update</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;not sending voice server update for guild </span><span class="si">{guild_id}</span><span class="s2"> because session id missing.&quot;</span><span class="p">)</span></div></div>
+
+
+<span class="n">SOCKET_RESPONSE_HANDLERS_ATTR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;__andesite_socket_response_handlers__&quot;</span>
+
+
+<div class="viewcode-block" id="get_andesite_socket_response_handlers"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.get_andesite_socket_response_handlers">[docs]</a><span class="k">def</span> <span class="nf">get_andesite_socket_response_handlers</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span><span class="p">,</span> <span class="n">SocketResponseHandler</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get the socket response handlers added to the discord client.</span>
+
+<span class="sd">    If it doesn&#39;t exist, a new one is created and added to the object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">SOCKET_RESPONSE_HANDLERS_ATTR</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">SOCKET_RESPONSE_HANDLERS_ATTR</span><span class="p">,</span> <span class="n">handlers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">handlers</span></div>
+
+
+<div class="viewcode-block" id="add_voice_server_update_handler"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.add_voice_server_update_handler">[docs]</a><span class="k">def</span> <span class="nf">add_voice_server_update_handler</span><span class="p">(</span><span class="n">discord_client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">andesite_client</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Add a voice server update listener to the discord client.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        discord_client: Discord client to add the listener to.</span>
+<span class="sd">        andesite_client: Andesite web socket client to use to send the voice server update.</span>
+
+<span class="sd">    This will listen to socket responses using the discord client</span>
+<span class="sd">    and trigger `WebSocketInterface.voice_server_update`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">handlers</span> <span class="o">=</span> <span class="n">get_andesite_socket_response_handlers</span><span class="p">(</span><span class="n">discord_client</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">andesite_client</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">SocketResponseHandler</span><span class="p">(</span><span class="n">discord_client</span><span class="p">,</span> <span class="n">andesite_client</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">add_listener</span><span class="p">()</span>
+
+    <span class="n">handlers</span><span class="p">[</span><span class="n">andesite_client</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span></div>
+
+
+<div class="viewcode-block" id="remove_voice_server_update_handler"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.remove_voice_server_update_handler">[docs]</a><span class="k">def</span> <span class="nf">remove_voice_server_update_handler</span><span class="p">(</span><span class="n">discord_client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="n">andesite_client</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Remove the socket response handler added by `add_voice_server_update_handler`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        discord_client: Discord client to remove listener from.</span>
+<span class="sd">        andesite_client: Andesite web socket client to use to send the voice server update.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">handlers</span> <span class="o">=</span> <span class="n">get_andesite_socket_response_handlers</span><span class="p">(</span><span class="n">discord_client</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">andesite_client</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">handler</span><span class="o">.</span><span class="n">remove_listener</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">_split_region</span><span class="p">(</span><span class="n">region</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Parse a region string into its parts.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        region: Region string to parse</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        3-tuple:</span>
+
+<span class="sd">            - Whether the region is VIP or not</span>
+<span class="sd">            - Country name</span>
+<span class="sd">            - Part of country</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;vip&quot;</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">vip</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">vip</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">country</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">country_part</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">country_part</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">vip</span><span class="p">,</span> <span class="n">country</span><span class="p">,</span> <span class="n">country_part</span>
+
+
+<div class="viewcode-block" id="compare_regions"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.compare_regions">[docs]</a><span class="k">def</span> <span class="nf">compare_regions</span><span class="p">(</span><span class="n">a_region</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_region</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Compare two region names.</span>
+
+<span class="sd">    The order of the provided regions is irrelevant.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a_region: First region name</span>
+<span class="sd">        b_region: Second region name</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        0 if the regions can&#39;t be properly compared</span>
+<span class="sd">        (ex: Node region unknown or guild id unknown).</span>
+<span class="sd">        If the regions can be compared</span>
+<span class="sd">        the result is the sum of the following points:</span>
+
+<span class="sd">        - 2 points if both regions are in the same country</span>
+<span class="sd">        - 1 point if both regions are in</span>
+<span class="sd">          the same part of a country (ex: us_west)</span>
+<span class="sd">          (This point is also awarded if both regions</span>
+<span class="sd">          don&#39;t specify a country part)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">score</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">a_country</span><span class="p">,</span> <span class="n">a_country_part</span> <span class="o">=</span> <span class="n">_split_region</span><span class="p">(</span><span class="n">a_region</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">b_country</span><span class="p">,</span> <span class="n">b_country_part</span> <span class="o">=</span> <span class="n">_split_region</span><span class="p">(</span><span class="n">b_region</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">a_country</span> <span class="o">==</span> <span class="n">b_country</span><span class="p">:</span>
+        <span class="n">score</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">a_country_part</span> <span class="o">==</span> <span class="n">b_country_part</span><span class="p">:</span>
+            <span class="n">score</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">score</span></div>
+
+
+<div class="viewcode-block" id="create_region_comparator"><a class="viewcode-back" href="../../reference/discord.html#andesite.discord.create_region_comparator">[docs]</a><span class="k">def</span> <span class="nf">create_region_comparator</span><span class="p">(</span><span class="n">discord_client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                             <span class="n">region_comp</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">RegionGuildComparator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create a region comparator which compares the guild region with the node region.</span>
+
+<span class="sd">    You can use the created comparator for the `WebSocketPool`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        discord_client: Client to use to determine the guild region.</span>
+<span class="sd">        region_comp: Specify the actual function which compares the guild region</span>
+<span class="sd">            and the Andesite node region. Defaults to `compare_regions`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Region comparator which uses region_comp to compare guild region with node region.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">region_comp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">region_comp</span> <span class="o">=</span> <span class="n">compare_regions</span>
+
+    <span class="k">def</span> <span class="nf">comparator</span><span class="p">(</span><span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">node_region</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">node_region</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">node_region</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">guild</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Guild</span><span class="p">]</span> <span class="o">=</span> <span class="n">discord_client</span><span class="o">.</span><span class="n">get_guild</span><span class="p">(</span><span class="n">guild_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">guild</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">region_comp</span><span class="p">(</span><span class="n">node_region</span><span class="p">,</span> <span class="n">guild</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">comparator</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">andesite.py</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick-start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Overview</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Giesela Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
