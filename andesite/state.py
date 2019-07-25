@@ -168,9 +168,17 @@ class PlayerState(AbstractPlayerState):
     `from_raw`. These methods exist to make it easy to implement a custom
     `AbstractState` which loads and stores serialised player states.
     """
+    __slots__ = ("__guild_id",
+                 "_player", "_track", "_voice_server_update")
+
+    __guild_id: int
+
+    _player: Optional[andesite.Player]
+    _track: Optional[str]
+    _voice_server_update: Optional[andesite.VoiceServerUpdate]
 
     def __init__(self, guild_id: int):
-        self._guild_id = guild_id
+        self.__guild_id = guild_id
 
         self._player = None
         self._track = None
@@ -178,7 +186,7 @@ class PlayerState(AbstractPlayerState):
 
     @property
     def guild_id(self) -> int:
-        return self._guild_id
+        return self.__guild_id
 
     async def get_player(self) -> Optional[andesite.Player]:
         return self._player
@@ -248,7 +256,7 @@ class PlayerState(AbstractPlayerState):
             raw_voice_server_update = None
 
         return {
-            "guild_id": self._guild_id,
+            "guild_id": self.__guild_id,
             "player": raw_player,
             "track": self._track,
             "voice_server_update": raw_voice_server_update,
@@ -391,6 +399,8 @@ class State(AbstractState, Generic[PST]):
         player_states (Dict[int, AbstractPlayerState]): Mapping from guild id
             to the corresponding player state.
     """
+    __slots__ = ("player_states", "_state_factory")
+
     player_states: Dict[int, PST]
     _state_factory: Callable[[int], PST]
 

@@ -207,7 +207,6 @@ class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
         penalty_time_frame: Number of seconds before a penalty expires and no
             long counts toward a client's total number of penalties.
     """
-
     _clients: Deque[andesite.AbstractHTTP]
     _penalties: Dict[andesite.AbstractHTTP, List[float]]
 
@@ -566,7 +565,7 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
 
         # either both None in which case it doesn't matter or both the same state
         if client.state is self.state:
-            client.state = None
+            client.state = False
 
         client.event_target.remove_child(self.event_target)
 
@@ -596,7 +595,7 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
 
         async def load_player_state(_guild_id: int, _client: andesite.AbstractWebSocket) -> None:
             player_state = await self.state.get(_guild_id)
-            await _client.load_player_state(player_state, loop=self.loop)
+            await _client.load_player_state(player_state)
 
         fs.clear()
 

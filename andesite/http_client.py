@@ -283,8 +283,8 @@ class HTTPBase(AbstractHTTP):
         aiohttp_session (aiohttp.ClientSession): Client session used to make
             requests.
     """
-    aiohttp_session: ClientSession
     loop: asyncio.AbstractEventLoop
+    aiohttp_session: ClientSession
 
     _base_url: URL
 

@@ -195,7 +195,7 @@ class Client(andesite.WebSocketInterface, andesite.HTTPInterface, ClientBase):
 
 def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
                   user_id: int, *,
-                  state: Union[andesite.AbstractState, bool] = None,
+                  state: andesite.StateArgumentType = None,
                   loop: asyncio.AbstractEventLoop = None) -> Client:
     """Create a new combined Andesite client.
 
@@ -220,5 +220,5 @@ def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], pa
 
     inst = Client(http_client, web_socket_client, loop=loop)
 
-    inst.state = andesite._get_state(state)
+    inst.state = state
     return inst
