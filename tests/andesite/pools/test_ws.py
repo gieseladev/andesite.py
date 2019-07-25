@@ -1,4 +1,5 @@
-from typing import cast
+import asyncio
+from typing import cast, Optional
 from unittest import mock
 
 import pytest
@@ -8,6 +9,9 @@ from tests.andesite.async_mock import AsyncMock
 
 
 class MockWebSocket(AbstractWebSocket):
+    def __init__(self) -> None:
+        self.loop = asyncio.get_event_loop()
+
     closed = mock.PropertyMock(return_value=False)
 
     close = AsyncMock()
