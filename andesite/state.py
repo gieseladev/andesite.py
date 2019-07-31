@@ -100,6 +100,7 @@ class AbstractPlayerState(abc.ABC):
     See Also:
         `AndesitePlayerState` for an in-memory implementation.
     """
+    __slots__ = ()
 
     def __str__(self) -> str:
         return f"PlayerState(guild_id={self.guild_id})"
@@ -274,6 +275,7 @@ class AbstractState(abc.ABC):
 
     Keeps track of the state of an Andesite node.
     """
+    __slots__ = ()
 
     def __str__(self) -> str:
         return f"{type(self).__name__}"

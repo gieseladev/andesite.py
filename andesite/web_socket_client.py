@@ -278,6 +278,7 @@ class AbstractWebSocketClient(AbstractWebSocket, abc.ABC):
     See Also:
         `AbstractWebSocket` for more details.
     """
+    __slots__ = ()
 
     @property
     @abc.abstractmethod
@@ -363,6 +364,7 @@ class AbstractWebSocketClient(AbstractWebSocket, abc.ABC):
 
 class WebSocketInterface(AbstractWebSocket, abc.ABC):
     """Implementation of the web socket endpoints."""
+    __slots__ = ()
 
     async def wait_for_receive(self, op_type: Type[ROPT], guild_id: int = None) -> ROPT:
         if guild_id is None:

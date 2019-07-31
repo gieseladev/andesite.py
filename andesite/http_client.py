@@ -47,6 +47,8 @@ class HTTPError(Exception):
         code (int): HTTP error code
         message (str): Message sent by Andesite
     """
+    __slots__ = ("code", "message")
+
     code: int
     message: str
 
@@ -101,6 +103,7 @@ def get_searcher(searcher: SearcherType) -> Searcher:
 
 class AbstractHTTP(abc.ABC):
     """Abstract base class which requires a request method and a close method."""
+    __slots__ = ()
 
     @property
     @abc.abstractmethod
@@ -152,6 +155,7 @@ class HTTPInterface(AbstractHTTP, abc.ABC):
     This does not include the player routes, as they are already covered by the `WebSocket`.
     The client uses the user agent `USER_AGENT` for every request.
     """
+    __slots__ = ()
 
     async def get_stats(self) -> andesite.Stats:
         """Get the node's statistics.
@@ -349,7 +353,7 @@ class HTTPBase(AbstractHTTP):
             return data
 
 
-class HTTP(HTTPInterface, HTTPBase):
+class HTTP(HTTPBase, HTTPInterface):
     """Client for Andesite's HTTP endpoints.
 
     See Also:

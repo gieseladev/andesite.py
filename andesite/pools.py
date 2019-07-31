@@ -56,6 +56,8 @@ class PoolException(Exception):
     Attributes:
         pool (ClientPool): Pool which raised the error
     """
+    __slots__ = ("pool",)
+
     pool: "ClientPool"
 
     def __init__(self, pool: "ClientPool") -> None:
@@ -65,7 +67,7 @@ class PoolException(Exception):
 
 class PoolEmptyError(PoolException):
     """Raised when a pool is empty but shouldn't be."""
-    ...
+    __slots__ = ()
 
 
 @dataclasses.dataclass()
@@ -347,7 +349,7 @@ class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
                 self._add_penalty(client)
 
 
-class HTTPPool(andesite.HTTPInterface, HTTPPoolBase):
+class HTTPPool(HTTPPoolBase, andesite.HTTPInterface):
     """Andesite HTTP client pool.
 
     This is just a wrapper around `HTTPPoolBase` which adds the
@@ -363,7 +365,7 @@ class HTTPPool(andesite.HTTPInterface, HTTPPoolBase):
 RegionGuildComparator = Callable[[int, Optional[str]], int]
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass()
 class ScoringData:
     """Data passed to the web socket scoring scoring function.
 
@@ -725,7 +727,7 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
         await client.send(guild_id, op, payload)
 
 
-class WebSocketPool(andesite.WebSocketInterface, WebSocketPoolBase):
+class WebSocketPool(WebSocketPoolBase, andesite.WebSocketInterface):
     """Pool of Andesite web socket connections.
 
     Please refer to `WebSocketPoolBase` for the documentation.

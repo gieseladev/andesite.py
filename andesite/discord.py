@@ -115,6 +115,8 @@ class AsyncMethodGroup:
     When called the instance calls all its functions.
     It doesn't pass the "self" parameter.
     """
+    __slots__ = ("methods",)
+
     methods: Set[Callable]
 
     def __init__(self, methods: Iterable[Callable]) -> None:
@@ -192,6 +194,8 @@ class SocketResponseHandler:
         andesite_client (WebSocketInterface): Andesite client to send
             the voice server update.
     """
+    __slots__ = ("discord_client", "andesite_client")
+
     discord_client: "Client"
     andesite_client: andesite.WebSocketInterface
 
