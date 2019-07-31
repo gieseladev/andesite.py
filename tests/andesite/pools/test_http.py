@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -20,7 +20,10 @@ class MockHTTP(AbstractHTTP):
 
     reset = AsyncMock()
 
-    request = AsyncMock()
+    request_mock = mock.Mock()
+
+    async def request(self, method: str, path: str, **kwargs) -> Any:
+        self.request_mock(method, path, **kwargs)
 
 
 @pytest.mark.asyncio
@@ -40,4 +43,4 @@ async def test_http_pool(mocked_build: mock.Mock):
     assert pool.get_current_client() is client_b
 
     await pool.load_tracks("lol track")
-    assert cast(AsyncMock, client_b.request).called_with("GET", "loadtracks", json={"identifier": "lol track"})
+    assert client_b.request_mock.called_with("GET", "loadtracks", json={"identifier": "lol track"})

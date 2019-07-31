@@ -122,7 +122,7 @@ class ClientPool(aiobservable.Observable, Collection[CT], abc.ABC, Generic[CT]):
 
     async def close(self) -> None:
         """Close all clients in the pool."""
-        await asyncio.gather(*(client.close() for client in self._clients), loop=self.loop)
+        await asyncio.gather(*(client.close() for client in self._clients))
 
     async def reset(self) -> None:
         """Reset all underlying clients so they may be used again.
@@ -130,7 +130,7 @@ class ClientPool(aiobservable.Observable, Collection[CT], abc.ABC, Generic[CT]):
         This has the opposite effect of the `close` method making the clients
         usable again.
         """
-        await asyncio.gather(*(client.reset() for client in self), loop=self.loop)
+        await asyncio.gather(*(client.reset() for client in self))
 
     def _check_client(self, client: CT) -> Optional[CT]:
         """Check whether the client is usable.
@@ -192,7 +192,6 @@ class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
         timeout: Sets the `timeout` attribute.
         max_penalties: Sets the `max_penalties` attribute.
         penalty_time_frame: Sets the `penalty_time_frame` attribute.
-        loop: Event loop to use for the event target.
 
     The pool uses a circular buffer which is rotated after every request.
 
@@ -217,9 +216,8 @@ class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
     def __init__(self, clients: Iterable[andesite.AbstractHTTP], *,
                  timeout: float = None,
                  max_penalties: int = 5,
-                 penalty_time_frame: float = 60,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
-        super().__init__(loop=loop)
+                 penalty_time_frame: float = 60) -> None:
+        super().__init__()
 
         # collect in a set first to make sure clients are unique.
         self._clients = deque(set(clients))
@@ -323,18 +321,17 @@ class HTTPPoolBase(ClientPool[andesite.AbstractHTTP], andesite.AbstractHTTP):
             PoolEmptyError: If no clients are available
         """
         running_fs: Set[asyncio.Future] = set()
+        loop = asyncio.get_event_loop()
 
         while True:
             client = self.get_next_client()
             if client is None:
                 raise PoolEmptyError(self)
 
-            fut = asyncio.ensure_future(client.request(method, path, **kwargs), loop=self.loop)
+            fut = loop.create_task(client.request(method, path, **kwargs))
             running_fs.add(fut)
 
-            done_fs, pending_fs = await asyncio.wait(running_fs,
-                                                     return_when=asyncio.FIRST_COMPLETED,
-                                                     loop=self.loop)
+            done_fs, pending_fs = await asyncio.wait(running_fs, return_when=asyncio.FIRST_COMPLETED)
             try:
                 done_fut = done_fs.pop()
             except KeyError:
@@ -439,7 +436,6 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
             and returns a comparable object. The function can be a coroutine.
             Defaults to `default_scoring_function`.
         region_comparator: Region comparator to use for comparing regions.
-        loop: Event loop to use for the event target.
 
     The pool uses different clients on a guild to guild level.
 
@@ -460,9 +456,8 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
     def __init__(self, clients: Iterable[andesite.AbstractWebSocket], *,
                  state: andesite.StateArgumentType = None,
                  scoring_function: PoolScoringFunction = None,
-                 region_comparator: RegionGuildComparator = None,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
-        super().__init__(loop=loop)
+                 region_comparator: RegionGuildComparator = None) -> None:
+        super().__init__()
 
         self._clients = set()
         self._guild_clients = WeakValueDictionary()
@@ -588,10 +583,13 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
         # TODO transfer message queue
 
         fs: List[asyncio.Future] = []
-        for guild_id in guild_ids:
-            fs.append(asyncio.ensure_future(self.assign_client(guild_id), loop=self.loop))
+        loop = asyncio.get_event_loop()
 
-        new_clients: List[Optional[andesite.AbstractWebSocket]] = await asyncio.gather(*fs, loop=self.loop)
+        for guild_id in guild_ids:
+            fut = loop.create_task(self.assign_client(guild_id))
+            fs.append(fut)
+
+        new_clients: List[Optional[andesite.AbstractWebSocket]] = await asyncio.gather(*fs)
 
         async def load_player_state(_guild_id: int, _client: andesite.AbstractWebSocket) -> None:
             player_state = await self.state.get(_guild_id)
@@ -600,9 +598,10 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
         fs.clear()
 
         for guild_id, new_client in zip(guild_ids, new_clients):
-            fs.append(asyncio.ensure_future(load_player_state(guild_id, new_client), loop=self.loop))
+            fut = loop.create_task(load_player_state(guild_id, new_client))
+            fs.append(fut)
 
-        await asyncio.gather(*fs, loop=self.loop)
+        await asyncio.gather(*fs)
 
     def get_client(self, guild_id: int) -> Optional[andesite.AbstractWebSocket]:
         """Get the andesite web socket client which is used for the given guild."""
@@ -641,6 +640,8 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
         async def perform_score_calc(_score_data: ScoringData) -> Tuple[andesite.AbstractWebSocket, Any]:
             return _score_data.client, await self.calculate_score(_score_data)
 
+        loop = asyncio.get_event_loop()
+
         for client, guild_ids in self.iter_client_guild_ids():
             try:
                 # noinspection PyUnresolvedReferences
@@ -649,9 +650,9 @@ class WebSocketPoolBase(ClientPool[andesite.AbstractWebSocket], andesite.Abstrac
                 node_region = None
 
             score_data = ScoringData(self, client, node_region, self.region_comparator, guild_ids, guild_id)
-            score_fs.append(asyncio.ensure_future(perform_score_calc(score_data), loop=self.loop))
+            score_fs.append(loop.create_task(perform_score_calc(score_data)))
 
-        scores: List[Tuple[andesite.AbstractWebSocket, Any]] = await asyncio.gather(*score_fs, loop=self.loop)
+        scores: List[Tuple[andesite.AbstractWebSocket, Any]] = await asyncio.gather(*score_fs)
         for client, score in scores:
             if best_score is not None:
                 if score < best_score:
@@ -759,34 +760,29 @@ def create_pool(http_nodes: Iterable[NodeDetails],
             constructor.
         web_socket_pool_kwargs: Additional keyword arguments to pass to the web
             socket pool constructor.
-        loop: Event loop to use.
+        loop: Event loop to use. No need to pass this if not absolutely
+            required.
 
     Returns:
         A combined Andesite client operation on an http pool and a web socket
         pool.
     """
-    from andesite import HTTPBase, WebSocketBase
-
     http_clients = []
     for uri, password in http_nodes:
-        http_clients.append(HTTPBase(uri, password, loop=loop))
+        http_clients.append(andesite.HTTPBase(uri, password))
 
     web_socket_clients = []
     for uri, password in web_socket_nodes:
-        ws = WebSocketBase(uri, user_id, password, state=False, loop=loop)
+        ws = andesite.WebSocketBase(uri, user_id, password, state=False, loop=loop)
         web_socket_clients.append(ws)
 
     http_pool_kwargs = http_pool_kwargs or {}
-    http_pool_kwargs["loop"] = loop
-
     http_pool = HTTPPoolBase(http_clients, **http_pool_kwargs)
 
     web_socket_pool_kwargs = web_socket_pool_kwargs or {}
-    web_socket_pool_kwargs["loop"] = loop
-
     web_socket_pool = WebSocketPoolBase(web_socket_clients, **web_socket_pool_kwargs)
 
-    inst = andesite.Client(http_pool, web_socket_pool, loop=loop)
+    inst = andesite.Client(http_pool, web_socket_pool)
 
     # the setter will make sure the state is proper
     inst.state = state

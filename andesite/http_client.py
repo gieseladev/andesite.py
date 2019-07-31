@@ -20,13 +20,12 @@ Attributes:
 """
 
 import abc
-import asyncio
 import logging
 from enum import Enum
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
-from aiohttp import ClientSession
-from yarl import URL
+import aiohttp
+import yarl
 
 import andesite
 from .transform import build_from_raw, seq_build_all_items_from_raw
@@ -270,55 +269,63 @@ class HTTPBase(AbstractHTTP):
     Args:
         password: Password to use for authorization. Use `None` if
             the Andesite node does not have a password set.
-        loop: Event loop to use for the `aiohttp.ClientSession`.
-            If you don't pass this parameter (i.e. it's `None`), the event loop
-            is retrieved using `asyncio.get_event_loop` because it is required
-            for the underlying `aiohttp.ClientSession`.
 
     See Also:
         `HTTP` for the client which includes the
             `HTTPInterface` methods.
-
-    Attributes:
-        aiohttp_session (aiohttp.ClientSession): Client session used to make
-            requests.
     """
-    loop: asyncio.AbstractEventLoop
-    aiohttp_session: ClientSession
 
-    _base_url: URL
+    __base_url: yarl.URL
+    __session: Optional[aiohttp.ClientSession]
+    __headers: Dict[str, str]
 
-    def __init__(self, uri: Union[str, URL], password: Optional[str], *,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
-        self.loop = loop if loop is not None else asyncio.get_event_loop()
-        self._base_url = URL(uri)
+    def __init__(self, uri: Union[str, yarl.URL], password: Optional[str]) -> None:
+        self.__base_url = yarl.URL(uri)
 
         headers = {"User-Agent": USER_AGENT}
 
         if password is not None:
             headers["Authorization"] = password
 
-        self.aiohttp_session = ClientSession(headers=headers, loop=self.loop)
+        self.__headers = headers
+
+        self.__session = None
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(uri={self._base_url!r}, password=[HIDDEN])"
+        return f"{type(self).__name__}(uri={self.__base_url!r}, password=[HIDDEN])"
 
     def __str__(self) -> str:
-        return f"{type(self).__name__}({self._base_url})"
+        return f"{type(self).__name__}({self.__base_url})"
+
+    @property
+    def aiohttp_session(self) -> aiohttp.ClientSession:
+        """Client session used to make requests."""
+        if self.__session is None:
+            log.info("creating aiohttp client session for %s", self)
+            self.__session = aiohttp.ClientSession(headers=self.__headers)
+
+        return self.__session
 
     @property
     def closed(self) -> bool:
-        return self.aiohttp_session.closed
+        if self.__session is not None:
+            return self.__session.closed
+
+        return False
 
     async def close(self) -> None:
-        await self.aiohttp_session.close()
+        if self.__session:
+            log.info("%s: closing aiohttp session", self)
+            await self.__session.close()
+        else:
+            log.debug("%s: called close without ever creating a session, doing nothing", self)
 
     async def reset(self) -> None:
-        self.aiohttp_session = ClientSession(headers=self.aiohttp_session._default_headers,
-                                             loop=self.loop)
+        log.debug("resetting ")
+        self.__session = None
 
     async def request(self, method: str, path: str, **kwargs) -> Any:
-        url = self._base_url / path
+        url = self.__base_url / path
 
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f"performing {method} request for endpoint {path} with arguments: {kwargs}")

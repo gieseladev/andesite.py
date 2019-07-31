@@ -15,7 +15,6 @@ Attributes:
 """
 
 import abc
-import asyncio
 import functools
 import logging
 from typing import Any, Awaitable, Callable, Coroutine, Dict, Generic, Optional, TypeVar, Union
@@ -263,15 +262,11 @@ class PlayerState(AbstractPlayerState):
         }
 
 
-def _run_with_error_callback(coro: Coroutine, err_cb: Callable[[Exception], Awaitable], *,
-                             loop: asyncio.AbstractEventLoop = None) -> asyncio.Future:
-    async def wrapper() -> None:
-        try:
-            await coro
-        except Exception as e:
-            await err_cb(e)
-
-    return asyncio.ensure_future(wrapper(), loop=loop)
+async def _run_with_error_callback(coro: Coroutine, err_cb: Callable[[Exception], Awaitable]) -> None:
+    try:
+        await coro
+    except Exception as e:
+        await err_cb(e)
 
 
 class AbstractState(abc.ABC):
@@ -283,42 +278,38 @@ class AbstractState(abc.ABC):
     def __str__(self) -> str:
         return f"{type(self).__name__}"
 
-    def _handle_andesite_message(self, message: andesite.ReceiveOperation, *,
-                                 loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
+    async def _handle_andesite_message(self, message: andesite.ReceiveOperation) -> None:
         """Handles the event of an andesite message being received.
 
         Args:
             message: Message that was sent.
-            loop: Event loop to use.
         """
         if isinstance(message, andesite.PlayerUpdate):
             coro = self.handle_player_update(message)
         elif isinstance(message, andesite.AndesiteEvent):
             coro = self.handle_andesite_event(message)
         else:
-            return None
+            return
 
         err_cb: Callable = functools.partial(self.on_handle_message_error, message)
-        return _run_with_error_callback(coro, err_cb, loop=loop)
+        await _run_with_error_callback(coro, err_cb)
 
-    def _handle_sent_message(self, guild_id: int, op: str, payload: Dict[str, Any], *,
-                             loop: asyncio.AbstractEventLoop = None) -> Optional[asyncio.Future]:
+    async def _handle_sent_message(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
         """Handles the event of a message being sent.
 
         Args:
             guild_id: Guild id the message was sent for.
             op: Operation code.
             payload: Raw payload of the message.
-            loop: Event loop to use.
         """
         if op == "voice-server-update":
             update = andesite.VoiceServerUpdate(payload["sessionId"], payload["event"])
             coro = self.handle_voice_server_update(guild_id, update)
         else:
-            return None
+            return
 
         err_cb: Callable = functools.partial(self.on_handle_sent_message_error, guild_id, op, payload)
-        return _run_with_error_callback(coro, err_cb, loop=loop)
+        await _run_with_error_callback(coro, err_cb)
 
     @abc.abstractmethod
     async def handle_player_update(self, update: andesite.PlayerUpdate) -> None:

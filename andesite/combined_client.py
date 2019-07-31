@@ -23,13 +23,12 @@ import andesite
 __all__ = ["ClientBase", "Client", "create_client"]
 
 
-class ClientBase(andesite.AbstractWebSocket, andesite.AbstractHTTP, aiobservable.Observable):
+class ClientBase(aiobservable.Observable, andesite.AbstractWebSocket, andesite.AbstractHTTP):
     """Implementation of `AbstractWebSocket` and `AbstractHTTP`.
 
     Args:
         http_client: Client to use for the http endpoints.
         web_socket_client: Client to use for the web socket communication.
-        loop: Event loop to use. This is used for the underlying event target.
 
     The `event_target` of the web socket client is set to the combined client.
 
@@ -46,9 +45,8 @@ class ClientBase(andesite.AbstractWebSocket, andesite.AbstractHTTP, aiobservable
     http: andesite.AbstractHTTP
     web_socket: andesite.AbstractWebSocket
 
-    def __init__(self, http_client: andesite.AbstractHTTP, web_socket_client: andesite.AbstractWebSocket, *,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
-        super().__init__(loop=loop)
+    def __init__(self, http_client: andesite.AbstractHTTP, web_socket_client: andesite.AbstractWebSocket) -> None:
+        super().__init__()
 
         self.http = http_client
         self.web_socket = web_socket_client
@@ -206,19 +204,18 @@ def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], pa
         user_id: User ID
         state: State handler to use. Defaults to in-memory `State`.
             You can pass `False` to disable state handling.
-        loop: Specify the event loop to use. The
-            meaning of this value depends on the client,
-            but you can safely omit it.
+        loop: Specify the event loop to use for initialisation. Unless
+            absolutely required you should not specify this.
 
     Returns:
         A new combined client with `HTTPBase` and `WebSocketBase` as
         its clients.
     """
 
-    http_client = andesite.HTTPBase(http_uri, password, loop=loop)
+    http_client = andesite.HTTPBase(http_uri, password)
     web_socket_client = andesite.WebSocketBase(web_socket_uri, user_id, password, loop=loop)
 
-    inst = Client(http_client, web_socket_client, loop=loop)
+    inst = Client(http_client, web_socket_client)
 
     inst.state = state
     return inst
