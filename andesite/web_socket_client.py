@@ -11,10 +11,9 @@ import asyncio
 import logging
 import math
 import time
-from collections import deque
 from contextlib import suppress
 from json import JSONDecodeError, JSONDecoder, JSONEncoder
-from typing import Any, Deque, Dict, Optional, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Dict, Optional, Tuple, Type, TypeVar, Union, overload
 
 import aiobservable
 import websockets
@@ -206,10 +205,11 @@ class AbstractWebSocket(abc.ABC):
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
         """Send a payload.
 
-        The guild_id and op are written to the payload before it is converted to JSON.
+        The guild_id and op are written to the payload before it is converted
+        to JSON.
 
-        If sending the message fails because the connection is closed,
-        it is added to the message queue and a connection attempt is started.
+        If sending the message fails because the connection is closed, the
+        client attempts to connect and then sends the message again.
 
         Regardless of whether the payload was actually sent or
         not a `RawMsgSendEvent` (`raw_msg_send`) event is dispatched.
@@ -689,7 +689,6 @@ class WebSocketBase(AbstractWebSocketClient):
     __last_connection_id: Optional[str]
 
     __connect_lock: Optional[asyncio.Lock]
-    __message_queue: Deque[str]
 
     __read_loop: Optional[asyncio.Future]
 
@@ -718,7 +717,6 @@ class WebSocketBase(AbstractWebSocketClient):
         # within the lock will not be the same as the loop used by
         # asyncio.run (as it creates a new loop every time)
         self.__connect_lock = None
-        self.__message_queue = deque()
 
         self.__closed = False
         self.__read_loop = None
@@ -796,7 +794,7 @@ class WebSocketBase(AbstractWebSocketClient):
 
         return self.__connect_lock
 
-    async def _connect(self, max_attempts: int = None) -> None:
+    async def __connect(self, max_attempts: int = None) -> None:
         """Internal connect method.
 
         Args:
@@ -846,11 +844,9 @@ class WebSocketBase(AbstractWebSocketClient):
             raise ConnectionError(f"Couldn't connect to {self.__ws_uri} after {attempt} attempts")
 
         self.web_socket_client = client
-        self._start_read_loop()
+        self.__start_read_loop()
 
         _ = self.event_target.emit(WebSocketConnectEvent(self))
-
-        await self._replay_message_queue()
 
     async def connect(self, *, max_attempts: int = None) -> None:
         if self.closed:
@@ -858,10 +854,10 @@ class WebSocketBase(AbstractWebSocketClient):
 
         async with self._get_connect_lock():
             if not self.connected:
-                await self._connect(max_attempts)
+                await self.__connect(max_attempts)
 
     async def disconnect(self) -> None:
-        self._stop_read_loop()
+        self.__stop_read_loop()
 
         if self.connected:
             await self.web_socket_client.close(reason="disconnect")
@@ -869,7 +865,6 @@ class WebSocketBase(AbstractWebSocketClient):
 
     async def reset(self) -> None:
         await self.disconnect()
-        self.__message_queue.clear()
         del self.connection_id
 
         self.__closed = False
@@ -878,20 +873,7 @@ class WebSocketBase(AbstractWebSocketClient):
         await self.disconnect()
         self.__closed = True
 
-    async def _replay_message_queue(self) -> None:
-        """Send all messages in the message queue."""
-        if not self.__message_queue:
-            return
-
-        log.info(f"Sending {len(self.__message_queue)} queued messages")
-
-        try:
-            for msg in self.__message_queue:
-                await self.web_socket_client.send(msg)
-        finally:
-            self.__message_queue.clear()
-
-    async def _web_socket_reader(self) -> None:
+    async def __web_socket_reader(self) -> None:
         """Internal web socket read loop.
 
         This method should never be called manually, see the following
@@ -956,8 +938,8 @@ class WebSocketBase(AbstractWebSocketClient):
             except asyncio.CancelledError:
                 break
             except ConnectionClosed:
-                log.error(f"Disconnected from websocket, trying to reconnect {self}!")
                 _ = self.event_target.emit(WebSocketDisconnectEvent(self, False))
+                log.error(f"Disconnected from websocket, trying to reconnect {self}!")
                 await self.connect()
                 continue
 
@@ -969,7 +951,7 @@ class WebSocketBase(AbstractWebSocketClient):
             except Exception:
                 log.exception("Exception in %s while handling message %s.", self, raw_msg)
 
-    def _start_read_loop(self, *, loop: asyncio.AbstractEventLoop = None) -> None:
+    def __start_read_loop(self, *, loop: asyncio.AbstractEventLoop = None) -> None:
         """Start the web socket reader.
 
         If the reader is already running, this is a no-op.
@@ -980,9 +962,9 @@ class WebSocketBase(AbstractWebSocketClient):
         if loop is None:
             loop = asyncio.get_event_loop()
 
-        self.__read_loop = loop.create_task(self._web_socket_reader())
+        self.__read_loop = loop.create_task(self.__web_socket_reader())
 
-    def _stop_read_loop(self) -> None:
+    def __stop_read_loop(self) -> None:
         """Stop the web socket reader.
 
         If the reader is already stopped, this is a no-op.
@@ -993,31 +975,27 @@ class WebSocketBase(AbstractWebSocketClient):
         self.__read_loop.cancel()
 
     async def send(self, guild_id: int, op: str, payload: Dict[str, Any]) -> None:
+        if self.web_socket_client is None or self.web_socket_client.open:
+            log.info("%s: Not connected, connecting.", self)
+            await self.connect()
+
         payload.update(guildId=str(guild_id), op=op)
 
+        log.debug("%s: sending payload: %s", self, payload)
         _ = self.event_target.emit(RawMsgSendEvent(self, guild_id, op, payload))
-
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug(f"sending payload: {payload}")
 
         data = self._json_encoder.encode(payload)
 
-        if self.web_socket_client is not None:
-            try:
-                await self.web_socket_client.send(data)
-            except ConnectionClosed:
-                # let the websocket reader handle this
-                pass
-            else:
-                state = self.state
-                if state:
-                    _ = state._handle_sent_message(guild_id, op, payload)
-
-                return
-
-        log.info("Not connected, adding message to queue.")
-        self.__message_queue.append(data)
-        await self.connect()
+        try:
+            await self.web_socket_client.send(data)
+        except ConnectionClosed:
+            # let the websocket reader handle this
+            log.warning("%s: couldn't send message because the connection is closed: %s", self, payload)
+        else:
+            state = self.state
+            if state:
+                loop = asyncio.get_event_loop()
+                loop.create_task(state._handle_sent_message(guild_id, op, payload))
 
 
 class WebSocket(WebSocketBase, aiobservable.Observable, WebSocketInterface):
