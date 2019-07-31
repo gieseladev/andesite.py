@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Andesite clients &#8212; andesite.py 0.2.1 documentation</title>
+    <title>Andesite clients &#8212; andesite.py 0.2.2 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -2148,9 +2148,10 @@ usable again.</p>
 <dt id="andesite.web_socket_client.AbstractWebSocket.send">
 <em class="property">abstract async </em><code class="sig-name descname">send</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#AbstractWebSocket.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.web_socket_client.AbstractWebSocket.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a payload.</p>
-<p>The guild_id and op are written to the payload before it is converted to JSON.</p>
-<p>If sending the message fails because the connection is closed,
-it is added to the message queue and a connection attempt is started.</p>
+<p>The guild_id and op are written to the payload before it is converted
+to JSON.</p>
+<p>If sending the message fails because the connection is closed, the
+client attempts to connect and then sends the message again.</p>
 <p>Regardless of whether the payload was actually sent or
 not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_msg_send</span></code>) event is dispatched.</p>
 <dl class="field-list simple">
@@ -2385,9 +2386,10 @@ usable again.</p>
 <dt id="andesite.web_socket_client.AbstractWebSocketClient.send">
 <em class="property">abstract async </em><code class="sig-name descname">send</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.web_socket_client.AbstractWebSocketClient.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a payload.</p>
-<p>The guild_id and op are written to the payload before it is converted to JSON.</p>
-<p>If sending the message fails because the connection is closed,
-it is added to the message queue and a connection attempt is started.</p>
+<p>The guild_id and op are written to the payload before it is converted
+to JSON.</p>
+<p>If sending the message fails because the connection is closed, the
+client attempts to connect and then sends the message again.</p>
 <p>Regardless of whether the payload was actually sent or
 not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_msg_send</span></code>) event is dispatched.</p>
 <dl class="field-list simple">
@@ -2773,9 +2775,10 @@ usable again.</p>
 <dt id="andesite.web_socket_client.WebSocketInterface.send">
 <em class="property">abstract async </em><code class="sig-name descname">send</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.web_socket_client.WebSocketInterface.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a payload.</p>
-<p>The guild_id and op are written to the payload before it is converted to JSON.</p>
-<p>If sending the message fails because the connection is closed,
-it is added to the message queue and a connection attempt is started.</p>
+<p>The guild_id and op are written to the payload before it is converted
+to JSON.</p>
+<p>If sending the message fails because the connection is closed, the
+client attempts to connect and then sends the message again.</p>
 <p>Regardless of whether the payload was actually sent or
 not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_msg_send</span></code>) event is dispatched.</p>
 <dl class="field-list simple">
@@ -3114,9 +3117,10 @@ usable again.</p>
 <dt id="andesite.web_socket_client.WebSocketBase.send">
 <em class="property">async </em><code class="sig-name descname">send</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/web_socket_client.html#WebSocketBase.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.web_socket_client.WebSocketBase.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a payload.</p>
-<p>The guild_id and op are written to the payload before it is converted to JSON.</p>
-<p>If sending the message fails because the connection is closed,
-it is added to the message queue and a connection attempt is started.</p>
+<p>The guild_id and op are written to the payload before it is converted
+to JSON.</p>
+<p>If sending the message fails because the connection is closed, the
+client attempts to connect and then sends the message again.</p>
 <p>Regardless of whether the payload was actually sent or
 not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_msg_send</span></code>) event is dispatched.</p>
 <dl class="field-list simple">
@@ -3652,9 +3656,10 @@ usable again.</p>
 <dt id="andesite.web_socket_client.WebSocket.send">
 <em class="property">async </em><code class="sig-name descname">send</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">op</em>, <em class="sig-param">payload</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.web_socket_client.WebSocket.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a payload.</p>
-<p>The guild_id and op are written to the payload before it is converted to JSON.</p>
-<p>If sending the message fails because the connection is closed,
-it is added to the message queue and a connection attempt is started.</p>
+<p>The guild_id and op are written to the payload before it is converted
+to JSON.</p>
+<p>If sending the message fails because the connection is closed, the
+client attempts to connect and then sends the message again.</p>
 <p>Regardless of whether the payload was actually sent or
 not a <code class="xref py py-obj docutils literal notranslate"><span class="pre">RawMsgSendEvent</span></code> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_msg_send</span></code>) event is dispatched.</p>
 <dl class="field-list simple">
