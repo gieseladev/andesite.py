@@ -193,8 +193,7 @@ class Client(andesite.WebSocketInterface, andesite.HTTPInterface, ClientBase):
 
 def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], password: Optional[str],
                   user_id: int, *,
-                  state: andesite.StateArgumentType = None,
-                  loop: asyncio.AbstractEventLoop = None) -> Client:
+                  state: andesite.StateArgumentType = None) -> Client:
     """Create a new combined Andesite client.
 
     Args:
@@ -204,8 +203,6 @@ def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], pa
         user_id: User ID
         state: State handler to use. Defaults to in-memory `State`.
             You can pass `False` to disable state handling.
-        loop: Specify the event loop to use for initialisation. Unless
-            absolutely required you should not specify this.
 
     Returns:
         A new combined client with `HTTPBase` and `WebSocketBase` as
@@ -213,7 +210,7 @@ def create_client(http_uri: Union[str, URL], web_socket_uri: Union[str, URL], pa
     """
 
     http_client = andesite.HTTPBase(http_uri, password)
-    web_socket_client = andesite.WebSocketBase(web_socket_uri, user_id, password, loop=loop)
+    web_socket_client = andesite.WebSocketBase(web_socket_uri, user_id, password)
 
     inst = Client(http_client, web_socket_client)
 

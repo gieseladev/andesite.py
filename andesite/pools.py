@@ -743,8 +743,7 @@ def create_pool(http_nodes: Iterable[NodeDetails],
                 user_id: int,
                 state: andesite.StateArgumentType = None,
                 http_pool_kwargs: Mapping[str, Any] = None,
-                web_socket_pool_kwargs: Mapping[str, Any] = None,
-                loop: asyncio.AbstractEventLoop = None) -> andesite.Client:
+                web_socket_pool_kwargs: Mapping[str, Any] = None) -> andesite.Client:
     """Create an `Client` with client pools.
 
     Uses `HTTPBase` and `WebSocketBase` which are contained in
@@ -762,8 +761,6 @@ def create_pool(http_nodes: Iterable[NodeDetails],
             constructor.
         web_socket_pool_kwargs: Additional keyword arguments to pass to the web
             socket pool constructor.
-        loop: Event loop to use. No need to pass this if not absolutely
-            required.
 
     Returns:
         A combined Andesite client operation on an http pool and a web socket
@@ -775,7 +772,7 @@ def create_pool(http_nodes: Iterable[NodeDetails],
 
     web_socket_clients = []
     for uri, password in web_socket_nodes:
-        ws = andesite.WebSocketBase(uri, user_id, password, state=False, loop=loop)
+        ws = andesite.WebSocketBase(uri, user_id, password, state=False)
         web_socket_clients.append(ws)
 
     http_pool_kwargs = http_pool_kwargs or {}

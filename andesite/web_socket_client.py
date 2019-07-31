@@ -659,8 +659,6 @@ class WebSocketBase(AbstractWebSocketClient):
         state: State handler to use. If `False` state handling is disabled.
             `None` to use the default state handler (`State`).
         max_connect_attempts: See the `max_connect_attempts` attribute.
-        loop: Event loop used for initialisation. There's no need to pass this
-            unless absolutely required.
 
     The client automatically keeps track of the current connection id and
     resumes the previous connection when calling `connect`, if there is any.
@@ -690,7 +688,7 @@ class WebSocketBase(AbstractWebSocketClient):
     __headers: Headers
     __last_connection_id: Optional[str]
 
-    __connect_lock: asyncio.Lock
+    __connect_lock: Optional[asyncio.Lock]
     __message_queue: Deque[str]
 
     __read_loop: Optional[asyncio.Future]
@@ -700,8 +698,7 @@ class WebSocketBase(AbstractWebSocketClient):
 
     def __init__(self, ws_uri: Union[str, URL], user_id: Optional[int], password: Optional[str], *,
                  state: andesite.StateArgumentType = False,
-                 max_connect_attempts: int = None,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
+                 max_connect_attempts: int = None) -> None:
         self.__ws_uri = str(ws_uri)
 
         self.__headers = Headers()
@@ -716,7 +713,11 @@ class WebSocketBase(AbstractWebSocketClient):
 
         self.web_socket_client = None
 
-        self.__connect_lock = asyncio.Lock(loop=loop)
+        # can't create the lock here, because if the user uses
+        # asyncio.run and creates the client outside of it, the loop
+        # within the lock will not be the same as the loop used by
+        # asyncio.run (as it creates a new loop every time)
+        self.__connect_lock = None
         self.__message_queue = deque()
 
         self.__closed = False
@@ -783,6 +784,18 @@ class WebSocketBase(AbstractWebSocketClient):
 
         return None
 
+    def _get_connect_lock(self, *, loop: asyncio.AbstractEventLoop = None) -> asyncio.Lock:
+        """Get the connect lock.
+
+        The connect lock is only created once. Subsequent calls always return
+        the same lock. The reason for the delayed creating is that the lock is
+        bound to an event loop, which can change between __init__ and connect.
+        """
+        if self.__connect_lock is None:
+            self.__connect_lock = asyncio.Lock(loop=loop)
+
+        return self.__connect_lock
+
     async def _connect(self, max_attempts: int = None) -> None:
         """Internal connect method.
 
@@ -843,7 +856,7 @@ class WebSocketBase(AbstractWebSocketClient):
         if self.closed:
             raise ValueError("Client is closed and cannot be reused.")
 
-        async with self.__connect_lock:
+        async with self._get_connect_lock():
             if not self.connected:
                 await self._connect(max_attempts)
 
