@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Discord &#8212; andesite.py 0.2.0 documentation</title>
+    <title>Discord &#8212; andesite.py 0.2.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -43,7 +43,7 @@ with it. All events received by discord.py will then automatically be forwarded
 to the Andesite client.
 Even further, you can use <a class="reference internal" href="#andesite.discord.connect_voice_channel" title="andesite.discord.connect_voice_channel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect_voice_channel</span></code></a> and <a class="reference internal" href="#andesite.discord.disconnect_voice_channel" title="andesite.discord.disconnect_voice_channel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disconnect_voice_channel</span></code></a>
 to easily connect to and disconnect from voice channels.
-This works for both <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Bot" title="(in discord.py v1.2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.ext.commands.Bot</span></code></a> and normal <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/api.html#discord.Client" title="(in discord.py v1.2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.Client</span></code></a>
+This works for both <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Bot" title="(in discord.py v1.3.0a)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.ext.commands.Bot</span></code></a> and normal <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/api.html#discord.Client" title="(in discord.py v1.3.0a)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.Client</span></code></a>
 instances without interfering.</p>
 <dl class="attribute">
 <dt id="andesite.discord.SOCKET_RESPONSE_HANDLERS_ATTR">
@@ -123,6 +123,11 @@ or provide a guild / guild id and the voice channel id.</p>
 <dd><p>Group of async functions which act as a method.</p>
 <p>When called the instance calls all its functions.
 It doesn’t pass the “self” parameter.</p>
+<dl class="attribute">
+<dt id="andesite.discord.AsyncMethodGroup.methods">
+<code class="sig-name descname">methods</code><a class="headerlink" href="#andesite.discord.AsyncMethodGroup.methods" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -152,7 +157,7 @@ Be sure to include “on_” if you set this.</p></li>
 </ul>
 </dd>
 </dl>
-<p>This makes it possible to add a listener if the client isn’t a <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Bot" title="(in discord.py v1.2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.ext.commands.Bot</span></code></a>.
+<p>This makes it possible to add a listener if the client isn’t a <a class="reference external" href="https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Bot" title="(in discord.py v1.3.0a)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discord.ext.commands.Bot</span></code></a>.
 This is achieved by adding the listener as a method to the client.
 If there already is a listener it is still called!</p>
 <div class="admonition seealso">
@@ -197,7 +202,7 @@ send voice server updates.</p>
 <dd><p>discord.py client that is listened to.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://discordpy.readthedocs.io/en/latest/api.html#discord.Client" title="(in discord.py v1.2.3)">discord.Client</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://discordpy.readthedocs.io/en/latest/api.html#discord.Client" title="(in discord.py v1.3.0a)">discord.Client</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -213,6 +218,16 @@ the voice server update.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">discord_client</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">andesite_client</code></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="andesite.discord.SocketResponseHandler.add_listener">

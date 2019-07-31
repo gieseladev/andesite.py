@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.discord &#8212; andesite.py 0.2.0 documentation</title>
+    <title>andesite.discord &#8212; andesite.py 0.2.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -149,6 +149,8 @@
 <span class="sd">    When called the instance calls all its functions.</span>
 <span class="sd">    It doesn&#39;t pass the &quot;self&quot; parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;methods&quot;</span><span class="p">,)</span>
+
     <span class="n">methods</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">methods</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -226,6 +228,8 @@
 <span class="sd">        andesite_client (WebSocketInterface): Andesite client to send</span>
 <span class="sd">            the voice server update.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;discord_client&quot;</span><span class="p">,</span> <span class="s2">&quot;andesite_client&quot;</span><span class="p">)</span>
+
     <span class="n">discord_client</span><span class="p">:</span> <span class="s2">&quot;Client&quot;</span>
     <span class="n">andesite_client</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span>
 

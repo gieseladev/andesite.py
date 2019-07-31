@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>API Overview &#8212; andesite.py 0.2.0 documentation</title>
+    <title>API Overview &#8212; andesite.py 0.2.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -62,7 +62,7 @@
 <h2><a class="toc-backref" href="#id2">Client</a><a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="andesite.create_client">
-<code class="sig-name descname">create_client</code><span class="sig-paren">(</span><em class="sig-param">http_uri</em>, <em class="sig-param">web_socket_uri</em>, <em class="sig-param">password</em>, <em class="sig-param">user_id</em>, <em class="sig-param">*</em>, <em class="sig-param">state=None</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/andesite/combined_client.html#create_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.create_client" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_client</code><span class="sig-paren">(</span><em class="sig-param">http_uri</em>, <em class="sig-param">web_socket_uri</em>, <em class="sig-param">password</em>, <em class="sig-param">user_id</em>, <em class="sig-param">*</em>, <em class="sig-param">state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/andesite/combined_client.html#create_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.create_client" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new combined Andesite client.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -73,9 +73,6 @@
 <li><p><strong>user_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – User ID</p></li>
 <li><p><strong>state</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="reference/state.html#andesite.state.AbstractState" title="andesite.state.AbstractState"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractState</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – State handler to use. Defaults to in-memory <code class="xref py py-obj docutils literal notranslate"><span class="pre">State</span></code>.
 You can pass <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a> to disable state handling.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Specify the event loop to use. The
-meaning of this value depends on the client,
-but you can safely omit it.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -93,7 +90,7 @@ its clients.</p>
 <h2><a class="toc-backref" href="#id3">Pool</a><a class="headerlink" href="#pool" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="andesite.create_pool">
-<code class="sig-name descname">create_pool</code><span class="sig-paren">(</span><em class="sig-param">http_nodes</em>, <em class="sig-param">web_socket_nodes</em>, <em class="sig-param">*</em>, <em class="sig-param">user_id</em>, <em class="sig-param">state=None</em>, <em class="sig-param">http_pool_kwargs=None</em>, <em class="sig-param">web_socket_pool_kwargs=None</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/andesite/pools.html#create_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.create_pool" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_pool</code><span class="sig-paren">(</span><em class="sig-param">http_nodes</em>, <em class="sig-param">web_socket_nodes</em>, <em class="sig-param">*</em>, <em class="sig-param">user_id</em>, <em class="sig-param">state=None</em>, <em class="sig-param">http_pool_kwargs=None</em>, <em class="sig-param">web_socket_pool_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/andesite/pools.html#create_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.create_pool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code> with client pools.</p>
 <p>Uses <code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPBase</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketBase</span></code> which are contained in
 <code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPPoolBase</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketPoolBase</span></code> pools respectively.</p>
@@ -111,7 +108,6 @@ can pass <a class="reference external" href="https://docs.python.org/3/library/c
 constructor.</p></li>
 <li><p><strong>web_socket_pool_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]) – Additional keyword arguments to pass to the web
 socket pool constructor.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>

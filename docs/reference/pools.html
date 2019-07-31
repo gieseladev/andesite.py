@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Pools &#8212; andesite.py 0.2.0 documentation</title>
+    <title>Pools &#8212; andesite.py 0.2.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -171,7 +171,7 @@ set self.__traceback__ to tb and return self.</p>
 
 <dl class="class">
 <dt id="andesite.pools.ClientPool">
-<em class="property">class </em><code class="sig-name descname">ClientPool</code><span class="sig-paren">(</span><em class="sig-param">events=None</em>, <em class="sig-param">*</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#ClientPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.ClientPool" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ClientPool</code><span class="sig-paren">(</span><em class="sig-param">events=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#ClientPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.ClientPool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Andesite client pool.</p>
 <dl class="method">
 <dt id="andesite.pools.ClientPool.closed">
@@ -248,11 +248,201 @@ usable again.</p>
 </dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="andesite.pools.ClientPool.add_child">
+<code class="sig-name descname">add_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.add_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to add.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the child emitter already is a child of this emitter,
+    or the emitter is a child of the child emitter.
+    The second case is only possible if the child emitter is itself
+    an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">EmitterABC</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.emit">
+<code class="sig-name descname">emit</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit an event to all observers.</p>
+<p>The order in which the observers receive the events isn’t defined and
+shouldn’t be depended upon.</p>
+<p>If a listener raises an error, a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event is emitted.
+If an error occurs while handling the <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event, it is
+ignored.</p>
+<dl class="attribute">
+<dt id="andesite.pools.ClientPool.event">
+<code class="sig-name descname">event</code><a class="headerlink" href="#andesite.pools.ClientPool.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event object to emit</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code></a> which resolves to <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> after all observers
+have handled the event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.has_child">
+<code class="sig-name descname">has_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.has_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the child emitter is a child of the emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ChildEmitterABC</span></code>[~T]) – Emitter to check.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether or not the given emitter is either a direct, or an indirect
+(child of a child) child of this emitter.
+Note that every emitter is a child of itself.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.off">
+<code class="sig-name descname">off</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable an event listener or remove all listeners from an event.</p>
+<p>This can also be used to disable a listener that was added using <a class="reference internal" href="#andesite.pools.ClientPool.once" title="andesite.pools.ClientPool.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>
+before it is called.</p>
+<p>To remove all listeners from an event, pass the event selector to the
+<a class="reference internal" href="#andesite.pools.ClientPool.event" title="andesite.pools.ClientPool.event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event</span></code></a> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyEvent</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">MyEvent</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To remove a listener which is listening to all events, pass the listener
+to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to remove the listeners for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Event listener. This is the same callable that was passed
+to <a class="reference internal" href="#andesite.pools.ClientPool.on" title="andesite.pools.ClientPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> or <a class="reference internal" href="#andesite.pools.ClientPool.once" title="andesite.pools.ClientPool.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.on">
+<code class="sig-name descname">on</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener to the given event(s).</p>
+<p>If you want to listen to all events you can pass the callback to the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for. The latter case is
+equivalent to calling <a class="reference internal" href="#andesite.pools.ClientPool.on" title="andesite.pools.ClientPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> for each event separately.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.once">
+<code class="sig-name descname">once</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.once" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener which is only called once.</p>
+<p>This is basically the same as adding the listener using <a class="reference internal" href="#andesite.pools.ClientPool.on" title="andesite.pools.ClientPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a>
+and then calling <a class="reference internal" href="#andesite.pools.ClientPool.off" title="andesite.pools.ClientPool.off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off</span></code></a> once the listener has been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.remove_child">
+<code class="sig-name descname">remove_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.remove_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to remove.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the emitter isn’t a direct child.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.ClientPool.subscribe">
+<code class="sig-name descname">subscribe</code><span class="sig-paren">(</span><em class="sig-param">event=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.ClientPool.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to the given event(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. Event type or multiple event types to
+subscribe to. Can be <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> which will subscribe to all events.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SubscriptionABC</span></code>[~T]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A subscription which is subscribed to the selected events.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="andesite.pools.HTTPPoolBase">
-<em class="property">class </em><code class="sig-name descname">HTTPPoolBase</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">max_penalties=5</em>, <em class="sig-param">penalty_time_frame=60</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#HTTPPoolBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.HTTPPoolBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">HTTPPoolBase</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">max_penalties=5</em>, <em class="sig-param">penalty_time_frame=60</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#HTTPPoolBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.HTTPPoolBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Andesite HTTP client pool.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -261,7 +451,6 @@ usable again.</p>
 <li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Sets the <a class="reference internal" href="#andesite.pools.HTTPPoolBase.timeout" title="andesite.pools.HTTPPoolBase.timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timeout</span></code></a> attribute.</p></li>
 <li><p><strong>max_penalties</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Sets the <a class="reference internal" href="#andesite.pools.HTTPPoolBase.max_penalties" title="andesite.pools.HTTPPoolBase.max_penalties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_penalties</span></code></a> attribute.</p></li>
 <li><p><strong>penalty_time_frame</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Sets the <a class="reference internal" href="#andesite.pools.HTTPPoolBase.penalty_time_frame" title="andesite.pools.HTTPPoolBase.penalty_time_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">penalty_time_frame</span></code></a> attribute.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use for the event target.</p></li>
 </ul>
 </dd>
 </dl>
@@ -373,6 +562,26 @@ that seems to be working. (i.e. not closed)</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.add_child">
+<code class="sig-name descname">add_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.add_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to add.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the child emitter already is a child of this emitter,
+    or the emitter is a child of the child emitter.
+    The second case is only possible if the child emitter is itself
+    an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">EmitterABC</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.HTTPPoolBase.close">
 <em class="property">async </em><code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close all clients in the pool.</p>
@@ -395,6 +604,158 @@ that seems to be working. (i.e. not closed)</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.emit">
+<code class="sig-name descname">emit</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit an event to all observers.</p>
+<p>The order in which the observers receive the events isn’t defined and
+shouldn’t be depended upon.</p>
+<p>If a listener raises an error, a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event is emitted.
+If an error occurs while handling the <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event, it is
+ignored.</p>
+<dl class="attribute">
+<dt id="andesite.pools.HTTPPoolBase.event">
+<code class="sig-name descname">event</code><a class="headerlink" href="#andesite.pools.HTTPPoolBase.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event object to emit</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code></a> which resolves to <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> after all observers
+have handled the event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.has_child">
+<code class="sig-name descname">has_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.has_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the child emitter is a child of the emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ChildEmitterABC</span></code>[~T]) – Emitter to check.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether or not the given emitter is either a direct, or an indirect
+(child of a child) child of this emitter.
+Note that every emitter is a child of itself.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.off">
+<code class="sig-name descname">off</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable an event listener or remove all listeners from an event.</p>
+<p>This can also be used to disable a listener that was added using <a class="reference internal" href="#andesite.pools.HTTPPoolBase.once" title="andesite.pools.HTTPPoolBase.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>
+before it is called.</p>
+<p>To remove all listeners from an event, pass the event selector to the
+<a class="reference internal" href="#andesite.pools.HTTPPoolBase.event" title="andesite.pools.HTTPPoolBase.event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event</span></code></a> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyEvent</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">MyEvent</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To remove a listener which is listening to all events, pass the listener
+to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to remove the listeners for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Event listener. This is the same callable that was passed
+to <a class="reference internal" href="#andesite.pools.HTTPPoolBase.on" title="andesite.pools.HTTPPoolBase.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> or <a class="reference internal" href="#andesite.pools.HTTPPoolBase.once" title="andesite.pools.HTTPPoolBase.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.on">
+<code class="sig-name descname">on</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener to the given event(s).</p>
+<p>If you want to listen to all events you can pass the callback to the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for. The latter case is
+equivalent to calling <a class="reference internal" href="#andesite.pools.HTTPPoolBase.on" title="andesite.pools.HTTPPoolBase.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> for each event separately.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.once">
+<code class="sig-name descname">once</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.once" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener which is only called once.</p>
+<p>This is basically the same as adding the listener using <a class="reference internal" href="#andesite.pools.HTTPPoolBase.on" title="andesite.pools.HTTPPoolBase.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a>
+and then calling <a class="reference internal" href="#andesite.pools.HTTPPoolBase.off" title="andesite.pools.HTTPPoolBase.off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off</span></code></a> once the listener has been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.remove_child">
+<code class="sig-name descname">remove_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.remove_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to remove.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the emitter isn’t a direct child.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.HTTPPoolBase.reset">
 <em class="property">async </em><code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset all underlying clients so they may be used again.</p>
@@ -407,15 +768,53 @@ usable again.</p>
 </dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="andesite.pools.HTTPPoolBase.subscribe">
+<code class="sig-name descname">subscribe</code><span class="sig-paren">(</span><em class="sig-param">event=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPoolBase.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to the given event(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. Event type or multiple event types to
+subscribe to. Can be <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> which will subscribe to all events.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SubscriptionABC</span></code>[~T]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A subscription which is subscribed to the selected events.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="andesite.pools.HTTPPool">
-<em class="property">class </em><code class="sig-name descname">HTTPPool</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">max_penalties=5</em>, <em class="sig-param">penalty_time_frame=60</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#HTTPPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.HTTPPool" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">HTTPPool</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">timeout=None</em>, <em class="sig-param">max_penalties=5</em>, <em class="sig-param">penalty_time_frame=60</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#HTTPPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.HTTPPool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Andesite HTTP client pool.</p>
 <p>This is just a wrapper around <a class="reference internal" href="#andesite.pools.HTTPPoolBase" title="andesite.pools.HTTPPoolBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPPoolBase</span></code></a> which adds the
 <code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPInterface</span></code> methods.</p>
 <p>Please see the documentation of <a class="reference internal" href="#andesite.pools.HTTPPoolBase" title="andesite.pools.HTTPPoolBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPPoolBase</span></code></a> for more details.</p>
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.add_child">
+<code class="sig-name descname">add_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.add_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to add.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the child emitter already is a child of this emitter,
+    or the emitter is a child of the child emitter.
+    The second case is only possible if the child emitter is itself
+    an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">EmitterABC</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="method">
 <dt id="andesite.pools.HTTPPool.add_client">
 <code class="sig-name descname">add_client</code><span class="sig-paren">(</span><em class="sig-param">client</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.add_client" title="Permalink to this definition">¶</a></dt>
@@ -504,6 +903,32 @@ encoded strings at once!</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.HTTPPool.emit">
+<code class="sig-name descname">emit</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit an event to all observers.</p>
+<p>The order in which the observers receive the events isn’t defined and
+shouldn’t be depended upon.</p>
+<p>If a listener raises an error, a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event is emitted.
+If an error occurs while handling the <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event, it is
+ignored.</p>
+<dl class="attribute">
+<dt id="andesite.pools.HTTPPool.event">
+<code class="sig-name descname">event</code><a class="headerlink" href="#andesite.pools.HTTPPool.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event object to emit</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code></a> which resolves to <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> after all observers
+have handled the event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.HTTPPool.get_current_client">
 <code class="sig-name descname">get_current_client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.get_current_client" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the current http client.</p>
@@ -543,6 +968,25 @@ that seems to be working. (i.e. not closed)</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="models.html#andesite.models.debug.Stats" title="andesite.models.debug.Stats"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stats</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.has_child">
+<code class="sig-name descname">has_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.has_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the child emitter is a child of the emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ChildEmitterABC</span></code>[~T]) – Emitter to check.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether or not the given emitter is either a direct, or an indirect
+(child of a child) child of this emitter.
+Note that every emitter is a child of itself.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -594,6 +1038,113 @@ as nothing but that.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.off">
+<code class="sig-name descname">off</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable an event listener or remove all listeners from an event.</p>
+<p>This can also be used to disable a listener that was added using <a class="reference internal" href="#andesite.pools.HTTPPool.once" title="andesite.pools.HTTPPool.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>
+before it is called.</p>
+<p>To remove all listeners from an event, pass the event selector to the
+<a class="reference internal" href="#andesite.pools.HTTPPool.event" title="andesite.pools.HTTPPool.event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event</span></code></a> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyEvent</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">MyEvent</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To remove a listener which is listening to all events, pass the listener
+to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to remove the listeners for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Event listener. This is the same callable that was passed
+to <a class="reference internal" href="#andesite.pools.HTTPPool.on" title="andesite.pools.HTTPPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> or <a class="reference internal" href="#andesite.pools.HTTPPool.once" title="andesite.pools.HTTPPool.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.on">
+<code class="sig-name descname">on</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener to the given event(s).</p>
+<p>If you want to listen to all events you can pass the callback to the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for. The latter case is
+equivalent to calling <a class="reference internal" href="#andesite.pools.HTTPPool.on" title="andesite.pools.HTTPPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> for each event separately.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.once">
+<code class="sig-name descname">once</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.once" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener which is only called once.</p>
+<p>This is basically the same as adding the listener using <a class="reference internal" href="#andesite.pools.HTTPPool.on" title="andesite.pools.HTTPPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a>
+and then calling <a class="reference internal" href="#andesite.pools.HTTPPool.off" title="andesite.pools.HTTPPool.off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off</span></code></a> once the listener has been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.remove_child">
+<code class="sig-name descname">remove_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.remove_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to remove.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the emitter isn’t a direct child.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -669,6 +1220,24 @@ A search query is just an identifier with the format
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="models.html#andesite.models.track.LoadedTrack" title="andesite.models.track.LoadedTrack"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoadedTrack</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.HTTPPool.subscribe">
+<code class="sig-name descname">subscribe</code><span class="sig-paren">(</span><em class="sig-param">event=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.HTTPPool.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to the given event(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. Event type or multiple event types to
+subscribe to. Can be <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> which will subscribe to all events.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SubscriptionABC</span></code>[~T]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A subscription which is subscribed to the selected events.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -772,7 +1341,7 @@ So it will favour clients with less guilds.</p>
 
 <dl class="class">
 <dt id="andesite.pools.WebSocketPoolBase">
-<em class="property">class </em><code class="sig-name descname">WebSocketPoolBase</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">state=None</em>, <em class="sig-param">scoring_function=None</em>, <em class="sig-param">region_comparator=None</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#WebSocketPoolBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.WebSocketPoolBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">WebSocketPoolBase</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">state=None</em>, <em class="sig-param">scoring_function=None</em>, <em class="sig-param">region_comparator=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#WebSocketPoolBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.WebSocketPoolBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base implementation of a web socket pool.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -786,7 +1355,6 @@ This is a function which takes <a class="reference internal" href="#andesite.poo
 and returns a comparable object. The function can be a coroutine.
 Defaults to <a class="reference internal" href="#andesite.pools.default_scoring_function" title="andesite.pools.default_scoring_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_scoring_function</span></code></a>.</p></li>
 <li><p><strong>region_comparator</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – Region comparator to use for comparing regions.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use for the event target.</p></li>
 </ul>
 </dd>
 </dl>
@@ -825,6 +1393,26 @@ it happens to implement <code class="xref py py-obj docutils literal notranslate
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.add_child">
+<code class="sig-name descname">add_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.add_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to add.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the child emitter already is a child of this emitter,
+    or the emitter is a child of the child emitter.
+    The second case is only possible if the child emitter is itself
+    an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">EmitterABC</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.WebSocketPoolBase.close">
 <em class="property">async </em><code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close all clients in the pool.</p>
@@ -847,6 +1435,32 @@ it happens to implement <code class="xref py py-obj docutils literal notranslate
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.emit">
+<code class="sig-name descname">emit</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit an event to all observers.</p>
+<p>The order in which the observers receive the events isn’t defined and
+shouldn’t be depended upon.</p>
+<p>If a listener raises an error, a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event is emitted.
+If an error occurs while handling the <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event, it is
+ignored.</p>
+<dl class="attribute">
+<dt id="andesite.pools.WebSocketPoolBase.event">
+<code class="sig-name descname">event</code><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event object to emit</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code></a> which resolves to <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> after all observers
+have handled the event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.WebSocketPoolBase.event_target">
 <em class="property">property </em><code class="sig-name descname">event_target</code><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.event_target" title="Permalink to this definition">¶</a></dt>
 <dd><p>Event target to send events to.</p>
@@ -856,6 +1470,25 @@ target is created.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Observable</span></code>[~T]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.has_child">
+<code class="sig-name descname">has_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.has_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the child emitter is a child of the emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ChildEmitterABC</span></code>[~T]) – Emitter to check.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether or not the given emitter is either a direct, or an indirect
+(child of a child) child of this emitter.
+Note that every emitter is a child of itself.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -875,12 +1508,119 @@ target is created.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.off">
+<code class="sig-name descname">off</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable an event listener or remove all listeners from an event.</p>
+<p>This can also be used to disable a listener that was added using <a class="reference internal" href="#andesite.pools.WebSocketPoolBase.once" title="andesite.pools.WebSocketPoolBase.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>
+before it is called.</p>
+<p>To remove all listeners from an event, pass the event selector to the
+<a class="reference internal" href="#andesite.pools.WebSocketPoolBase.event" title="andesite.pools.WebSocketPoolBase.event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event</span></code></a> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyEvent</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">MyEvent</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To remove a listener which is listening to all events, pass the listener
+to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to remove the listeners for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Event listener. This is the same callable that was passed
+to <a class="reference internal" href="#andesite.pools.WebSocketPoolBase.on" title="andesite.pools.WebSocketPoolBase.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> or <a class="reference internal" href="#andesite.pools.WebSocketPoolBase.once" title="andesite.pools.WebSocketPoolBase.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.on">
+<code class="sig-name descname">on</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener to the given event(s).</p>
+<p>If you want to listen to all events you can pass the callback to the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for. The latter case is
+equivalent to calling <a class="reference internal" href="#andesite.pools.WebSocketPoolBase.on" title="andesite.pools.WebSocketPoolBase.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> for each event separately.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.once">
+<code class="sig-name descname">once</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.once" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener which is only called once.</p>
+<p>This is basically the same as adding the listener using <a class="reference internal" href="#andesite.pools.WebSocketPoolBase.on" title="andesite.pools.WebSocketPoolBase.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a>
+and then calling <a class="reference internal" href="#andesite.pools.WebSocketPoolBase.off" title="andesite.pools.WebSocketPoolBase.off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off</span></code></a> once the listener has been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.WebSocketPoolBase.region_comparator">
 <em class="property">property </em><code class="sig-name descname">region_comparator</code><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.region_comparator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Region comparator used to compare guild region with Andesite node region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.remove_child">
+<code class="sig-name descname">remove_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.remove_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to remove.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the emitter isn’t a direct child.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -917,6 +1657,24 @@ directly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPoolBase.subscribe">
+<code class="sig-name descname">subscribe</code><span class="sig-paren">(</span><em class="sig-param">event=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPoolBase.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to the given event(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. Event type or multiple event types to
+subscribe to. Can be <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> which will subscribe to all events.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SubscriptionABC</span></code>[~T]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A subscription which is subscribed to the selected events.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1084,9 +1842,29 @@ The payload is mutated by the function.</p></li>
 
 <dl class="class">
 <dt id="andesite.pools.WebSocketPool">
-<em class="property">class </em><code class="sig-name descname">WebSocketPool</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">state=None</em>, <em class="sig-param">scoring_function=None</em>, <em class="sig-param">region_comparator=None</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#WebSocketPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.WebSocketPool" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">WebSocketPool</code><span class="sig-paren">(</span><em class="sig-param">clients</em>, <em class="sig-param">*</em>, <em class="sig-param">state=None</em>, <em class="sig-param">scoring_function=None</em>, <em class="sig-param">region_comparator=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#WebSocketPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.WebSocketPool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pool of Andesite web socket connections.</p>
 <p>Please refer to <a class="reference internal" href="#andesite.pools.WebSocketPoolBase" title="andesite.pools.WebSocketPoolBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketPoolBase</span></code></a> for the documentation.</p>
+<dl class="method">
+<dt id="andesite.pools.WebSocketPool.add_child">
+<code class="sig-name descname">add_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.add_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to add.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the child emitter already is a child of this emitter,
+    or the emitter is a child of the child emitter.
+    The second case is only possible if the child emitter is itself
+    an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">EmitterABC</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="method">
 <dt id="andesite.pools.WebSocketPool.add_client">
 <code class="sig-name descname">add_client</code><span class="sig-paren">(</span><em class="sig-param">client</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.add_client" title="Permalink to this definition">¶</a></dt>
@@ -1160,6 +1938,32 @@ The payload is mutated by the function.</p></li>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPool.emit">
+<code class="sig-name descname">emit</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit an event to all observers.</p>
+<p>The order in which the observers receive the events isn’t defined and
+shouldn’t be depended upon.</p>
+<p>If a listener raises an error, a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event is emitted.
+If an error occurs while handling the <code class="xref py py-obj docutils literal notranslate"><span class="pre">ListenerError</span></code> event, it is
+ignored.</p>
+<dl class="attribute">
+<dt id="andesite.pools.WebSocketPool.event">
+<code class="sig-name descname">event</code><a class="headerlink" href="#andesite.pools.WebSocketPool.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event object to emit</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code></a> which resolves to <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> after all observers
+have handled the event.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1283,6 +2087,25 @@ state, the returned set is a shallow copy of the internal one.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.WebSocketPool.has_child">
+<code class="sig-name descname">has_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.has_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the child emitter is a child of the emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ChildEmitterABC</span></code>[~T]) – Emitter to check.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether or not the given emitter is either a direct, or an indirect
+(child of a child) child of this emitter.
+Note that every emitter is a child of itself.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.WebSocketPool.iter_client_guild_ids">
 <code class="sig-name descname">iter_client_guild_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.iter_client_guild_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over all clients with their assigned guild ids.</p>
@@ -1317,6 +2140,96 @@ state, the returned set is a shallow copy of the internal one.</p>
 <li><p><strong>guild_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – ID of the guild for which to configure the mixer</p></li>
 <li><p><strong>enable</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]) – If present, controls whether or not the mixer should be used</p></li>
 <li><p><strong>**players</strong> – Map of player id to <code class="xref py py-obj docutils literal notranslate"><span class="pre">Play</span></code> / <code class="xref py py-obj docutils literal notranslate"><span class="pre">Update</span></code> payloads for each mixer source</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPool.off">
+<code class="sig-name descname">off</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable an event listener or remove all listeners from an event.</p>
+<p>This can also be used to disable a listener that was added using <a class="reference internal" href="#andesite.pools.WebSocketPool.once" title="andesite.pools.WebSocketPool.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>
+before it is called.</p>
+<p>To remove all listeners from an event, pass the event selector to the
+<a class="reference internal" href="#andesite.pools.WebSocketPool.event" title="andesite.pools.WebSocketPool.event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">event</span></code></a> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyEvent</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">MyEvent</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To remove a listener which is listening to all events, pass the listener
+to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">off</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to remove the listeners for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Event listener. This is the same callable that was passed
+to <a class="reference internal" href="#andesite.pools.WebSocketPool.on" title="andesite.pools.WebSocketPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> or <a class="reference internal" href="#andesite.pools.WebSocketPool.once" title="andesite.pools.WebSocketPool.once"><code class="xref py py-obj docutils literal notranslate"><span class="pre">once</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPool.on">
+<code class="sig-name descname">on</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener to the given event(s).</p>
+<p>If you want to listen to all events you can pass the callback to the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">callback</span></code> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_any_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+<span class="n">observable</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_any_event</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for. The latter case is
+equivalent to calling <a class="reference internal" href="#andesite.pools.WebSocketPool.on" title="andesite.pools.WebSocketPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a> for each event separately.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPool.once">
+<code class="sig-name descname">once</code><span class="sig-paren">(</span><em class="sig-param">event=None</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.once" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a listener which is only called once.</p>
+<p>This is basically the same as adding the listener using <a class="reference internal" href="#andesite.pools.WebSocketPool.on" title="andesite.pools.WebSocketPool.on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on</span></code></a>
+and then calling <a class="reference internal" href="#andesite.pools.WebSocketPool.off" title="andesite.pools.WebSocketPool.off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">off</span></code></a> once the listener has been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. This can be the type of a single event or
+a tuple of multiple events to listen for.</p></li>
+<li><p><strong>callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[~T], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Awaitable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Awaitable</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>]]]]) – Callable to call when the selected events are emitted.
+It is called with the event instance as its only argument.
+If it returns an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Awaitable</span></code> (or is a coroutine) it is awaited
+before the emission “completes” (See <code class="xref py py-obj docutils literal notranslate"><span class="pre">ChildEmitterABC.emit</span></code>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1412,6 +2325,23 @@ this command is ignored (Default: False)</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="andesite.pools.WebSocketPool.remove_child">
+<code class="sig-name descname">remove_child</code><span class="sig-paren">(</span><em class="sig-param">emitter</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.remove_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a child emitter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>emitter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Childemitterabc</span></code>[~T]) – Child emitter to remove.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If the emitter isn’t a direct child.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1561,6 +2491,24 @@ it happens to implement <code class="xref py py-obj docutils literal notranslate
 </dd></dl>
 
 <dl class="method">
+<dt id="andesite.pools.WebSocketPool.subscribe">
+<code class="sig-name descname">subscribe</code><span class="sig-paren">(</span><em class="sig-param">event=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to the given event(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[~T], …], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Event selector. Event type or multiple event types to
+subscribe to. Can be <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> which will subscribe to all events.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SubscriptionABC</span></code>[~T]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A subscription which is subscribed to the selected events.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="andesite.pools.WebSocketPool.update">
 <em class="property">async </em><code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">guild_id</em>, <em class="sig-param">update=None</em>, <em class="sig-param">*</em>, <em class="sig-param">pause=None</em>, <em class="sig-param">position=None</em>, <em class="sig-param">volume=None</em>, <em class="sig-param">filters=None</em><span class="sig-paren">)</span><a class="headerlink" href="#andesite.pools.WebSocketPool.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send an update.</p>
@@ -1628,7 +2576,7 @@ use the <a class="reference internal" href="#andesite.pools.WebSocketPool.send_o
 
 <dl class="function">
 <dt id="andesite.pools.create_pool">
-<code class="sig-name descname">create_pool</code><span class="sig-paren">(</span><em class="sig-param">http_nodes</em>, <em class="sig-param">web_socket_nodes</em>, <em class="sig-param">*</em>, <em class="sig-param">user_id</em>, <em class="sig-param">state=None</em>, <em class="sig-param">http_pool_kwargs=None</em>, <em class="sig-param">web_socket_pool_kwargs=None</em>, <em class="sig-param">loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#create_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.create_pool" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_pool</code><span class="sig-paren">(</span><em class="sig-param">http_nodes</em>, <em class="sig-param">web_socket_nodes</em>, <em class="sig-param">*</em>, <em class="sig-param">user_id</em>, <em class="sig-param">state=None</em>, <em class="sig-param">http_pool_kwargs=None</em>, <em class="sig-param">web_socket_pool_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/pools.html#create_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.pools.create_pool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an <code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code> with client pools.</p>
 <p>Uses <code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPBase</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketBase</span></code> which are contained in
 <a class="reference internal" href="#andesite.pools.HTTPPoolBase" title="andesite.pools.HTTPPoolBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPPoolBase</span></code></a> and <a class="reference internal" href="#andesite.pools.WebSocketPoolBase" title="andesite.pools.WebSocketPoolBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WebSocketPoolBase</span></code></a> pools respectively.</p>
@@ -1646,7 +2594,6 @@ can pass <a class="reference external" href="https://docs.python.org/3/library/c
 constructor.</p></li>
 <li><p><strong>web_socket_pool_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]) – Additional keyword arguments to pass to the web
 socket pool constructor.</p></li>
-<li><p><strong>loop</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEventLoop</span></code>]) – Event loop to use.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>

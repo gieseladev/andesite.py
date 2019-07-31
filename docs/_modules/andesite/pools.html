@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.pools &#8212; andesite.py 0.2.0 documentation</title>
+    <title>andesite.pools &#8212; andesite.py 0.2.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -90,6 +90,8 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        pool (ClientPool): Pool which raised the error</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;pool&quot;</span><span class="p">,)</span>
+
     <span class="n">pool</span><span class="p">:</span> <span class="s2">&quot;ClientPool&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">:</span> <span class="s2">&quot;ClientPool&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -99,7 +101,7 @@
 
 <div class="viewcode-block" id="PoolEmptyError"><a class="viewcode-back" href="../../reference/pools.html#andesite.PoolEmptyError">[docs]</a><span class="k">class</span> <span class="nc">PoolEmptyError</span><span class="p">(</span><span class="n">PoolException</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Raised when a pool is empty but shouldn&#39;t be.&quot;&quot;&quot;</span>
-    <span class="o">...</span></div>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PoolClientAddEvent"><a class="viewcode-back" href="../../reference/pools.html#andesite.PoolClientAddEvent">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">()</span>
@@ -156,7 +158,7 @@
 
 <div class="viewcode-block" id="ClientPool.close"><a class="viewcode-back" href="../../reference/pools.html#andesite.ClientPool.close">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Close all clients in the pool.&quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clients</span><span class="p">),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span></div>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clients</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="ClientPool.reset"><a class="viewcode-back" href="../../reference/pools.html#andesite.ClientPool.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Reset all underlying clients so they may be used again.</span>
@@ -164,7 +166,7 @@
 <span class="sd">        This has the opposite effect of the `close` method making the clients</span>
 <span class="sd">        usable again.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span></div>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="nf">_check_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">CT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CT</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Check whether the client is usable.</span>
@@ -226,7 +228,6 @@
 <span class="sd">        timeout: Sets the `timeout` attribute.</span>
 <span class="sd">        max_penalties: Sets the `max_penalties` attribute.</span>
 <span class="sd">        penalty_time_frame: Sets the `penalty_time_frame` attribute.</span>
-<span class="sd">        loop: Event loop to use for the event target.</span>
 
 <span class="sd">    The pool uses a circular buffer which is rotated after every request.</span>
 
@@ -251,9 +252,8 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clients</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractHTTP</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
                  <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">max_penalties</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-                 <span class="n">penalty_time_frame</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
-                 <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+                 <span class="n">penalty_time_frame</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">60</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="c1"># collect in a set first to make sure clients are unique.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_clients</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clients</span><span class="p">))</span>
@@ -357,18 +357,17 @@
 <span class="sd">            PoolEmptyError: If no clients are available</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">running_fs</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
 
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_client</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">PoolEmptyError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-            <span class="n">fut</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
+            <span class="n">fut</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="n">running_fs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
 
-            <span class="n">done_fs</span><span class="p">,</span> <span class="n">pending_fs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">running_fs</span><span class="p">,</span>
-                                                     <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span><span class="p">,</span>
-                                                     <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
+            <span class="n">done_fs</span><span class="p">,</span> <span class="n">pending_fs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">running_fs</span><span class="p">,</span> <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">done_fut</span> <span class="o">=</span> <span class="n">done_fs</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -384,7 +383,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_add_penalty</span><span class="p">(</span><span class="n">client</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="HTTPPool"><a class="viewcode-back" href="../../reference/pools.html#andesite.HTTPPool">[docs]</a><span class="k">class</span> <span class="nc">HTTPPool</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">HTTPInterface</span><span class="p">,</span> <span class="n">HTTPPoolBase</span><span class="p">):</span>
+<div class="viewcode-block" id="HTTPPool"><a class="viewcode-back" href="../../reference/pools.html#andesite.HTTPPool">[docs]</a><span class="k">class</span> <span class="nc">HTTPPool</span><span class="p">(</span><span class="n">HTTPPoolBase</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">HTTPInterface</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Andesite HTTP client pool.</span>
 
 <span class="sd">    This is just a wrapper around `HTTPPoolBase` which adds the</span>
@@ -400,7 +399,7 @@
 <span class="n">RegionGuildComparator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="nb">int</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="ScoringData"><a class="viewcode-back" href="../../reference/pools.html#andesite.ScoringData">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="ScoringData"><a class="viewcode-back" href="../../reference/pools.html#andesite.ScoringData">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ScoringData</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Data passed to the web socket scoring scoring function.</span>
 
@@ -473,7 +472,6 @@
 <span class="sd">            and returns a comparable object. The function can be a coroutine.</span>
 <span class="sd">            Defaults to `default_scoring_function`.</span>
 <span class="sd">        region_comparator: Region comparator to use for comparing regions.</span>
-<span class="sd">        loop: Event loop to use for the event target.</span>
 
 <span class="sd">    The pool uses different clients on a guild to guild level.</span>
 
@@ -494,9 +492,8 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clients</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
                  <span class="n">state</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">StateArgumentType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">scoring_function</span><span class="p">:</span> <span class="n">PoolScoringFunction</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">region_comparator</span><span class="p">:</span> <span class="n">RegionGuildComparator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+                 <span class="n">region_comparator</span><span class="p">:</span> <span class="n">RegionGuildComparator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_clients</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_guild_clients</span> <span class="o">=</span> <span class="n">WeakValueDictionary</span><span class="p">()</span>
@@ -622,10 +619,13 @@
         <span class="c1"># TODO transfer message queue</span>
 
         <span class="n">fs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">guild_id</span> <span class="ow">in</span> <span class="n">guild_ids</span><span class="p">:</span>
-            <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assign_client</span><span class="p">(</span><span class="n">guild_id</span><span class="p">),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">))</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
 
-        <span class="n">new_clients</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">fs</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">guild_id</span> <span class="ow">in</span> <span class="n">guild_ids</span><span class="p">:</span>
+            <span class="n">fut</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assign_client</span><span class="p">(</span><span class="n">guild_id</span><span class="p">))</span>
+            <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
+
+        <span class="n">new_clients</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">fs</span><span class="p">)</span>
 
         <span class="k">async</span> <span class="k">def</span> <span class="nf">load_player_state</span><span class="p">(</span><span class="n">_guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_client</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">player_state</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_guild_id</span><span class="p">)</span>
@@ -634,9 +634,10 @@
         <span class="n">fs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">guild_id</span><span class="p">,</span> <span class="n">new_client</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">guild_ids</span><span class="p">,</span> <span class="n">new_clients</span><span class="p">):</span>
-            <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">load_player_state</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">new_client</span><span class="p">),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">))</span>
+            <span class="n">fut</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">load_player_state</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">new_client</span><span class="p">))</span>
+            <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
 
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">fs</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span></div>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">fs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="WebSocketPoolBase.get_client"><a class="viewcode-back" href="../../reference/pools.html#andesite.WebSocketPoolBase.get_client">[docs]</a>    <span class="k">def</span> <span class="nf">get_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Get the andesite web socket client which is used for the given guild.&quot;&quot;&quot;</span>
@@ -675,6 +676,8 @@
         <span class="k">async</span> <span class="k">def</span> <span class="nf">perform_score_calc</span><span class="p">(</span><span class="n">_score_data</span><span class="p">:</span> <span class="n">ScoringData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">_score_data</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_score</span><span class="p">(</span><span class="n">_score_data</span><span class="p">)</span>
 
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+
         <span class="k">for</span> <span class="n">client</span><span class="p">,</span> <span class="n">guild_ids</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_client_guild_ids</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># noinspection PyUnresolvedReferences</span>
@@ -683,9 +686,9 @@
                 <span class="n">node_region</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="n">score_data</span> <span class="o">=</span> <span class="n">ScoringData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">node_region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_comparator</span><span class="p">,</span> <span class="n">guild_ids</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">)</span>
-            <span class="n">score_fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">perform_score_calc</span><span class="p">(</span><span class="n">score_data</span><span class="p">),</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">))</span>
+            <span class="n">score_fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">perform_score_calc</span><span class="p">(</span><span class="n">score_data</span><span class="p">)))</span>
 
-        <span class="n">scores</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">score_fs</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
+        <span class="n">scores</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">andesite</span><span class="o">.</span><span class="n">AbstractWebSocket</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">score_fs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">client</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">scores</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">best_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">score</span> <span class="o">&lt;</span> <span class="n">best_score</span><span class="p">:</span>
@@ -758,7 +761,7 @@
         <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">guild_id</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="WebSocketPool"><a class="viewcode-back" href="../../reference/pools.html#andesite.WebSocketPool">[docs]</a><span class="k">class</span> <span class="nc">WebSocketPool</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span><span class="p">,</span> <span class="n">WebSocketPoolBase</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketPool"><a class="viewcode-back" href="../../reference/pools.html#andesite.WebSocketPool">[docs]</a><span class="k">class</span> <span class="nc">WebSocketPool</span><span class="p">(</span><span class="n">WebSocketPoolBase</span><span class="p">,</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketInterface</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Pool of Andesite web socket connections.</span>
 
 <span class="sd">    Please refer to `WebSocketPoolBase` for the documentation.</span>
@@ -774,8 +777,7 @@
                 <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                 <span class="n">state</span><span class="p">:</span> <span class="n">andesite</span><span class="o">.</span><span class="n">StateArgumentType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">http_pool_kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">web_socket_pool_kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Client</span><span class="p">:</span>
+                <span class="n">web_socket_pool_kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Client</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Create an `Client` with client pools.</span>
 
 <span class="sd">    Uses `HTTPBase` and `WebSocketBase` which are contained in</span>
@@ -793,34 +795,27 @@
 <span class="sd">            constructor.</span>
 <span class="sd">        web_socket_pool_kwargs: Additional keyword arguments to pass to the web</span>
 <span class="sd">            socket pool constructor.</span>
-<span class="sd">        loop: Event loop to use.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A combined Andesite client operation on an http pool and a web socket</span>
 <span class="sd">        pool.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">andesite</span> <span class="k">import</span> <span class="n">HTTPBase</span><span class="p">,</span> <span class="n">WebSocketBase</span>
-
     <span class="n">http_clients</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">uri</span><span class="p">,</span> <span class="n">password</span> <span class="ow">in</span> <span class="n">http_nodes</span><span class="p">:</span>
-        <span class="n">http_clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HTTPBase</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">))</span>
+        <span class="n">http_clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">andesite</span><span class="o">.</span><span class="n">HTTPBase</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">password</span><span class="p">))</span>
 
     <span class="n">web_socket_clients</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">uri</span><span class="p">,</span> <span class="n">password</span> <span class="ow">in</span> <span class="n">web_socket_nodes</span><span class="p">:</span>
-        <span class="n">ws</span> <span class="o">=</span> <span class="n">WebSocketBase</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">WebSocketBase</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">web_socket_clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ws</span><span class="p">)</span>
 
     <span class="n">http_pool_kwargs</span> <span class="o">=</span> <span class="n">http_pool_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">http_pool_kwargs</span><span class="p">[</span><span class="s2">&quot;loop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop</span>
-
     <span class="n">http_pool</span> <span class="o">=</span> <span class="n">HTTPPoolBase</span><span class="p">(</span><span class="n">http_clients</span><span class="p">,</span> <span class="o">**</span><span class="n">http_pool_kwargs</span><span class="p">)</span>
 
     <span class="n">web_socket_pool_kwargs</span> <span class="o">=</span> <span class="n">web_socket_pool_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">web_socket_pool_kwargs</span><span class="p">[</span><span class="s2">&quot;loop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop</span>
-
     <span class="n">web_socket_pool</span> <span class="o">=</span> <span class="n">WebSocketPoolBase</span><span class="p">(</span><span class="n">web_socket_clients</span><span class="p">,</span> <span class="o">**</span><span class="n">web_socket_pool_kwargs</span><span class="p">)</span>
 
-    <span class="n">inst</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">http_pool</span><span class="p">,</span> <span class="n">web_socket_pool</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+    <span class="n">inst</span> <span class="o">=</span> <span class="n">andesite</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">http_pool</span><span class="p">,</span> <span class="n">web_socket_pool</span><span class="p">)</span>
 
     <span class="c1"># the setter will make sure the state is proper</span>
     <span class="n">inst</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
