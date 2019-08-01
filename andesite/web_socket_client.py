@@ -584,14 +584,15 @@ class WebSocketInterface(AbstractWebSocket, abc.ABC):
 
         await self.send(guild_id, "filters", payload)
 
-    async def get_player(self, guild_id: int) -> andesite.Player:
+    async def get_player(self, guild_id: int) -> Optional[andesite.Player]:
         """Get the player.
 
         Args:
             guild_id: Target guild id
 
         Returns:
-            Player for the guild
+            Player state for the guild. This may be `None` if no player
+            is available yet.
         """
 
         await self.send(guild_id, "get-player", {})

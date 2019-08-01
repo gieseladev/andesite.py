@@ -125,13 +125,14 @@ class PlayerUpdate(ReceiveOperation):
     Attributes:
         user_id (int): user id
         guild_id (int): guild id
-        state (andesite.Player): player
+        state (Optional[andesite.Player]): State of the player. `None` if no
+            player exists yet.
     """
     __op__ = "player-update"
 
     user_id: int
     guild_id: int
-    state: Player
+    state: Optional[Player]
 
     @classmethod
     def __transform_input__(cls, data: RawDataType) -> None:
