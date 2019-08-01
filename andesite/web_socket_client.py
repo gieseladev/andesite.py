@@ -844,6 +844,8 @@ class WebSocketBase(AbstractWebSocketClient):
             self.__closed = True
             raise ConnectionError(f"Couldn't connect to {self.__ws_uri} after {attempt} attempts")
 
+        log.info("%s: connected", self)
+
         self.web_socket_client = client
         self.__start_read_loop()
 
@@ -858,11 +860,13 @@ class WebSocketBase(AbstractWebSocketClient):
                 await self.__connect(max_attempts)
 
     async def disconnect(self) -> None:
-        self.__stop_read_loop()
+        async with self._get_connect_lock():
+            self.__stop_read_loop()
+            self.__last_connection_id = None
 
-        if self.connected:
-            await self.web_socket_client.close(reason="disconnect")
-            _ = self.event_target.emit(WebSocketDisconnectEvent(self, True))
+            if self.connected:
+                await self.web_socket_client.close(reason="disconnect")
+                _ = self.event_target.emit(WebSocketDisconnectEvent(self, True))
 
     async def reset(self) -> None:
         await self.disconnect()
