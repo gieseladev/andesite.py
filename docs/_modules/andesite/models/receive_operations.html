@@ -159,13 +159,14 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        user_id (int): user id</span>
 <span class="sd">        guild_id (int): guild id</span>
-<span class="sd">        state (andesite.Player): player</span>
+<span class="sd">        state (Optional[andesite.Player]): State of the player. `None` if no</span>
+<span class="sd">            player exists yet.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__op__</span> <span class="o">=</span> <span class="s2">&quot;player-update&quot;</span>
 
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">state</span><span class="p">:</span> <span class="n">Player</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Player</span><span class="p">]</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">__transform_input__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">RawDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
