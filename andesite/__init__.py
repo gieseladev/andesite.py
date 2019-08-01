@@ -9,7 +9,7 @@ Attributes:
 """
 
 # must be defined before http client is imported
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 # preserve order:
 from .models import *  # 1
