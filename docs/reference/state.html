@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>State &#8212; andesite.py 0.2.2 documentation</title>
+    <title>State &#8212; andesite.py 0.2.3 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -478,26 +478,40 @@ returned data.</p>
 
 <dl class="class">
 <dt id="andesite.state.State">
-<em class="property">class </em><code class="sig-name descname">State</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">state_factory=&lt;class 'andesite.state.PlayerState'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.State" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">State</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">state_factory=&lt;class 'andesite.state.PlayerState'&gt;</em>, <em class="sig-param">keep_states=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/andesite/state.html#State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#andesite.state.State" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default implementation of <a class="reference internal" href="#andesite.state.AbstractState" title="andesite.state.AbstractState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractState</span></code></a>.</p>
-<p>Stores the player states in memory.</p>
+<p>Stores the player states in memory, unless explicitly suppressed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>state_factory</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], ~PST]) – Callable which when called with a guild id, creates an
-<a class="reference internal" href="#andesite.state.AbstractPlayerState" title="andesite.state.AbstractPlayerState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractPlayerState</span></code></a>. The default is <a class="reference internal" href="#andesite.state.PlayerState" title="andesite.state.PlayerState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlayerState</span></code></a>.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state_factory</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], ~PST]) – Callable which when called with a guild id, creates an
+<a class="reference internal" href="#andesite.state.AbstractPlayerState" title="andesite.state.AbstractPlayerState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractPlayerState</span></code></a>. The default is <a class="reference internal" href="#andesite.state.PlayerState" title="andesite.state.PlayerState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlayerState</span></code></a>.</p></li>
+<li><p><strong>keep_states</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether or not the player states should be stored when
+they’re created. This is required for in-memory storage as otherwise
+the data would be lost.</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="attribute">
 <dt id="andesite.state.State.player_states">
 <code class="sig-name descname">player_states</code><a class="headerlink" href="#andesite.state.State.player_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mapping from guild id
-to the corresponding player state.</p>
+<dd><p>Mapping from</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>, <a class="reference internal" href="#andesite.state.AbstractPlayerState" title="andesite.state.AbstractPlayerState">AbstractPlayerState</a>]</p>
+<dd class="field-odd"><p>Optional[Dict[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a>, <a class="reference internal" href="#andesite.state.AbstractPlayerState" title="andesite.state.AbstractPlayerState">AbstractPlayerState</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">guild id to the corresponding player state. `None` if `keep_states`</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">was `False`.</code></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>andesite.state &#8212; andesite.py 0.2.2 documentation</title>
+    <title>andesite.state &#8212; andesite.py 0.2.3 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -416,23 +416,30 @@
 <div class="viewcode-block" id="State"><a class="viewcode-back" href="../../reference/state.html#andesite.state.State">[docs]</a><span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="n">AbstractState</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">PST</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;Default implementation of `AbstractState`.</span>
 
-<span class="sd">    Stores the player states in memory.</span>
+<span class="sd">    Stores the player states in memory, unless explicitly suppressed.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state_factory: Callable which when called with a guild id, creates an</span>
 <span class="sd">            `AbstractPlayerState`. The default is `PlayerState`.</span>
+<span class="sd">        keep_states: Whether or not the player states should be stored when</span>
+<span class="sd">            they&#39;re created. This is required for in-memory storage as otherwise</span>
+<span class="sd">            the data would be lost.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        player_states (Dict[int, AbstractPlayerState]): Mapping from guild id</span>
-<span class="sd">            to the corresponding player state.</span>
+<span class="sd">        player_states (Optional[Dict[int, AbstractPlayerState]]): Mapping from</span>
+<span class="sd">        guild id to the corresponding player state. `None` if `keep_states`</span>
+<span class="sd">        was `False`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;player_states&quot;</span><span class="p">,</span> <span class="s2">&quot;_state_factory&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;player_states&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;_state_factory&quot;</span><span class="p">)</span>
 
-    <span class="n">player_states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PST</span><span class="p">]</span>
+    <span class="n">player_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PST</span><span class="p">]]</span>
+
     <span class="n">_state_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PST</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PST</span><span class="p">]</span> <span class="o">=</span> <span class="n">PlayerState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PST</span><span class="p">]</span> <span class="o">=</span> <span class="n">PlayerState</span><span class="p">,</span>
+                 <span class="n">keep_states</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">keep_states</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_state_factory</span> <span class="o">=</span> <span class="n">state_factory</span>
 
@@ -440,6 +447,9 @@
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{type(self).__name__}(state_factory=</span><span class="si">{self._state_factory!r}</span><span class="s2">)&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_or_create_player_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guild_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PST</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_factory</span><span class="p">(</span><span class="n">guild_id</span><span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">player_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">player_states</span><span class="p">[</span><span class="n">guild_id</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
