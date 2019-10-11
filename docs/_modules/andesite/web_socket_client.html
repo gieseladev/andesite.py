@@ -878,6 +878,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__closed</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Couldn&#39;t connect to </span><span class="si">{self.__ws_uri}</span><span class="s2"> after </span><span class="si">{attempt}</span><span class="s2"> attempts&quot;</span><span class="p">)</span>
 
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: connected&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span> <span class="o">=</span> <span class="n">client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__start_read_loop</span><span class="p">()</span>
 
@@ -892,11 +894,13 @@
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="WebSocketBase.disconnect"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.disconnect">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__stop_read_loop</span><span class="p">()</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connect_lock</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__stop_read_loop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__last_connection_id</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;disconnect&quot;</span><span class="p">)</span>
-            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">WebSocketDisconnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span></div>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">web_socket_client</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">reason</span><span class="o">=</span><span class="s2">&quot;disconnect&quot;</span><span class="p">)</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_target</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">WebSocketDisconnectEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="WebSocketBase.reset"><a class="viewcode-back" href="../../reference/clients.html#andesite.combined_client.WebSocketBase.reset">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
