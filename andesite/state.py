@@ -382,23 +382,30 @@ PST = TypeVar("PST", bound=AbstractPlayerState)
 class State(AbstractState, Generic[PST]):
     """Default implementation of `AbstractState`.
 
-    Stores the player states in memory.
+    Stores the player states in memory, unless explicitly suppressed.
 
     Args:
         state_factory: Callable which when called with a guild id, creates an
             `AbstractPlayerState`. The default is `PlayerState`.
+        keep_states: Whether or not the player states should be stored when
+            they're created. This is required for in-memory storage as otherwise
+            the data would be lost.
 
     Attributes:
-        player_states (Dict[int, AbstractPlayerState]): Mapping from guild id
-            to the corresponding player state.
+        player_states (Optional[Dict[int, AbstractPlayerState]]): Mapping from
+        guild id to the corresponding player state. `None` if `keep_states`
+        was `False`.
     """
-    __slots__ = ("player_states", "_state_factory")
+    __slots__ = ("player_states",
+                 "_state_factory")
 
-    player_states: Dict[int, PST]
+    player_states: Optional[Dict[int, PST]]
+
     _state_factory: Callable[[int], PST]
 
-    def __init__(self, *, state_factory: Callable[[int], PST] = PlayerState) -> None:
-        self.player_states = {}
+    def __init__(self, *, state_factory: Callable[[int], PST] = PlayerState,
+                 keep_states: bool = True) -> None:
+        self.player_states = {} if keep_states else None
 
         self._state_factory = state_factory
 
@@ -406,6 +413,9 @@ class State(AbstractState, Generic[PST]):
         return f"{type(self).__name__}(state_factory={self._state_factory!r})"
 
     def _get_or_create_player_state(self, guild_id: int) -> PST:
+        if self.player_states is None:
+            return self._state_factory(guild_id)
+
         try:
             player_state = self.player_states[guild_id]
         except KeyError:

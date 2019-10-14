@@ -290,7 +290,7 @@ class Karaoke(Filter):
     level: float = 1.0
     mono_level: float = 1.0
     filter_band: float = 220.0
-    filter_width: float = 220.0
+    filter_width: float = 100.0
 
 
 @dataclass
